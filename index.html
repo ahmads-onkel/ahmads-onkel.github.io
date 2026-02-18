@@ -1,9 +1,10 @@
 <script type="module">
-import { initializeApp }   from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
 import { getDatabase, ref, set, onValue, onDisconnect, remove }
-  from "https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js";
+from "https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js";
 
 /* ================= FIREBASE ================= */
+
 const app = initializeApp({
   apiKey: "AIzaSyB8eIlsvx6fz7RaVy1EeRSgqVsopqyoeyI",
   authDomain: "ahmad-5ea27.firebaseapp.com",
@@ -13,204 +14,209 @@ const app = initializeApp({
   messagingSenderId: "168368947306",
   appId: "1:168368947306:web:605abc8ba0b91acfad4a13"
 });
+
 const db = getDatabase(app);
 
-/* ================= IDENTITY ================= */
-const PID   = Math.random().toString(36).slice(2,10);
-const COLOR = ['#ff3d6e','#3dffa0','#4499ff','#ffbf3d','#bf3dff','#ff7a3d','#3dfff0','#ffe333']
-  [Math.floor(Math.random()*8)];
+/* ================= DOM REFERENCES (FIXES BLANK SCREEN) ================= */
 
-/* ================= STATE ================= */
-let roomId = '';
+const menu      = document.getElementById('menu');
+const hud       = document.getElementById('hud');
+const cursor    = document.getElementById('cursor');
+const respawn   = document.getElementById('respawn');
+const nameInput = document.getElementById('nameInput');
+const roomInput = document.getElementById('roomInput');
+const killNum   = document.getElementById('kills');
+
+/* ================= CORE STATE ================= */
+
+const PID   = crypto.randomUUID().slice(0,8);
+const COLOR = `hsl(${Math.random()*360},80%,60%)`;
+
+let roomId = "";
 let pRef;
 let players = {};
-let x = innerWidth/2, y = innerHeight/2;
-let tx = x, ty = y;
-let kills = 0;
-let alive = true;
-let started = false;
-let spawnProt = true;
-let lastSend = 0;
-let name = 'Mouse';
-let intentionalRemove = false;
 
-/* ================= PUBLIC MATCHMAKING (FIXED) ================= */
+let x = innerWidth/2;
+let y = innerHeight/2;
+let tx = x;
+let ty = y;
+
+let alive = false;
+let spawnProt = false;
+let kills = 0;
+let lastSend = 0;
+
+/* ================= PUBLIC MATCHMAKING ================= */
+
 async function findPublicRoom() {
-  return 'pub_' + (Math.floor(Math.random() * 10) + 1);
+  return "public_" + (Math.floor(Math.random()*10)+1);
 }
 
 /* ================= JOIN ================= */
+
 window.joinPublic = async () => {
-  name = nameInput.value.trim() || 'Mouse';
   roomId = await findPublicRoom();
   startGame();
 };
 
-window.createPrivate = () => {
-  name = nameInput.value.trim() || 'Mouse';
-  let code = roomInput.value.trim().toUpperCase();
-  if (!code) code = Math.random().toString(36).slice(2,8).toUpperCase();
-  roomId = 'priv_' + code;
-  roomInput.value = code;
-  roomBadge.style.display = 'block';
-  roomBadge.textContent = '📋 Share code: ' + code;
+window.joinPrivate = () => {
+  const code = roomInput.value.trim() || "private";
+  roomId = "private_" + code.toLowerCase();
   startGame();
 };
 
-/* ================= START ================= */
-function startGame() {
-  menu.style.display = 'none';
-  hud.style.display = 'block';
-  killfeed.style.display = 'block';
+/* ================= START GAME ================= */
 
-  const sp = spawn();
-  x = sp.x; y = sp.y; tx = x; ty = y;
+function startGame() {
+  menu.style.display = "none";
+  hud.style.display = "block";
+
+  alive = true;
+  spawnProt = true;
 
   pRef = ref(db, `rooms/${roomId}/players/${PID}`);
   onDisconnect(pRef).remove();
 
-  /* IMPORTANT: spawn immediately */
+  spawn();
+
   set(pRef, {
     x, y,
     color: COLOR,
-    name,
+    name: nameInput.value || "Player",
     kills,
     spawnProt: true
   });
 
+  setTimeout(() => spawnProt = false, 2000);
+
   onValue(ref(db, `rooms/${roomId}/players`), snap => {
-    const data = snap.val() || {};
-
-    if (started && alive && !data[PID] && !intentionalRemove) {
-      die();
-    }
-
-    players = data;
-    renderOthers();
-    pcount.textContent = Object.keys(players).length + ' mice';
+    players = snap.val() || {};
+    render();
   });
 
-  started = true;
-  spawnProt = true;
-  setTimeout(() => spawnProt = false, 1800);
   requestAnimationFrame(loop);
 }
 
-/* ================= LOOP ================= */
+/* ================= MAIN LOOP ================= */
+
 function loop(ts) {
   requestAnimationFrame(loop);
-  if (!alive || !started) return;
+  if (!alive) return;
 
+  // smooth movement
   x += (tx - x) * 0.15;
   y += (ty - y) * 0.15;
 
-  x = Math.max(20, Math.min(innerWidth-20, x));
-  y = Math.max(20, Math.min(innerHeight-20, y));
+  x = clamp(x, 20, innerWidth - 20);
+  y = clamp(y, 20, innerHeight - 20);
 
   drawSelf();
 
-  if (ts - lastSend > 50) {
+  if (ts - lastSend > 60) {
     lastSend = ts;
 
     set(pRef, {
       x: Math.round(x),
       y: Math.round(y),
       color: COLOR,
-      name,
+      name: nameInput.value || "Player",
       kills,
       spawnProt
     });
 
-    if (!spawnProt) {
-      for (const id in players) {
-        if (id === PID) continue;
-        const p = players[id];
-        if (p.spawnProt) continue;
-        if (Math.hypot(p.x-x, p.y-y) < 28) {
-          kills++;
-          killNum.textContent = kills;
-          remove(ref(db, `rooms/${roomId}/players/${id}`));
-        }
-      }
+    checkKills();
+  }
+}
+
+/* ================= KILL SYSTEM ================= */
+
+function checkKills() {
+  if (spawnProt) return;
+
+  for (const id in players) {
+    if (id === PID) continue;
+
+    const p = players[id];
+    if (p.spawnProt) continue;
+
+    const dist = Math.hypot(p.x - x, p.y - y);
+
+    if (dist < 30) {
+      kills++;
+      killNum.textContent = kills;
+      remove(ref(db, `rooms/${roomId}/players/${id}`));
     }
   }
 }
 
 /* ================= RENDER ================= */
+
 function drawSelf() {
-  let el = document.getElementById('me');
+  let el = document.getElementById("me");
   if (!el) {
-    el = document.createElement('div');
-    el.id = 'me';
-    el.className = 'player-wrap';
-    el.innerHTML = `<div class="p-name" style="color:${COLOR}">${name}</div>`;
-    document.body.appendChild(el);
+    el = createPlayerElement(PID, COLOR, true);
   }
-  el.style.left = x + 'px';
-  el.style.top  = y + 'px';
+  el.style.left = x + "px";
+  el.style.top  = y + "px";
 }
 
-function renderOthers() {
-  document.querySelectorAll('.player-wrap:not(#me)').forEach(e => {
-    const id = e.dataset.id;
-    if (!players[id]) e.remove();
+function render() {
+  // remove missing players
+  document.querySelectorAll(".player").forEach(el => {
+    const id = el.dataset.id;
+    if (!players[id] && id !== PID) el.remove();
   });
 
   for (const id in players) {
     if (id === PID) continue;
     const p = players[id];
+
     let el = document.querySelector(`[data-id="${id}"]`);
     if (!el) {
-      el = document.createElement('div');
-      el.dataset.id = id;
-      el.className = 'player-wrap';
-      el.innerHTML = `<div class="p-name" style="color:${p.color}">${p.name}</div>`;
-      document.body.appendChild(el);
+      el = createPlayerElement(id, p.color);
     }
-    el.style.left = p.x + 'px';
-    el.style.top  = p.y + 'px';
+
+    el.style.left = p.x + "px";
+    el.style.top  = p.y + "px";
   }
 }
 
-/* ================= DEATH / RESPAWN ================= */
-function die() {
-  alive = false;
-  intentionalRemove = true;
-  document.getElementById('me')?.remove();
-  respawn.style.display = 'flex';
+function createPlayerElement(id, color, isSelf=false) {
+  const el = document.createElement("div");
+  el.className = "player";
+  el.dataset.id = id;
+  el.style.position = "absolute";
+  el.style.width = "32px";
+  el.style.height = "32px";
+  el.style.borderRadius = "50%";
+  el.style.background = color;
+  el.style.transform = "translate(-50%, -50%)";
+  el.style.pointerEvents = "none";
 
-  let c = 3;
-  rspNum.textContent = c;
-  const iv = setInterval(() => {
-    c--;
-    rspNum.textContent = c;
-    if (c <= 0) {
-      clearInterval(iv);
-      respawn.style.display = 'none';
-      intentionalRemove = false;
-      alive = true;
-      spawnProt = true;
-      const sp = spawn();
-      x = sp.x; y = sp.y;
-      set(pRef, { x, y, color:COLOR, name, kills, spawnProt:true });
-      setTimeout(() => spawnProt = false, 1800);
-    }
-  }, 1000);
+  document.body.appendChild(el);
+  return el;
+}
+
+/* ================= RESPAWN ================= */
+
+function spawn() {
+  x = Math.random() * (innerWidth - 100) + 50;
+  y = Math.random() * (innerHeight - 100) + 50;
 }
 
 /* ================= INPUT ================= */
-document.addEventListener('mousemove', e => {
-  cursor.style.left = e.clientX + 'px';
-  cursor.style.top  = e.clientY + 'px';
-  if (alive) { tx = e.clientX; ty = e.clientY; }
+
+document.addEventListener("mousemove", e => {
+  tx = e.clientX;
+  ty = e.clientY;
+
+  cursor.style.left = tx + "px";
+  cursor.style.top  = ty + "px";
 });
 
 /* ================= UTIL ================= */
-function spawn() {
-  const W = innerWidth, H = innerHeight;
-  const s = [
-    {x:60,y:60},{x:W-60,y:60},{x:60,y:H-60},{x:W-60,y:H-60}
-  ];
-  return s[Math.floor(Math.random()*s.length)];
+
+function clamp(v, min, max) {
+  return Math.max(min, Math.min(max, v));
 }
 </script>
