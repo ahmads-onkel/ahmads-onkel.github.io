@@ -1,486 +1,9 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>🐭 Mouse Arena</title>
-<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
-<style>
-* { box-sizing: border-box; margin: 0; padding: 0; }
-
-:root {
-  --bg: #06060f;
-  --grid: rgba(80,80,200,0.04);
-  --wall-bg: rgba(255,255,255,0.07);
-  --wall-border: rgba(255,255,255,0.13);
-  --ui-bg: rgba(10,10,25,0.95);
-}
-
-body {
-  background: var(--bg);
-  font-family: 'Rajdhani', sans-serif;
-  color: #e8e8ff;
-  overflow: hidden;
-  height: 100vh;
-  width: 100vw;
-  cursor: none;
-  user-select: none;
-}
-
-#arena {
-  position: fixed;
-  inset: 0;
-  background:
-    linear-gradient(var(--grid) 1px, transparent 1px),
-    linear-gradient(90deg, var(--grid) 1px, transparent 1px),
-    var(--bg);
-  background-size: 48px 48px;
-}
-
-#arena::after {
-  content: '';
-  position: fixed;
-  inset: 0;
-  background: radial-gradient(ellipse at 50% 50%, transparent 55%, rgba(0,0,0,0.55) 100%);
-  pointer-events: none;
-}
-
-/* MENU */
-#menu {
-  position: fixed;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 200;
-  background: rgba(6,6,15,0.97);
-}
-
-.menu-card {
-  background: rgba(255,255,255,0.025);
-  border: 1px solid rgba(255,255,255,0.09);
-  border-radius: 20px;
-  padding: 52px 44px 44px;
-  text-align: center;
-  max-width: 420px;
-  width: 92%;
-  backdrop-filter: blur(30px);
-}
-
-.menu-logo {
-  font-size: 56px;
-  margin-bottom: 4px;
-  animation: float 3s ease-in-out infinite;
-  display: block;
-}
-
-@keyframes float {
-  0%,100% { transform: translateY(0); }
-  50% { transform: translateY(-7px); }
-}
-
-.menu-title {
-  font-family: 'Orbitron', sans-serif;
-  font-size: 28px;
-  font-weight: 900;
-  letter-spacing: 7px;
-  color: #fff;
-  margin-bottom: 6px;
-}
-
-.menu-sub {
-  font-size: 11px;
-  letter-spacing: 3px;
-  color: rgba(255,255,255,0.28);
-  text-transform: uppercase;
-  margin-bottom: 36px;
-}
-
-.field { margin-bottom: 14px; text-align: left; }
-.field label {
-  display: block;
-  font-size: 10px;
-  letter-spacing: 3px;
-  text-transform: uppercase;
-  color: rgba(255,255,255,0.35);
-  margin-bottom: 7px;
-}
-
-.field input {
-  width: 100%;
-  background: rgba(255,255,255,0.04);
-  border: 1px solid rgba(255,255,255,0.09);
-  border-radius: 10px;
-  padding: 13px 16px;
-  color: #fff;
-  font-family: 'Rajdhani', sans-serif;
-  font-size: 17px;
-  font-weight: 600;
-  outline: none;
-  transition: border-color 0.2s, background 0.2s;
-}
-
-.field input:focus { border-color: rgba(255,255,255,0.25); background: rgba(255,255,255,0.07); }
-.field input::placeholder { color: rgba(255,255,255,0.2); }
-
-.btn-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-  margin-top: 22px;
-}
-
-.btn {
-  padding: 15px;
-  border-radius: 10px;
-  border: none;
-  font-family: 'Orbitron', sans-serif;
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 2px;
-  cursor: pointer;
-  transition: all 0.15s;
-}
-
-.btn-play { background: #fff; color: #06060f; }
-.btn-play:hover { background: rgba(255,255,255,0.85); transform: translateY(-2px); }
-
-.btn-priv { background: transparent; color: #fff; border: 1px solid rgba(255,255,255,0.18); }
-.btn-priv:hover { background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.35); }
-
-.room-badge {
-  margin-top: 14px;
-  font-size: 12px;
-  letter-spacing: 2px;
-  color: rgba(255,255,255,0.4);
-  display: none;
-  padding: 9px 12px;
-  background: rgba(255,255,255,0.05);
-  border-radius: 8px;
-}
-
-/* HUD */
-#hud {
-  position: fixed;
-  top: 20px;
-  right: 20px;
-  z-index: 50;
-  text-align: right;
-  display: none;
-}
-
-.hud-num {
-  font-family: 'Orbitron', sans-serif;
-  font-size: 36px;
-  font-weight: 900;
-  color: #fff;
-  line-height: 1;
-}
-
-.hud-lbl {
-  font-size: 10px;
-  letter-spacing: 4px;
-  text-transform: uppercase;
-  color: rgba(255,255,255,0.3);
-  margin-top: 2px;
-}
-
-.hud-room {
-  font-size: 10px;
-  letter-spacing: 2px;
-  color: rgba(255,255,255,0.18);
-  margin-top: 10px;
-  font-family: 'Orbitron', sans-serif;
-}
-
-/* KILL FEED */
-#killfeed {
-  position: fixed;
-  top: 20px;
-  left: 20px;
-  z-index: 50;
-  pointer-events: none;
-  display: none;
-  max-width: 280px;
-}
-
-.kf-item {
-  background: rgba(0,0,0,0.6);
-  border-left: 3px solid #fff;
-  border-radius: 0 6px 6px 0;
-  padding: 7px 12px;
-  margin-bottom: 5px;
-  font-size: 13px;
-  font-weight: 600;
-  animation: kfIn 0.25s ease, kfOut 0.4s ease 3s forwards;
-  backdrop-filter: blur(8px);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-@keyframes kfIn {
-  from { transform: translateX(-16px); opacity: 0; }
-  to   { transform: translateX(0); opacity: 1; }
-}
-@keyframes kfOut {
-  to { opacity: 0; transform: translateX(-8px); }
-}
-
-/* SCOREBOARD */
-#scoreboard {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  z-index: 100;
-  background: var(--ui-bg);
-  border: 1px solid rgba(255,255,255,0.09);
-  border-radius: 14px;
-  padding: 28px 32px;
-  min-width: 300px;
-  display: none;
-  backdrop-filter: blur(30px);
-}
-
-.sb-title {
-  font-family: 'Orbitron', sans-serif;
-  font-size: 11px;
-  letter-spacing: 5px;
-  color: rgba(255,255,255,0.35);
-  text-align: center;
-  margin-bottom: 18px;
-}
-
-.sb-row {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 9px 0;
-  border-bottom: 1px solid rgba(255,255,255,0.05);
-}
-
-.sb-rank { font-family: 'Orbitron', sans-serif; font-size: 11px; color: rgba(255,255,255,0.25); width: 20px; text-align: center; }
-.sb-dot  { width: 11px; height: 11px; border-radius: 50%; flex-shrink: 0; }
-.sb-name { flex: 1; font-size: 16px; font-weight: 600; }
-.sb-kills { font-family: 'Orbitron', sans-serif; font-size: 20px; font-weight: 700; }
-.sb-hint { text-align: center; font-size: 10px; color: rgba(255,255,255,0.18); margin-top: 14px; letter-spacing: 3px; text-transform: uppercase; }
-
-/* RESPAWN */
-#respawn {
-  position: fixed;
-  inset: 0;
-  display: none;
-  align-items: center;
-  justify-content: center;
-  flex-direction: column;
-  background: rgba(0,0,0,0.78);
-  z-index: 150;
-  backdrop-filter: blur(6px);
-}
-
-.rsp-died { font-family: 'Orbitron', sans-serif; font-size: 13px; letter-spacing: 8px; color: rgba(255,255,255,0.4); margin-bottom: 12px; }
-.rsp-num  { font-family: 'Orbitron', sans-serif; font-size: 96px; font-weight: 900; color: #fff; line-height: 1; animation: pulse 1s ease infinite; }
-
-@keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.45; } }
-
-/* WALLS */
-.wall {
-  position: absolute;
-  background: var(--wall-bg);
-  border: 1px solid var(--wall-border);
-  border-radius: 5px;
-}
-
-/* PLAYERS */
-.player-wrap {
-  position: absolute;
-  pointer-events: none;
-  transform: translate(-50%, -50%);
-  will-change: left, top;
-}
-
-.p-name {
-  position: absolute;
-  top: -26px;
-  left: 50%;
-  transform: translateX(-50%);
-  font-size: 12px;
-  font-weight: 700;
-  white-space: nowrap;
-  text-shadow: 0 0 10px rgba(0,0,0,1), 0 0 4px rgba(0,0,0,1);
-}
-
-.p-svg {
-  display: block;
-  transform-origin: center center;
-}
-
-.shield-ring {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 56px;
-  height: 56px;
-  border-radius: 50%;
-  border: 2px solid rgba(255,255,255,0.5);
-  animation: shieldPulse 0.9s ease-in-out infinite;
-  pointer-events: none;
-}
-
-@keyframes shieldPulse {
-  0%,100% { opacity: 0.6; transform: translate(-50%,-50%) scale(1); }
-  50%      { opacity: 0.1; transform: translate(-50%,-50%) scale(1.25); }
-}
-
-/* CURSOR */
-#cursor {
-  position: fixed;
-  width: 8px;
-  height: 8px;
-  background: white;
-  border-radius: 50%;
-  pointer-events: none;
-  transform: translate(-50%, -50%);
-  z-index: 999;
-  box-shadow: 0 0 12px rgba(255,255,255,0.9), 0 0 24px rgba(255,255,255,0.3);
-}
-
-#cursor::before, #cursor::after {
-  content: '';
-  position: absolute;
-  background: rgba(255,255,255,0.35);
-}
-#cursor::before { width: 1px; height: 14px; left: 50%; top: 50%; transform: translate(-50%,-50%); }
-#cursor::after  { width: 14px; height: 1px; left: 50%; top: 50%; transform: translate(-50%,-50%); }
-
-/* JOYSTICK */
-#joystick {
-  position: fixed;
-  bottom: 36px;
-  left: 36px;
-  width: 130px;
-  height: 130px;
-  border-radius: 50%;
-  background: rgba(255,255,255,0.05);
-  border: 1px solid rgba(255,255,255,0.12);
-  display: none;
-  touch-action: none;
-  z-index: 50;
-}
-
-#stick {
-  width: 52px;
-  height: 52px;
-  background: rgba(255,255,255,0.25);
-  border: 2px solid rgba(255,255,255,0.4);
-  border-radius: 50%;
-  position: absolute;
-  top: 39px;
-  left: 39px;
-}
-
-/* MISC */
-#pcount {
-  position: fixed;
-  bottom: 20px;
-  right: 20px;
-  font-family: 'Orbitron', sans-serif;
-  font-size: 11px;
-  letter-spacing: 3px;
-  color: rgba(255,255,255,0.2);
-  display: none;
-}
-
-#dflash {
-  position: fixed;
-  inset: 0;
-  background: radial-gradient(ellipse, rgba(255,40,40,0.65) 0%, transparent 70%);
-  opacity: 0;
-  pointer-events: none;
-  z-index: 140;
-  transition: opacity 0.08s;
-}
-
-#tabHint {
-  position: fixed;
-  bottom: 20px;
-  left: 50%;
-  transform: translateX(-50%);
-  font-size: 10px;
-  letter-spacing: 3px;
-  color: rgba(255,255,255,0.15);
-  text-transform: uppercase;
-  display: none;
-  pointer-events: none;
-}
-</style>
-</head>
-<body>
-<div id="arena"></div>
-
-<!-- MENU -->
-<div id="menu">
-  <div class="menu-card">
-    <span class="menu-logo">🐭</span>
-    <div class="menu-title">MOUSE ARENA</div>
-    <div class="menu-sub">8 mice enter &middot; one survives</div>
-
-    <div class="field">
-      <label>Your Name</label>
-      <input id="nameInput" placeholder="Anonymous" maxlength="14" autocomplete="off">
-    </div>
-
-    <div class="field" id="privField" style="display:none">
-      <label>Room Code</label>
-      <input id="roomInput" placeholder="e.g. CHEESE" maxlength="10"
-        style="text-transform:uppercase;letter-spacing:3px" autocomplete="off">
-    </div>
-
-    <div class="room-badge" id="roomBadge"></div>
-
-    <div class="btn-row">
-      <button class="btn btn-play" id="playBtn" onclick="joinPublic()">PLAY NOW</button>
-      <button class="btn btn-priv" id="privBtn" onclick="togglePrivate()">PRIVATE</button>
-    </div>
-  </div>
-</div>
-
-<!-- HUD -->
-<div id="hud">
-  <div class="hud-num" id="killNum">0</div>
-  <div class="hud-lbl">KILLS</div>
-  <div class="hud-room" id="roomLbl"></div>
-</div>
-
-<div id="killfeed"></div>
-
-<!-- SCOREBOARD -->
-<div id="scoreboard">
-  <div class="sb-title">SCOREBOARD</div>
-  <div id="sbList"></div>
-  <div class="sb-hint">hold tab to close</div>
-</div>
-
-<!-- RESPAWN -->
-<div id="respawn">
-  <div class="rsp-died">YOU WERE EATEN</div>
-  <div class="rsp-num" id="rspNum">3</div>
-</div>
-
-<div id="cursor"></div>
-<div id="joystick"><div id="stick"></div></div>
-<div id="pcount"></div>
-<div id="dflash"></div>
-<div id="tabHint">TAB &rarr; Scoreboard</div>
-
 <script type="module">
 import { initializeApp }   from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
-import { getDatabase, ref, set, get, onValue, onDisconnect, remove }
+import { getDatabase, ref, set, onValue, onDisconnect, remove }
   from "https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js";
 
-/* Firebase */
+/* ================= FIREBASE ================= */
 const app = initializeApp({
   apiKey: "AIzaSyB8eIlsvx6fz7RaVy1EeRSgqVsopqyoeyI",
   authDomain: "ahmad-5ea27.firebaseapp.com",
@@ -492,243 +15,111 @@ const app = initializeApp({
 });
 const db = getDatabase(app);
 
-/* Player identity */
+/* ================= IDENTITY ================= */
 const PID   = Math.random().toString(36).slice(2,10);
-const COLOR = pickRandom(['#ff3d6e','#3dffa0','#4499ff','#ffbf3d','#bf3dff','#ff7a3d','#3dfff0','#ffe333']);
+const COLOR = ['#ff3d6e','#3dffa0','#4499ff','#ffbf3d','#bf3dff','#ff7a3d','#3dfff0','#ffe333']
+  [Math.floor(Math.random()*8)];
 
-/* Game state */
-let roomId = '', pRef;
+/* ================= STATE ================= */
+let roomId = '';
+let pRef;
 let players = {};
-let x, y, tx, ty, prevX, prevY;
-let angle = 0;
+let x = innerWidth/2, y = innerHeight/2;
+let tx = x, ty = y;
 let kills = 0;
 let alive = true;
 let started = false;
 let spawnProt = true;
-let lastUpload = 0;
-let joystickDX = 0, joystickDY = 0;
-let _name = 'Mouse';
+let lastSend = 0;
+let name = 'Mouse';
+let intentionalRemove = false;
 
-/* Walls */
-let WALLS = [];
-
-function buildWalls() {
-  const W = innerWidth, H = innerHeight;
-  WALLS = [
-    { x:180,     y:150,     w:220, h:16 },
-    { x:180,     y:150,     w:16,  h:210 },
-    { x:W-400,   y:150,     w:220, h:16 },
-    { x:W-196,   y:150,     w:16,  h:210 },
-    { x:180,     y:H-166,   w:220, h:16 },
-    { x:180,     y:H-360,   w:16,  h:210 },
-    { x:W-400,   y:H-166,   w:220, h:16 },
-    { x:W-196,   y:H-360,   w:16,  h:210 },
-    { x:W/2-110, y:H/2-80,  w:220, h:16 },
-    { x:W/2-110, y:H/2+64,  w:220, h:16 },
-    { x:W/2-8,   y:H/2-145, w:16,  h:55 },
-    { x:W/2-8,   y:H/2+90,  w:16,  h:55 },
-  ];
-  document.querySelectorAll('.wall').forEach(e => e.remove());
-  WALLS.forEach(w => {
-    const d = document.createElement('div');
-    d.className = 'wall';
-    d.style.cssText = `left:${w.x}px;top:${w.y}px;width:${w.w}px;height:${w.h}px`;
-    document.body.appendChild(d);
-  });
+/* ================= PUBLIC MATCHMAKING (FIXED) ================= */
+async function findPublicRoom() {
+  return 'pub_' + (Math.floor(Math.random() * 10) + 1);
 }
 
-/* SVG mouse character */
-function mouseSVG(col) {
-  const ear  = shade(col, -28);
-  const earIn = shade(col, 22);
-  const nose  = shade(col, -18);
-  return `<svg class="p-svg" xmlns="http://www.w3.org/2000/svg"
-      viewBox="-24 -20 48 30" width="48" height="30">
-    <path d="M-18 5 Q-28 0 -22 -13" stroke="${col}" stroke-width="2.5" fill="none" stroke-linecap="round" opacity="0.6"/>
-    <ellipse cx="-4" cy="3" rx="14" ry="9.5" fill="${col}"/>
-    <circle cx="10" cy="0" r="9.5" fill="${col}"/>
-    <circle cx="6.5" cy="-11" r="5.8" fill="${ear}"/>
-    <circle cx="6.5" cy="-11" r="3.2" fill="${earIn}" opacity="0.55"/>
-    <circle cx="14.5" cy="-10" r="4.8" fill="${ear}"/>
-    <circle cx="14.5" cy="-10" r="2.6" fill="${earIn}" opacity="0.55"/>
-    <circle cx="13.2" cy="-2.5" r="2.4" fill="#0a0a14"/>
-    <circle cx="14"   cy="-3.2" r="0.9" fill="white"/>
-    <ellipse cx="20" cy="1.2" rx="1.9" ry="1.4" fill="${nose}"/>
-    <line x1="17.5" y1="0"   x2="24" y2="-2.5" stroke="rgba(255,255,255,0.4)" stroke-width="0.7"/>
-    <line x1="17.5" y1="1.5" x2="24" y2="3.5"  stroke="rgba(255,255,255,0.4)" stroke-width="0.7"/>
-    <line x1="17.5" y1="0.5" x2="24" y2="0.5"  stroke="rgba(255,255,255,0.4)" stroke-width="0.7"/>
-  </svg>`;
-}
-
-function shade(hex, amt) {
-  const h = hex.replace('#','').replace(/^(.)(.)(.)$/,'$1$1$2$2$3$3');
-  return '#' + [0,2,4].map(i =>
-    Math.min(255, Math.max(0, parseInt(h.slice(i,i+2),16) + amt))
-      .toString(16).padStart(2,'0')
-  ).join('');
-}
-
-function pickRandom(arr) { return arr[Math.floor(Math.random()*arr.length)]; }
-
-/* Spawn positions */
-function spawnPos() {
-  const W = innerWidth, H = innerHeight;
-  const spots = [
-    {x:70,y:70},{x:W-70,y:70},{x:70,y:H-70},{x:W-70,y:H-70},
-    {x:W/2,y:60},{x:W/2,y:H-60},{x:60,y:H/2},{x:W-60,y:H/2}
-  ];
-  return pickRandom(spots);
-}
-
-/* Private mode toggle */
-let privMode = false;
-window.togglePrivate = () => {
-  privMode = !privMode;
-  const pf = document.getElementById('privField');
-  const pb = document.getElementById('privBtn');
-  const bb = document.getElementById('roomBadge');
-  if (privMode) {
-    pf.style.display = 'block';
-    pb.textContent = 'JOIN CODE';
-    bb.style.display = 'none';
-    document.getElementById('playBtn').textContent = 'CREATE';
-    document.getElementById('playBtn').onclick = createPrivate;
-  } else {
-    pf.style.display = 'none';
-    pb.textContent = 'PRIVATE';
-    bb.style.display = 'none';
-    document.getElementById('playBtn').textContent = 'PLAY NOW';
-    document.getElementById('playBtn').onclick = joinPublic;
-  }
+/* ================= JOIN ================= */
+window.joinPublic = async () => {
+  name = nameInput.value.trim() || 'Mouse';
+  roomId = await findPublicRoom();
+  startGame();
 };
 
 window.createPrivate = () => {
-  let code = document.getElementById('roomInput').value.trim().toUpperCase().replace(/\s/g,'');
+  name = nameInput.value.trim() || 'Mouse';
+  let code = roomInput.value.trim().toUpperCase();
   if (!code) code = Math.random().toString(36).slice(2,8).toUpperCase();
-  document.getElementById('roomInput').value = code;
-  const badge = document.getElementById('roomBadge');
-  badge.style.display = 'block';
-  badge.textContent = '📋 Share code: ' + code;
   roomId = 'priv_' + code;
-  beginGame(document.getElementById('nameInput').value.trim() || 'Mouse');
+  roomInput.value = code;
+  roomBadge.style.display = 'block';
+  roomBadge.textContent = '📋 Share code: ' + code;
+  startGame();
 };
 
-window.joinPublic = async () => {
-  const n = document.getElementById('nameInput').value.trim() || 'Mouse';
-  if (privMode) {
-    const code = document.getElementById('roomInput').value.trim().toUpperCase();
-    if (code) { roomId = 'priv_' + code; beginGame(n); return; }
-  }
-  roomId = await findPublicRoom();
-  beginGame(n);
-};
+/* ================= START ================= */
+function startGame() {
+  menu.style.display = 'none';
+  hud.style.display = 'block';
+  killfeed.style.display = 'block';
 
-async function findPublicRoom() {
-  try {
-    const snap = await get(ref(db, 'rooms'));
-    const all  = snap.val() || {};
-    // Prefer existing rooms with space
-    for (let i = 1; i <= 50; i++) {
-      const rid = 'pub_' + i;
-      if (all[rid]?.players) {
-        const cnt = Object.keys(all[rid].players).length;
-        if (cnt > 0 && cnt < 8) return rid;
-      }
-    }
-    // Create new room
-    for (let i = 1; i <= 50; i++) {
-      if (!all['pub_' + i]) return 'pub_' + i;
-    }
-  } catch(e) { console.warn(e); }
-  return 'pub_1';
-}
-
-/* Start */
-function beginGame(playerName) {
-  _name = playerName;
-  document.getElementById('menu').style.display    = 'none';
-  document.getElementById('hud').style.display     = 'block';
-  document.getElementById('killfeed').style.display = 'block';
-  document.getElementById('pcount').style.display  = 'block';
-  document.getElementById('tabHint').style.display = 'block';
-
-  const lbl = roomId.startsWith('pub_')
-    ? 'PUBLIC ROOM ' + roomId.replace('pub_','')
-    : roomId.replace('priv_','');
-  document.getElementById('roomLbl').textContent = lbl;
-
-  buildWalls();
-  const sp = spawnPos();
-  x = sp.x; y = sp.y; tx = x; ty = y; prevX = x; prevY = y;
+  const sp = spawn();
+  x = sp.x; y = sp.y; tx = x; ty = y;
 
   pRef = ref(db, `rooms/${roomId}/players/${PID}`);
   onDisconnect(pRef).remove();
 
-  // Main listener
+  /* IMPORTANT: spawn immediately */
+  set(pRef, {
+    x, y,
+    color: COLOR,
+    name,
+    kills,
+    spawnProt: true
+  });
+
   onValue(ref(db, `rooms/${roomId}/players`), snap => {
     const data = snap.val() || {};
 
-    // Death detection: our entry vanished
-    if (started && alive && !data[PID]) {
-      diePlayer();
+    if (started && alive && !data[PID] && !intentionalRemove) {
+      die();
     }
 
     players = data;
     renderOthers();
-    updateSB();
-    document.getElementById('pcount').textContent = Object.keys(data).length + '/8 mice';
+    pcount.textContent = Object.keys(players).length + ' mice';
   });
 
   started = true;
   spawnProt = true;
-  requestAnimationFrame(gameLoop);
-  setTimeout(() => { spawnProt = false; }, 1800);
-
-  if ('ontouchstart' in window) initJoystick();
+  setTimeout(() => spawnProt = false, 1800);
+  requestAnimationFrame(loop);
 }
 
-/* Game loop */
-function gameLoop(ts) {
-  requestAnimationFrame(gameLoop);
+/* ================= LOOP ================= */
+function loop(ts) {
+  requestAnimationFrame(loop);
   if (!alive || !started) return;
 
-  // Move
-  if ('ontouchstart' in window) {
-    x += joystickDX;
-    y += joystickDY;
-  } else {
-    x += (tx - x) * 0.14;
-    y += (ty - y) * 0.14;
-  }
+  x += (tx - x) * 0.15;
+  y += (ty - y) * 0.15;
 
-  // Bounds
-  x = Math.max(20, Math.min(innerWidth  - 20, x));
-  y = Math.max(20, Math.min(innerHeight - 20, y));
+  x = Math.max(20, Math.min(innerWidth-20, x));
+  y = Math.max(20, Math.min(innerHeight-20, y));
 
-  // Wall collision
-  for (const w of WALLS) {
-    if (x+16>w.x && x-16<w.x+w.w && y+16>w.y && y-16<w.y+w.h) {
-      const oL=x+16-w.x, oR=w.x+w.w-(x-16), oT=y+16-w.y, oB=w.y+w.h-(y-16);
-      const m = Math.min(oL,oR,oT,oB);
-      if      (m===oL) x -= oL;
-      else if (m===oR) x += oR;
-      else if (m===oT) y -= oT;
-      else             y += oB;
-      tx = x; ty = y;
-    }
-  }
+  drawSelf();
 
-  // Angle
-  const dx = x - prevX, dy = y - prevY;
-  if (Math.hypot(dx,dy) > 0.4) angle = Math.atan2(dy,dx) * 180/Math.PI;
-  prevX = x; prevY = y;
+  if (ts - lastSend > 50) {
+    lastSend = ts;
 
-  updateLocalEl();
-
-  // Upload & collision ~50ms
-  if (ts - lastUpload > 50) {
-    lastUpload = ts;
-    set(pRef, { x:Math.round(x), y:Math.round(y), color:COLOR, name:_name, kills, angle, spawnProt });
+    set(pRef, {
+      x: Math.round(x),
+      y: Math.round(y),
+      color: COLOR,
+      name,
+      kills,
+      spawnProt
+    });
 
     if (!spawnProt) {
       for (const id in players) {
@@ -737,8 +128,7 @@ function gameLoop(ts) {
         if (p.spawnProt) continue;
         if (Math.hypot(p.x-x, p.y-y) < 28) {
           kills++;
-          document.getElementById('killNum').textContent = kills;
-          addKillFeed(_name, p.name, COLOR);
+          killNum.textContent = kills;
           remove(ref(db, `rooms/${roomId}/players/${id}`));
         }
       }
@@ -746,180 +136,81 @@ function gameLoop(ts) {
   }
 }
 
-/* Local player DOM */
-function updateLocalEl() {
+/* ================= RENDER ================= */
+function drawSelf() {
   let el = document.getElementById('me');
   if (!el) {
     el = document.createElement('div');
-    el.className = 'player-wrap';
     el.id = 'me';
-    el.innerHTML = `<div class="p-name" style="color:${COLOR}">${_name}</div>` + mouseSVG(COLOR);
+    el.className = 'player-wrap';
+    el.innerHTML = `<div class="p-name" style="color:${COLOR}">${name}</div>`;
     document.body.appendChild(el);
   }
   el.style.left = x + 'px';
   el.style.top  = y + 'px';
-  const svg = el.querySelector('.p-svg');
-  if (svg) svg.style.transform = `rotate(${angle}deg)`;
-
-  // shield ring
-  let ring = el.querySelector('.shield-ring');
-  if (spawnProt && !ring) {
-    ring = document.createElement('div');
-    ring.className = 'shield-ring';
-    el.appendChild(ring);
-  } else if (!spawnProt && ring) {
-    ring.remove();
-  }
 }
 
-/* Remote players DOM */
 function renderOthers() {
-  // Remove gone players
-  document.querySelectorAll('.player-wrap:not(#me)').forEach(el => {
-    const id = el.id.replace('pw_','');
-    if (!players[id]) el.remove();
+  document.querySelectorAll('.player-wrap:not(#me)').forEach(e => {
+    const id = e.dataset.id;
+    if (!players[id]) e.remove();
   });
 
   for (const id in players) {
     if (id === PID) continue;
     const p = players[id];
-    let el = document.getElementById('pw_' + id);
+    let el = document.querySelector(`[data-id="${id}"]`);
     if (!el) {
       el = document.createElement('div');
+      el.dataset.id = id;
       el.className = 'player-wrap';
-      el.id = 'pw_' + id;
-      el.innerHTML = `<div class="p-name" style="color:${p.color}">${p.name}</div>` + mouseSVG(p.color);
+      el.innerHTML = `<div class="p-name" style="color:${p.color}">${p.name}</div>`;
       document.body.appendChild(el);
     }
     el.style.left = p.x + 'px';
     el.style.top  = p.y + 'px';
-
-    const svg = el.querySelector('.p-svg');
-    if (svg) svg.style.transform = `rotate(${p.angle||0}deg)`;
-
-    const nm = el.querySelector('.p-name');
-    if (nm) nm.textContent = p.name + ' (' + (p.kills||0) + ')';
-
-    let ring = el.querySelector('.shield-ring');
-    if (p.spawnProt && !ring) {
-      ring = document.createElement('div');
-      ring.className = 'shield-ring';
-      el.appendChild(ring);
-    } else if (!p.spawnProt && ring) {
-      ring.remove();
-    }
   }
 }
 
-/* Scoreboard */
-function updateSB() {
-  const sorted = Object.entries(players).sort((a,b)=>(b[1].kills||0)-(a[1].kills||0));
-  document.getElementById('sbList').innerHTML = sorted.map(([id,p],i) => `
-    <div class="sb-row">
-      <div class="sb-rank">${i+1}</div>
-      <div class="sb-dot" style="background:${p.color}"></div>
-      <div class="sb-name">${p.name}${id===PID?' <span style="opacity:.35;font-size:11px">(you)</span>':''}</div>
-      <div class="sb-kills" style="color:${p.color}">${p.kills||0}</div>
-    </div>`).join('');
-}
-
-/* Kill feed */
-function addKillFeed(killer, victim, col) {
-  const feed = document.getElementById('killfeed');
-  const el   = document.createElement('div');
-  el.className = 'kf-item';
-  el.style.borderLeftColor = col;
-  el.innerHTML = `<span style="color:${col}">${killer}</span> 🐭 ate ${victim}`;
-  feed.appendChild(el);
-  setTimeout(() => el.remove(), 3600);
-}
-
-/* Death */
-function diePlayer() {
+/* ================= DEATH / RESPAWN ================= */
+function die() {
   alive = false;
-  const dfl = document.getElementById('dflash');
-  dfl.style.opacity = '1';
-  setTimeout(() => dfl.style.opacity = '0', 250);
+  intentionalRemove = true;
   document.getElementById('me')?.remove();
+  respawn.style.display = 'flex';
 
-  const rsp = document.getElementById('respawn');
-  rsp.style.display = 'flex';
-  let cd = 3;
-  document.getElementById('rspNum').textContent = cd;
+  let c = 3;
+  rspNum.textContent = c;
   const iv = setInterval(() => {
-    cd--;
-    document.getElementById('rspNum').textContent = cd;
-    if (cd <= 0) { clearInterval(iv); doRespawn(); }
+    c--;
+    rspNum.textContent = c;
+    if (c <= 0) {
+      clearInterval(iv);
+      respawn.style.display = 'none';
+      intentionalRemove = false;
+      alive = true;
+      spawnProt = true;
+      const sp = spawn();
+      x = sp.x; y = sp.y;
+      set(pRef, { x, y, color:COLOR, name, kills, spawnProt:true });
+      setTimeout(() => spawnProt = false, 1800);
+    }
   }, 1000);
 }
 
-function doRespawn() {
-  const sp = spawnPos();
-  x = sp.x; y = sp.y; tx = x; ty = y;
-  alive     = true;
-  spawnProt = true;
-  document.getElementById('respawn').style.display = 'none';
-  set(pRef, { x, y, color:COLOR, name:_name, kills, angle:0, spawnProt:true });
-  setTimeout(() => {
-    spawnProt = false;
-    set(ref(db, `rooms/${roomId}/players/${PID}/spawnProt`), false);
-  }, 1800);
-}
-
-/* Mouse / keyboard input */
+/* ================= INPUT ================= */
 document.addEventListener('mousemove', e => {
-  document.getElementById('cursor').style.left = e.clientX + 'px';
-  document.getElementById('cursor').style.top  = e.clientY + 'px';
-  if (alive && started) { tx = e.clientX; ty = e.clientY; }
+  cursor.style.left = e.clientX + 'px';
+  cursor.style.top  = e.clientY + 'px';
+  if (alive) { tx = e.clientX; ty = e.clientY; }
 });
 
-document.addEventListener('keydown', e => {
-  if (e.key === 'Tab') { e.preventDefault(); document.getElementById('scoreboard').style.display = 'block'; }
-});
-document.addEventListener('keyup', e => {
-  if (e.key === 'Tab') document.getElementById('scoreboard').style.display = 'none';
-});
-
-/* Joystick */
-function initJoystick() {
-  const js = document.getElementById('joystick');
-  const st = document.getElementById('stick');
-  document.getElementById('cursor').style.display = 'none';
-  js.style.display = 'block';
-
-  let active = false, bx = 0, by = 0;
-  const R = 40;
-
-  js.addEventListener('touchstart', e => {
-    e.preventDefault();
-    active = true;
-    const r = js.getBoundingClientRect();
-    bx = r.left + 65; by = r.top + 65;
-  }, {passive:false});
-
-  js.addEventListener('touchmove', e => {
-    e.preventDefault();
-    if (!active) return;
-    const t = e.touches[0];
-    let ddx = t.clientX - bx, ddy = t.clientY - by;
-    const dist = Math.min(Math.hypot(ddx,ddy), R);
-    const ang  = Math.atan2(ddy, ddx);
-    ddx = Math.cos(ang)*dist; ddy = Math.sin(ang)*dist;
-    st.style.left = (39 + ddx) + 'px';
-    st.style.top  = (39 + ddy) + 'px';
-    const spd = (dist/R) * 4.5;
-    joystickDX = Math.cos(ang)*spd;
-    joystickDY = Math.sin(ang)*spd;
-  }, {passive:false});
-
-  const end = () => {
-    active = false;
-    st.style.left = '39px'; st.style.top = '39px';
-    joystickDX = 0; joystickDY = 0;
-  };
-  js.addEventListener('touchend', end);
-  js.addEventListener('touchcancel', end);
+/* ================= UTIL ================= */
+function spawn() {
+  const W = innerWidth, H = innerHeight;
+  const s = [
+    {x:60,y:60},{x:W-60,y:60},{x:60,y:H-60},{x:W-60,y:H-60}
+  ];
+  return s[Math.floor(Math.random()*s.length)];
 }
 </script>
-</body>
-</html>
