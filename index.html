@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Mouse Arena</title>
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      background: black;
+    }
+    .player {
+      position: absolute;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      pointer-events: none;
+      transform: translate(-50%, -50%);
+    }
+  </style>
+</head>
+<body>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+import { getDatabase, ref, set, onValue, onDisconnect } 
+from "https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js";
+
+/* 🔥 REPLACE THIS WITH YOUR FIREBASE CONFIG 🔥 */
+const firebaseConfig = {
+  apiKey: "AIzaSyB8eIlsvx6fz7RaVy1EeRSgqVsopqyoeyI",
+  authDomain: "ahmad-5ea27.firebaseapp.com",
+  databaseURL: "https://ahmad-5ea27-default-rtdb.firebaseio.com",
+  projectId: "ahmad-5ea27",
+  storageBucket: "ahmad-5ea27.firebasestorage.app",
+  messagingSenderId: "168368947306",
+  appId: "1:168368947306:web:605abc8ba0b91acfad4a13"
+};
+/* ------------------------------------------ */
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+const playerId = Math.random().toString(36).slice(2);
+const playerRef = ref(db, "players/" + playerId);
+
+const color = "#" + Math.floor(Math.random() * 16777215).toString(16);
+
+onDisconnect(playerRef).remove();
+
+document.addEventListener("mousemove", (e) => {
+  set(playerRef, {
+    x: e.clientX,
+    y: e.clientY,
+    color: color
+  });
+});
+
+onValue(ref(db, "players"), (snapshot) => {
+  const players = snapshot.val() || {};
+  document.querySelectorAll(".player").forEach(p => p.remove());
+
+  for (const id in players) {
+    const p = players[id];
+    const div = document.createElement("div");
+    div.className = "player";
+    div.style.left = p.x + "px";
+    div.style.top = p.y + "px";
+    div.style.background = p.color;
+    document.body.appendChild(div);
+  }
+});
+</script>
+
+</body>
+</html>
