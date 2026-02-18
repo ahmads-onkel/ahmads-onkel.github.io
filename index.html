@@ -2,30 +2,108 @@
 <html>
 <head>
   <title>Mouse Arena</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     body {
       margin: 0;
       overflow: hidden;
-      background: black;
+      background: #0b0b0b;
+      font-family: Arial, sans-serif;
+      color: white;
     }
+
+    #menu {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      z-index: 10;
+    }
+
+    input, button {
+      padding: 8px;
+      margin: 4px;
+    }
+
     .player {
       position: absolute;
-      width: 20px;
-      height: 20px;
+      width: 30px;
+      height: 30px;
       border-radius: 50%;
-      pointer-events: none;
       transform: translate(-50%, -50%);
+      pointer-events: none;
+    }
+
+    .name {
+      position: absolute;
+      font-size: 12px;
+      transform: translate(-50%, -160%);
+      pointer-events: none;
+      white-space: nowrap;
+    }
+
+    #hud {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      font-size: 16px;
+      z-index: 10;
+    }
+
+    #respawn {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      font-size: 48px;
+      background: rgba(0,0,0,0.7);
+      z-index: 20;
+    }
+
+    #joystick {
+      position: fixed;
+      bottom: 30px;
+      left: 30px;
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.1);
+      display: none;
+      touch-action: none;
+    }
+
+    #stick {
+      width: 50px;
+      height: 50px;
+      background: white;
+      border-radius: 50%;
+      position: absolute;
+      top: 35px;
+      left: 35px;
     }
   </style>
 </head>
 <body>
 
+<div id="menu">
+  <input id="nameInput" placeholder="Name">
+  <input id="roomInput" placeholder="Room code">
+  <br>
+  <button onclick="joinPrivate()">Join Private</button>
+  <button onclick="joinPublic()">Public</button>
+</div>
+
+<div id="hud">Kills: <span id="kills">0</span></div>
+<div id="respawn"></div>
+
+<div id="joystick"><div id="stick"></div></div>
+
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
-import { getDatabase, ref, set, onValue, onDisconnect } 
+import { getDatabase, ref, set, onValue, onDisconnect, remove }
 from "https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js";
 
-/* 🔥 REPLACE THIS WITH YOUR FIREBASE CONFIG 🔥 */
+/* YOUR FIREBASE CONFIG */
 const firebaseConfig = {
   apiKey: "AIzaSyB8eIlsvx6fz7RaVy1EeRSgqVsopqyoeyI",
   authDomain: "ahmad-5ea27.firebaseapp.com",
@@ -35,40 +113,140 @@ const firebaseConfig = {
   messagingSenderId: "168368947306",
   appId: "1:168368947306:web:605abc8ba0b91acfad4a13"
 };
-/* ------------------------------------------ */
 
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
-const playerId = Math.random().toString(36).slice(2);
-const playerRef = ref(db, "players/" + playerId);
+let roomId = "";
+let playerId = Math.random().toString(36).slice(2);
+let playerRef;
+let players = {};
+let x = innerWidth/2, y = innerHeight/2;
+let name = "";
+let color = "#" + Math.floor(Math.random()*16777215).toString(16);
+let kills = 0;
+let alive = true;
 
-const color = "#" + Math.floor(Math.random() * 16777215).toString(16);
+window.joinPrivate = () => {
+  name = nameInput.value || "Player";
+  roomId = roomInput.value || "private";
+  start();
+};
 
-onDisconnect(playerRef).remove();
+window.joinPublic = () => {
+  name = nameInput.value || "Player";
+  roomId = "public";
+  start();
+};
 
-document.addEventListener("mousemove", (e) => {
-  set(playerRef, {
-    x: e.clientX,
-    y: e.clientY,
-    color: color
+function start() {
+  menu.style.display = "none";
+  playerRef = ref(db, `rooms/${roomId}/players/${playerId}`);
+  onDisconnect(playerRef).remove();
+
+  onValue(ref(db, `rooms/${roomId}/players`), snap => {
+    players = snap.val() || {};
+    render();
   });
-});
 
-onValue(ref(db, "players"), (snapshot) => {
-  const players = snapshot.val() || {};
-  document.querySelectorAll(".player").forEach(p => p.remove());
+  setInterval(update, 30);
+  if ("ontouchstart" in window) setupJoystick();
+}
 
-  for (const id in players) {
-    const p = players[id];
-    const div = document.createElement("div");
-    div.className = "player";
-    div.style.left = p.x + "px";
-    div.style.top = p.y + "px";
-    div.style.background = p.color;
-    document.body.appendChild(div);
+function update() {
+  if (!alive) return;
+
+  set(playerRef, { x, y, color, name, kills });
+
+  for (let id in players) {
+    if (id === playerId) continue;
+    let p = players[id];
+    let dx = p.x - x;
+    let dy = p.y - y;
+
+    if (Math.hypot(dx, dy) < 35) {
+      kills++;
+      document.getElementById("kills").innerText = kills;
+      remove(ref(db, `rooms/${roomId}/players/${id}`));
+    }
   }
+}
+
+function die() {
+  alive = false;
+  remove(playerRef);
+
+  let time = 3;
+  respawn.style.display = "flex";
+  respawn.innerText = time;
+
+  let interval = setInterval(() => {
+    time--;
+    respawn.innerText = time;
+    if (time <= 0) {
+      clearInterval(interval);
+      respawn.style.display = "none";
+      x = Math.random()*innerWidth;
+      y = Math.random()*innerHeight;
+      alive = true;
+    }
+  }, 1000);
+}
+
+function render() {
+  document.querySelectorAll(".player,.name").forEach(e => e.remove());
+
+  for (let id in players) {
+    let p = players[id];
+
+    let d = document.createElement("div");
+    d.className = "player";
+    d.style.left = p.x + "px";
+    d.style.top = p.y + "px";
+    d.style.background = p.color;
+    document.body.appendChild(d);
+
+    let n = document.createElement("div");
+    n.className = "name";
+    n.style.left = p.x + "px";
+    n.style.top = p.y + "px";
+    n.innerText = `${p.name} (${p.kills||0})`;
+    document.body.appendChild(n);
+  }
+}
+
+document.addEventListener("mousemove", e => {
+  x = e.clientX;
+  y = e.clientY;
 });
+
+function setupJoystick() {
+  joystick.style.display = "block";
+
+  joystick.addEventListener("touchmove", e => {
+    let r = joystick.getBoundingClientRect();
+    let t = e.touches[0];
+    let dx = t.clientX - (r.left + 60);
+    let dy = t.clientY - (r.top + 60);
+
+    let dist = Math.min(Math.hypot(dx, dy), 45);
+    let ang = Math.atan2(dy, dx);
+
+    let mx = Math.cos(ang) * dist;
+    let my = Math.sin(ang) * dist;
+
+    stick.style.left = 35 + mx + "px";
+    stick.style.top = 35 + my + "px";
+
+    x += mx * 0.25;
+    y += my * 0.25;
+  });
+
+  joystick.addEventListener("touchend", () => {
+    stick.style.left = "35px";
+    stick.style.top = "35px";
+  });
+}
 </script>
 
 </body>
