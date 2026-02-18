@@ -725,4 +725,259 @@ function updateLB() {
       <div class="lb-dot" style="background:${p.color};box-shadow:0 0 5px ${p.color}"></div>
       <div class="lb-name">${p.name}</div>
       <div class="lb-k">${p.kills||0}</div>
-    </div>
+    </div>`
+  ).join('');
+}
+
+function renderKF(arr) {
+  document.getElementById('kfeed').innerHTML = arr.map(e =>
+    `<div class="kf-row">
+      <span style="color:${e.kc||'#00ff88'}">${e.killer}</span>
+      <span style="color:rgba(255,255,255,.35)"> ⊘ </span>
+      <span style="color:${e.vc||'#ff4444'}">${e.victim}</span>
+    </div>`
+  ).join('');
+}
+
+/* ── DRAW ── */
+function draw(ts) {
+  const W = canvas.width, H = canvas.height;
+  const now = Date.now();
+
+  // Screen shake
+  let shakeX = 0, shakeY = 0;
+  if (screenShake > 0) {
+    shakeX = (Math.random()*2-1)*screenShake*0.5;
+    shakeY = (Math.random()*2-1)*screenShake*0.5;
+  }
+
+  ctx.save();
+  ctx.translate(shakeX, shakeY);
+
+  // Background
+  ctx.fillStyle = '#040a04';
+  ctx.fillRect(-10, -10, W+20, H+20);
+
+  // Grid (infinite-scroll)
+  const gSize = 64;
+  const gox = (-camX % gSize + gSize) % gSize;
+  const goy = (-camY % gSize + gSize) % gSize;
+  ctx.save();
+  ctx.strokeStyle = 'rgba(0,255,136,0.035)';
+  ctx.lineWidth = 1;
+  for (let x = gox - gSize; x < W + gSize; x += gSize) {
+    ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke();
+  }
+  for (let y = goy - gSize; y < H + gSize; y += gSize) {
+    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
+  }
+  ctx.restore();
+
+  // World border glow
+  const bx = -camX, by = -camY;
+  ctx.save();
+  ctx.shadowBlur = 30; ctx.shadowColor = '#00ff88';
+  ctx.strokeStyle = 'rgba(0,255,136,0.4)';
+  ctx.lineWidth = 2;
+  ctx.strokeRect(bx, by, WW, WH);
+  ctx.restore();
+
+  // Walls
+  for (const w of WALLS) {
+    const sx = w.x-camX, sy = w.y-camY;
+    if (sx+w.w<0||sx>W||sy+w.h<0||sy>H) continue;
+    // Fill
+    const grad = ctx.createLinearGradient(sx, sy, sx, sy+w.h);
+    grad.addColorStop(0, '#1c2e1c'); grad.addColorStop(1, '#0f180f');
+    ctx.fillStyle = grad;
+    ctx.fillRect(sx, sy, w.w, w.h);
+    // Edge
+    ctx.strokeStyle = 'rgba(0,255,136,0.18)';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(sx+.5, sy+.5, w.w-1, w.h-1);
+    // Top glow line
+    ctx.fillStyle = 'rgba(0,255,136,0.08)';
+    ctx.fillRect(sx, sy, w.w, 2);
+  }
+
+  // Bullets
+  for (const bid in bullets) {
+    const b = bullets[bid];
+    const age = now - b.createdAt;
+    if (age > B_LIFE) continue;
+    const { x: bx2, y: by2 } = bPos(b);
+    const sx = bx2-camX, sy = by2-camY;
+    if (sx<-20||sx>W+20||sy<-20||sy>H+20) continue;
+
+    // Trail
+    const trailMs = 80;
+    const t0x = b.sx + b.vx*(age-trailMs) - camX;
+    const t0y = b.sy + b.vy*(age-trailMs) - camY;
+    const tg = ctx.createLinearGradient(t0x, t0y, sx, sy);
+    tg.addColorStop(0, 'rgba(0,0,0,0)');
+    tg.addColorStop(1, b.ownerColor || '#fff');
+    ctx.save();
+    ctx.beginPath(); ctx.moveTo(t0x, t0y); ctx.lineTo(sx, sy);
+    ctx.strokeStyle = tg; ctx.lineWidth = 2.5; ctx.stroke();
+    ctx.restore();
+
+    // Dot
+    ctx.save();
+    ctx.shadowBlur = 12; ctx.shadowColor = b.ownerColor || '#fff';
+    ctx.beginPath(); ctx.arc(sx, sy, BR, 0, Math.PI*2);
+    ctx.fillStyle = b.ownerColor || '#fff'; ctx.fill();
+    ctx.restore();
+  }
+
+  // Players
+  for (const id in players) {
+    const p = players[id];
+    if (!p) continue;
+    const sx = p.x-camX, sy = p.y-camY;
+    if (sx<-60||sx>W+60||sy<-60||sy>H+60) continue;
+    const isMe = id === playerId;
+
+    // Glow halo
+    ctx.save();
+    const halo = ctx.createRadialGradient(sx, sy, 0, sx, sy, PR*3);
+    halo.addColorStop(0, p.color + '30');
+    halo.addColorStop(1, 'transparent');
+    ctx.fillStyle = halo;
+    ctx.fillRect(sx-PR*3, sy-PR*3, PR*6, PR*6);
+    ctx.restore();
+
+    // Body
+    ctx.save();
+    ctx.shadowBlur = isMe ? 24 : 14;
+    ctx.shadowColor = p.color;
+    ctx.beginPath(); ctx.arc(sx, sy, PR, 0, Math.PI*2);
+    ctx.fillStyle = p.color;
+    ctx.fill();
+    ctx.restore();
+
+    // Inner shine
+    ctx.save();
+    const shine = ctx.createRadialGradient(sx-3, sy-4, 1, sx, sy, PR);
+    shine.addColorStop(0, 'rgba(255,255,255,0.4)');
+    shine.addColorStop(1, 'rgba(255,255,255,0)');
+    ctx.beginPath(); ctx.arc(sx, sy, PR, 0, Math.PI*2);
+    ctx.fillStyle = shine; ctx.fill();
+    ctx.restore();
+
+    // Ring
+    ctx.beginPath(); ctx.arc(sx, sy, PR+2, 0, Math.PI*2);
+    ctx.strokeStyle = isMe ? 'rgba(255,255,255,0.6)' : 'rgba(255,255,255,0.15)';
+    ctx.lineWidth = 1.2; ctx.stroke();
+
+    // Spawn shield
+    if (id === playerId && spawnProtect) {
+      const pulse = 0.5 + 0.4*Math.sin(ts*0.006);
+      ctx.beginPath(); ctx.arc(sx, sy, PR+9, 0, Math.PI*2);
+      ctx.strokeStyle = `rgba(0,200,255,${pulse})`;
+      ctx.lineWidth = 2; ctx.stroke();
+    }
+
+    // HP bar
+    const bw = 38, bh = 4;
+    const bxr = sx-bw/2, byr = sy-PR-13;
+    ctx.fillStyle = 'rgba(0,0,0,0.5)'; ctx.fillRect(bxr, byr, bw, bh);
+    const hpFrac = (p.hp ?? MAX_HP) / MAX_HP;
+    const hpCol = hpFrac>0.5 ? '#00ff88' : hpFrac>0.25 ? '#ffaa00' : '#ff4444';
+    ctx.save();
+    ctx.shadowBlur = 6; ctx.shadowColor = hpCol;
+    ctx.fillStyle = hpCol;
+    ctx.fillRect(bxr, byr, bw*hpFrac, bh);
+    ctx.restore();
+
+    // Name
+    ctx.font = '500 9px Orbitron, monospace';
+    ctx.textAlign = 'center';
+    ctx.fillStyle = isMe ? '#fff' : 'rgba(255,255,255,0.65)';
+    ctx.fillText(`${p.name}`, sx, sy-PR-17);
+  }
+
+  // Particles
+  for (let i = particles.length-1; i >= 0; i--) {
+    const p = particles[i];
+    p.x += p.vx; p.y += p.vy;
+    p.vx *= 0.9; p.vy *= 0.9;
+    p.life -= p.decay;
+    if (p.life <= 0) { particles.splice(i,1); continue; }
+    const alpha = Math.floor(p.life*255).toString(16).padStart(2,'0');
+    ctx.beginPath(); ctx.arc(p.x, p.y, p.r*p.life, 0, Math.PI*2);
+    ctx.fillStyle = p.color + alpha; ctx.fill();
+  }
+
+  ctx.restore(); // shake
+
+  // Minimap
+  drawMinimap(W, H, now);
+
+  // Dash cooldown indicator (bottom-right arc)
+  drawDashBar(W, H);
+}
+
+function drawMinimap(W, H, now) {
+  const mmW = 160, mmH = 120;
+  const mmX = W-mmW-16, mmY = H-mmH-70;
+  const sx = mmW/WW, sy2 = mmH/WH;
+
+  ctx.save();
+  ctx.globalAlpha = 0.75;
+  ctx.fillStyle = 'rgba(0,8,0,0.85)';
+  ctx.fillRect(mmX, mmY, mmW, mmH);
+  ctx.strokeStyle = 'rgba(0,255,136,0.25)';
+  ctx.lineWidth = 1; ctx.strokeRect(mmX, mmY, mmW, mmH);
+
+  // Walls
+  ctx.fillStyle = 'rgba(0,255,136,0.12)';
+  for (const w of WALLS)
+    ctx.fillRect(mmX+w.x*sx, mmY+w.y*sy2, Math.max(1,w.w*sx), Math.max(1,w.h*sy2));
+
+  // Players
+  for (const id in players) {
+    const p = players[id];
+    ctx.beginPath(); ctx.arc(mmX+p.x*sx, mmY+p.y*sy2, id===playerId?3.5:2, 0, Math.PI*2);
+    ctx.fillStyle = p.color; ctx.fill();
+    if (id===playerId) { ctx.shadowBlur=6; ctx.shadowColor=p.color; ctx.fill(); ctx.shadowBlur=0; }
+  }
+
+  // Viewport rect
+  ctx.strokeStyle = 'rgba(255,255,255,0.18)'; ctx.lineWidth=1;
+  ctx.strokeRect(mmX+camX*sx, mmY+camY*sy2, canvas.width*sx, canvas.height*sy2);
+
+  ctx.globalAlpha = 0.45;
+  ctx.fillStyle = '#00ff88';
+  ctx.font = '7px Orbitron, monospace';
+  ctx.textAlign = 'left';
+  ctx.fillText('RADAR', mmX+4, mmY-4);
+  ctx.restore();
+}
+
+function drawDashBar(W, H) {
+  if (!alive) return;
+  const now = Date.now();
+  const frac = Math.min(1, (now - lastDash) / DASH_CD);
+  const r = 22, cx2 = W-16-r, cy2 = H-70-r;
+
+  ctx.save();
+  ctx.strokeStyle = 'rgba(0,255,136,0.15)';
+  ctx.lineWidth = 3;
+  ctx.beginPath(); ctx.arc(cx2, cy2, r, 0, Math.PI*2); ctx.stroke();
+
+  ctx.strokeStyle = frac >= 1 ? '#00ff88' : '#0088ff';
+  ctx.lineWidth = 3;
+  ctx.lineCap = 'round';
+  ctx.beginPath();
+  ctx.arc(cx2, cy2, r, -Math.PI/2, -Math.PI/2 + frac*Math.PI*2);
+  ctx.stroke();
+  if (frac >= 1) { ctx.shadowBlur = 10; ctx.shadowColor = '#00ff88'; ctx.stroke(); }
+
+  ctx.fillStyle = frac >= 1 ? 'rgba(0,255,136,0.8)' : 'rgba(255,255,255,0.3)';
+  ctx.font = '7px Orbitron'; ctx.textAlign = 'center';
+  ctx.fillText('DASH', cx2, cy2+3);
+  ctx.restore();
+}
+</script>
+</body>
+</html>
