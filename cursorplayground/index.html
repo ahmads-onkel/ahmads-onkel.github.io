@@ -3,58 +3,468 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Cursor Playground</title>
-
+<title>Bubble Clicker 🫧</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&family=Fredoka+One&display=swap" rel="stylesheet">
 <style>
-body {
-  margin: 0;
-  font-family: system-ui, sans-serif;
-  background: #fafafa;
-  height: 100vh;
-  overflow: hidden;
-}
+  *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+  body{
+    background:#f7f7f5;font-family:'Nunito',sans-serif;
+    overflow:hidden;height:100vh;display:flex;
+    user-select:none;
+  }
 
-h1 {
-  text-align: center;
-  margin-top: 40px;
-}
+  /* ===== LEFT — CLICKER ===== */
+  #left{
+    width:340px;flex-shrink:0;
+    display:flex;flex-direction:column;align-items:center;
+    justify-content:center;gap:20px;padding:30px 20px;
+    border-right:3px solid #111;background:#fff;
+    position:relative;overflow:hidden;
+  }
 
-.trail {
-  position: fixed;
-  width: 10px;
-  height: 10px;
-  background: #3b82f6;
-  border-radius: 50%;
-  pointer-events: none;
-  opacity: 0.6;
-  transform: translate(-50%, -50%);
-}
+  /* Floating bubbles behind cookie */
+  .fbubble{
+    position:absolute;border-radius:50%;border:2px solid rgba(0,0,0,0.07);
+    animation:frise linear infinite;pointer-events:none;
+  }
+  @keyframes frise{
+    0%{transform:translateY(110%) scale(1);opacity:0;}
+    10%{opacity:1;}90%{opacity:1;}
+    100%{transform:translateY(-120%) scale(1.05);opacity:0;}
+  }
 
-a {
-  position: fixed;
-  top: 20px;
-  left: 20px;
-  text-decoration: none;
-  color: #3b82f6;
-}
+  .counter-wrap{text-align:center;}
+  #bigcount{
+    font-family:'Fredoka One',cursive;font-size:48px;color:#111;line-height:1;
+  }
+  #persec{font-size:13px;font-weight:800;color:#bbb;margin-top:4px;}
+
+  /* THE BUBBLE */
+  #bubble-btn{
+    width:200px;height:200px;border-radius:50%;
+    border:5px solid #111;background:#fff;
+    cursor:pointer;position:relative;
+    box-shadow:0 8px 0 #000,0 16px 40px rgba(0,0,0,0.12);
+    transition:transform .08s,box-shadow .08s;
+    display:flex;align-items:center;justify-content:center;
+    flex-shrink:0;
+  }
+  #bubble-btn:hover{transform:scale(1.04);}
+  #bubble-btn:active{
+    transform:scale(0.93) translateY(6px);
+    box-shadow:0 2px 0 #000,0 6px 20px rgba(0,0,0,0.1);
+  }
+  .shine1{
+    position:absolute;width:60px;height:60px;background:rgba(255,255,255,0.7);
+    border-radius:50%;top:28px;left:30px;
+  }
+  .shine2{
+    position:absolute;width:24px;height:24px;background:rgba(255,255,255,0.45);
+    border-radius:50%;top:52px;left:90px;
+  }
+  #bubble-emoji{font-size:64px;z-index:1;}
+
+  /* Click floaters */
+  .clickpop{
+    position:fixed;pointer-events:none;z-index:999;
+    font-family:'Fredoka One',cursive;font-size:22px;color:#111;
+    animation:cpop .9s ease forwards;font-weight:400;
+  }
+  @keyframes cpop{
+    0%{opacity:1;transform:translateY(0)scale(1.1);}
+    100%{opacity:0;transform:translateY(-90px)scale(0.6);}
+  }
+
+  /* Upgrades row */
+  #upgrades-title{font-size:11px;font-weight:900;color:#bbb;letter-spacing:2px;}
+  #upgrades{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;max-width:280px;}
+  .upg-btn{
+    width:52px;height:52px;border-radius:16px;
+    border:2.5px solid #e0e0e0;background:#fafafa;
+    font-size:22px;cursor:pointer;
+    transition:all .15s cubic-bezier(.34,1.56,.64,1);
+    display:flex;align-items:center;justify-content:center;
+    position:relative;
+  }
+  .upg-btn:hover{transform:scale(1.1) translateY(-3px);border-color:#111;box-shadow:0 4px 0 #111;}
+  .upg-btn:active{transform:scale(.94);}
+  .upg-btn.bought{border-color:#111;background:#111;}
+  .upg-btn.bought span{filter:brightness(0)invert(1);}
+  .upg-btn.locked{opacity:.3;cursor:not-allowed;}
+  .upg-btn.locked:hover{transform:none;border-color:#e0e0e0;box-shadow:none;}
+  .upg-cost{
+    position:absolute;bottom:-18px;left:50%;transform:translateX(-50%);
+    font-size:9px;font-weight:900;color:#999;white-space:nowrap;
+  }
+
+  /* Milestone badge */
+  #milestone{
+    font-family:'Fredoka One',cursive;font-size:13px;color:#bbb;text-align:center;
+  }
+
+  /* ===== RIGHT — SHOP ===== */
+  #right{
+    flex:1;display:flex;flex-direction:column;overflow:hidden;
+    background:#f7f7f5;
+  }
+
+  #shop-header{
+    padding:20px 24px 14px;border-bottom:2px solid #eee;
+    display:flex;justify-content:space-between;align-items:center;flex-shrink:0;
+  }
+  #shop-header h2{font-family:'Fredoka One',cursive;font-size:22px;color:#111;}
+  #cps-badge{
+    background:#111;color:#fff;border-radius:50px;
+    padding:6px 16px;font-size:12px;font-weight:900;
+    box-shadow:0 3px 0 #000;
+  }
+
+  #buildings{
+    flex:1;overflow-y:auto;padding:16px 20px;
+    display:flex;flex-direction:column;gap:10px;
+  }
+  #buildings::-webkit-scrollbar{width:6px;}
+  #buildings::-webkit-scrollbar-track{background:transparent;}
+  #buildings::-webkit-scrollbar-thumb{background:#ddd;border-radius:3px;}
+
+  .building{
+    background:#fff;border-radius:22px;
+    border:2.5px solid #eee;
+    padding:14px 18px;
+    display:flex;align-items:center;gap:14px;
+    transition:all .18s cubic-bezier(.34,1.56,.64,1);
+    cursor:pointer;
+    box-shadow:0 3px 0 #e8e8e4;
+  }
+  .building:hover{border-color:#111;box-shadow:0 4px 0 #111;transform:translateY(-2px) scale(1.01);}
+  .building:active{transform:scale(.98);box-shadow:0 1px 0 #111;}
+  .building.cant-afford{opacity:.45;cursor:not-allowed;}
+  .building.cant-afford:hover{border-color:#eee;box-shadow:0 3px 0 #e8e8e4;transform:none;}
+  .building.owned{border-color:#111;}
+
+  .b-icon{font-size:34px;flex-shrink:0;width:46px;text-align:center;}
+  .b-info{flex:1;}
+  .b-name{font-family:'Fredoka One',cursive;font-size:15px;color:#111;display:flex;align-items:center;gap:8px;}
+  .b-owned{
+    background:#111;color:#fff;border-radius:20px;
+    font-size:11px;font-weight:900;padding:2px 10px;
+    font-family:'Nunito',sans-serif;
+  }
+  .b-desc{font-size:11px;color:#aaa;font-weight:700;margin-top:2px;}
+  .b-cps{font-size:11px;font-weight:900;color:#888;margin-top:3px;}
+  .b-cost{
+    font-family:'Fredoka One',cursive;font-size:17px;color:#111;
+    flex-shrink:0;text-align:right;
+  }
+  .b-cost .b-unit{font-size:10px;color:#bbb;font-weight:900;font-family:'Nunito',sans-serif;}
+
+  /* News ticker */
+  #ticker{
+    border-top:2px solid #eee;padding:10px 20px;
+    font-size:12px;font-weight:800;color:#bbb;
+    background:#fff;flex-shrink:0;overflow:hidden;white-space:nowrap;
+  }
+  #ticker-inner{display:inline-block;animation:tick 30s linear infinite;}
+  @keyframes tick{from{transform:translateX(100vw)}to{transform:translateX(-100%);}}
+
+  /* Golden bubble */
+  .golden{
+    position:fixed;font-size:40px;cursor:pointer;z-index:100;
+    animation:goldspin 8s linear forwards;pointer-events:all;
+    filter:drop-shadow(0 4px 12px rgba(0,0,0,0.2));
+  }
+  @keyframes goldspin{
+    0%{opacity:0;transform:scale(0) rotate(0deg);}
+    5%{opacity:1;transform:scale(1) rotate(10deg);}
+    95%{opacity:1;}
+    100%{opacity:0;transform:scale(0.8) rotate(-10deg);}
+  }
 </style>
 </head>
 <body>
 
-<a href="/">← Zurück</a>
-<h1>Beweg deine Maus.</h1>
+<!-- LEFT -->
+<div id="left">
+  <!-- bg bubbles -->
+  <div id="fbubbles"></div>
+
+  <div class="counter-wrap">
+    <div id="bigcount">0 🫧</div>
+    <div id="persec">0 bubbles / Sek</div>
+  </div>
+
+  <div id="bubble-btn" onclick="click_bubble(event)">
+    <div class="shine1"></div>
+    <div class="shine2"></div>
+    <span id="bubble-emoji">🫧</span>
+  </div>
+
+  <div id="upgrades-title">UPGRADES</div>
+  <div id="upgrades"></div>
+
+  <div id="milestone">Klick dich zur Unendlichkeit! 🚀</div>
+</div>
+
+<!-- RIGHT -->
+<div id="right">
+  <div id="shop-header">
+    <h2>🏪 Bubble Shop</h2>
+    <div id="cps-badge">0 🫧/s</div>
+  </div>
+  <div id="buildings"></div>
+  <div id="ticker">
+    <span id="ticker-inner">📰 Wissenschaftler bestätigen: Bubbles sind die Zukunft &nbsp;•&nbsp; 🫧 Bubble-Wirtschaft wächst um 420% &nbsp;•&nbsp; 🏆 Du bist ein Bubble-Gott &nbsp;•&nbsp; 💼 Bubble-Aktien auf Allzeithoch &nbsp;•&nbsp; 🔬 Neue Studie: Mehr Bubbles = mehr Glück &nbsp;•&nbsp; 🌍 Welt läuft mit Bubble-Energie &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+  </div>
+</div>
 
 <script>
-document.addEventListener("mousemove", (e) => {
-  const dot = document.createElement("div");
-  dot.classList.add("trail");
-  dot.style.left = e.clientX + "px";
-  dot.style.top = e.clientY + "px";
-  document.body.appendChild(dot);
+// ===== GAME STATE =====
+let bubbles = 0;
+let totalBubbles = 0;
+let cps = 0; // bubbles per second
+let clickPower = 1;
+let frame = 0;
 
-  setTimeout(() => dot.remove(), 300);
-});
+// ===== BUILDINGS =====
+const BUILDINGS = [
+  { id:'finger',   icon:'👆', name:'Zeigefinger',  desc:'Der gute alte Klick.',         baseCost:15,    baseCps:0.1,  owned:0 },
+  { id:'machine',  icon:'🤖', name:'Klick-Roboter', desc:'Klickt für dich. Nie müde.',   baseCost:100,   baseCps:0.5,  owned:0 },
+  { id:'lab',      icon:'🧪', name:'Bubble-Labor',  desc:'Züchtet Bubbles wissenschaftlich.', baseCost:500, baseCps:2, owned:0 },
+  { id:'factory',  icon:'🏭', name:'Bubble-Fabrik', desc:'Massenproduktion!',            baseCost:2000,  baseCps:8,    owned:0 },
+  { id:'mine',     icon:'⛏️', name:'Bubble-Mine',   desc:'Gräbt Bubbles aus der Erde.',  baseCost:8000,  baseCps:25,   owned:0 },
+  { id:'ship',     icon:'🚀', name:'Weltraum-Pod',  desc:'Bubbles aus dem Universum.',   baseCost:30000, baseCps:80,   owned:0 },
+  { id:'portal',   icon:'🌀', name:'Bubble-Portal', desc:'Aus einer anderen Dimension!', baseCost:100000,baseCps:250,  owned:0 },
+  { id:'god',      icon:'✨', name:'Bubble.exe',   desc:'Erschafft Bubbles per Gedanke.',baseCost:500000,baseCps:1000, owned:0 },
+];
+
+// ===== UPGRADES =====
+const UPGRADES = [
+  { id:'u0', icon:'💪', name:'Stärkere Finger',  desc:'+1 Klick-Power',       cost:100,    req:0,     fn:()=>{ clickPower+=1; } },
+  { id:'u1', icon:'☕', name:'Koffein',           desc:'+3 Klick-Power',       cost:500,    req:10,    fn:()=>{ clickPower+=3; } },
+  { id:'u2', icon:'🧲', name:'Bubble-Magnet',    desc:'2× alle Gebäude',      cost:1000,   req:25,    fn:()=>{ cpsMulti*=2; recalcCps(); } },
+  { id:'u3', icon:'🔬', name:'Forschung',        desc:'+10 Klick-Power',      cost:5000,   req:50,    fn:()=>{ clickPower+=10; } },
+  { id:'u4', icon:'⚡', name:'Turbo-Klick',      desc:'+25 Klick-Power',      cost:20000,  req:100,   fn:()=>{ clickPower+=25; } },
+  { id:'u5', icon:'🌪️', name:'Bubble-Sturm',    desc:'3× alle Gebäude',      cost:50000,  req:200,   fn:()=>{ cpsMulti*=3; recalcCps(); } },
+  { id:'u6', icon:'🏆', name:'Goldene Bubble',   desc:'+100 Klick-Power',     cost:200000, req:500,   fn:()=>{ clickPower+=100; } },
+  { id:'u7', icon:'👑', name:'Bubble-Kaisertum', desc:'5× alle Gebäude',      cost:1000000,req:1000,  fn:()=>{ cpsMulti*=5; recalcCps(); } },
+];
+
+let cpsMulti = 1;
+const boughtUpgrades = new Set();
+
+const MILESTONES = [
+  [100,'Bubble-Anfänger 🌱'],[1000,'Bubble-Lehrling ✏️'],
+  [10000,'Bubble-Meister 🎓'],[100000,'Bubble-Legende 🏆'],
+  [1000000,'Bubble-Gott ✨'],[1000000000,'Bubble-Universum 🌌'],
+];
+
+// ===== FORMAT =====
+function fmt(n){
+  if(n>=1e12) return (n/1e12).toFixed(2)+' Bio';
+  if(n>=1e9)  return (n/1e9).toFixed(2)+' Mrd';
+  if(n>=1e6)  return (n/1e6).toFixed(2)+' Mio';
+  if(n>=1000) return (n/1000).toFixed(2)+'k';
+  return Math.floor(n)+'';
+}
+
+// ===== BUILDING COST =====
+function bCost(b){ return Math.ceil(b.baseCost * Math.pow(1.15, b.owned)); }
+
+// ===== CPS CALC =====
+function recalcCps(){
+  cps = 0;
+  BUILDINGS.forEach(b=>{ cps += b.baseCps * b.owned; });
+  cps *= cpsMulti;
+}
+
+// ===== CLICK =====
+function click_bubble(e){
+  const gained = clickPower;
+  bubbles += gained;
+  totalBubbles += gained;
+  // Floating +n
+  const el = document.createElement('div');
+  el.className='clickpop';
+  el.style.left=(e.clientX-20)+'px';
+  el.style.top=(e.clientY-20)+'px';
+  el.textContent='+'+fmt(gained);
+  document.body.appendChild(el);
+  setTimeout(()=>el.remove(),900);
+  // Squish effect
+  const btn = document.getElementById('bubble-btn');
+  btn.style.transform='scale(0.92) translateY(6px)';
+  btn.style.boxShadow='0 2px 0 #000,0 4px 14px rgba(0,0,0,0.1)';
+  setTimeout(()=>{ btn.style.transform=''; btn.style.boxShadow=''; },120);
+  updateUI();
+}
+
+// ===== BUY BUILDING =====
+function buyBuilding(idx){
+  const b = BUILDINGS[idx];
+  const cost = bCost(b);
+  if(bubbles < cost) return;
+  bubbles -= cost;
+  b.owned++;
+  recalcCps();
+  renderBuildings();
+  updateUI();
+  checkMilestones();
+}
+
+// ===== BUY UPGRADE =====
+function buyUpgrade(idx){
+  const u = UPGRADES[idx];
+  if(boughtUpgrades.has(idx)) return;
+  if(bubbles < u.cost) return;
+  if(totalBubbles < u.req) return;
+  bubbles -= u.cost;
+  boughtUpgrades.add(idx);
+  u.fn();
+  renderUpgrades();
+  updateUI();
+}
+
+// ===== RENDER BUILDINGS =====
+function renderBuildings(){
+  const cont = document.getElementById('buildings');
+  cont.innerHTML='';
+  BUILDINGS.forEach((b,i)=>{
+    const cost = bCost(b);
+    const canAfford = bubbles >= cost;
+    const thisCps = (b.baseCps*cpsMulti).toFixed(1);
+    const div = document.createElement('div');
+    div.className='building'+(b.owned>0?' owned':'')+(canAfford?'':' cant-afford');
+    div.innerHTML=`
+      <div class="b-icon">${b.icon}</div>
+      <div class="b-info">
+        <div class="b-name">${b.name}${b.owned>0?`<span class="b-owned">${b.owned}</span>`:''}</div>
+        <div class="b-desc">${b.desc}</div>
+        <div class="b-cps">+${thisCps} 🫧/s pro Stück</div>
+      </div>
+      <div class="b-cost">${fmt(cost)}<div class="b-unit">🫧</div></div>`;
+    div.onclick=()=>buyBuilding(i);
+    cont.appendChild(div);
+  });
+}
+
+// ===== RENDER UPGRADES =====
+function renderUpgrades(){
+  const cont = document.getElementById('upgrades');
+  cont.innerHTML='';
+  UPGRADES.forEach((u,i)=>{
+    const bought = boughtUpgrades.has(i);
+    const unlocked = totalBubbles >= u.req;
+    const canAfford = bubbles >= u.cost && unlocked;
+    const btn = document.createElement('div');
+    btn.className='upg-btn'+(bought?' bought':(!unlocked?' locked':''));
+    btn.title=`${u.name}: ${u.desc}\nKosten: ${fmt(u.cost)} 🫧`;
+    btn.innerHTML=`<span>${u.icon}</span>`;
+    if(!bought&&unlocked){
+      const cost = document.createElement('div');
+      cost.className='upg-cost';
+      cost.textContent=fmt(u.cost);
+      btn.appendChild(cost);
+    }
+    btn.onclick=()=>{ if(!bought&&canAfford) buyUpgrade(i); };
+    cont.appendChild(btn);
+  });
+}
+
+// ===== MILESTONE =====
+function checkMilestones(){
+  let label='Klick dich zur Unendlichkeit! 🚀';
+  for(const [n,text] of MILESTONES){ if(totalBubbles>=n) label=text; }
+  document.getElementById('milestone').textContent=label;
+}
+
+// ===== CPS BADGE =====
+function updateCpsBadge(){
+  document.getElementById('cps-badge').textContent=fmt(cps)+' 🫧/s';
+}
+
+// ===== FULL UI UPDATE =====
+function updateUI(){
+  document.getElementById('bigcount').textContent=fmt(Math.floor(bubbles))+' 🫧';
+  document.getElementById('persec').textContent=fmt(cps)+' bubbles / Sek';
+  updateCpsBadge();
+  renderBuildings();
+  renderUpgrades();
+  checkMilestones();
+}
+
+// ===== GOLDEN BUBBLE (random) =====
+function spawnGolden(){
+  const el=document.createElement('div');
+  el.className='golden';
+  el.textContent='⭐';
+  el.style.left=(80+Math.random()*(window.innerWidth-200))+'px';
+  el.style.top=(80+Math.random()*(window.innerHeight-200))+'px';
+  el.title='Goldene Bubble! KLICK MICH!';
+  el.onclick=()=>{
+    const bonus = Math.max(cps*10, clickPower*50);
+    bubbles+=bonus;
+    totalBubbles+=bonus;
+    const pop=document.createElement('div');
+    pop.className='clickpop';
+    pop.style.left=el.style.left;
+    pop.style.top=el.style.top;
+    pop.style.fontSize='28px';
+    pop.textContent='⭐ +'+fmt(bonus)+'!';
+    document.body.appendChild(pop);
+    setTimeout(()=>pop.remove(),900);
+    el.remove();
+    updateUI();
+  };
+  document.body.appendChild(el);
+  setTimeout(()=>{ if(el.parentNode) el.remove(); }, 8000);
+  // Next golden in 30-90s
+  setTimeout(spawnGolden, 30000+Math.random()*60000);
+}
+
+// ===== BACKGROUND BUBBLES =====
+function spawnFBubbles(){
+  const cont=document.getElementById('fbubbles');
+  for(let i=0;i<14;i++){
+    const b=document.createElement('div');
+    b.className='fbubble';
+    const size=20+Math.random()*80;
+    b.style.cssText=`
+      width:${size}px;height:${size}px;
+      left:${Math.random()*320}px;
+      bottom:-${size}px;
+      animation-duration:${5+Math.random()*12}s;
+      animation-delay:-${Math.random()*14}s;
+    `;
+    cont.appendChild(b);
+  }
+}
+
+// ===== GAME LOOP =====
+let lastTime=0;
+function gameLoop(ts){
+  const dt=Math.min((ts-lastTime)/1000,.1);
+  lastTime=ts;
+  frame++;
+  bubbles+=cps*dt;
+  totalBubbles+=cps*dt;
+  // Update display every 6 frames
+  if(frame%6===0){
+    document.getElementById('bigcount').textContent=fmt(Math.floor(bubbles))+' 🫧';
+    document.getElementById('persec').textContent=fmt(cps)+' bubbles / Sek';
+    updateCpsBadge();
+    // Refresh affordability on buildings/upgrades every 18 frames
+    if(frame%18===0){ renderBuildings(); renderUpgrades(); }
+  }
+  requestAnimationFrame(gameLoop);
+}
+
+// ===== INIT =====
+spawnFBubbles();
+renderBuildings();
+renderUpgrades();
+updateUI();
+requestAnimationFrame(gameLoop);
+setTimeout(spawnGolden, 20000+Math.random()*40000);
 </script>
-
 </body>
 </html>
