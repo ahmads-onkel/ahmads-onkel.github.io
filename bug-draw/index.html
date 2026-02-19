@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Bug Painter</title>
+<title>Line Image Generator</title>
 <style>
 body{
-    background:#eee;
+    background:#111;
     display:flex;
     flex-direction:column;
     align-items:center;
@@ -12,27 +12,27 @@ body{
 }
 canvas{
     background:white;
-    border:2px solid black;
+    border:2px solid #444;
 }
 input{
     margin:20px;
     padding:10px;
-    font-size:18px;
+    font-size:20px;
     width:300px;
 }
 </style>
 </head>
 <body>
 
-<input id="textInput" placeholder="type something..." />
-<canvas id="canvas" width="600" height="600"></canvas>
+<input id="textInput" placeholder="type word and press enter"/>
+<canvas id="canvas" width="700" height="700"></canvas>
 
 <script>
 const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
 const input = document.getElementById("textInput");
 
-let path = [];
+let points = [];
 let drawing = false;
 
 input.addEventListener("keydown", e=>{
@@ -43,91 +43,72 @@ input.addEventListener("keydown", e=>{
 
 function generate(text){
 
-    ctx.clearRect(0,0,600,600);
+    ctx.clearRect(0,0,700,700);
 
-    let seed = 0;
-    for(let i=0;i<text.length;i++){
-        seed += text.charCodeAt(i);
+    // Text unsichtbar rendern
+    ctx.fillStyle = "black";
+    ctx.font = "bold 200px Arial";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(text,350,350);
+
+    const imageData = ctx.getImageData(0,0,700,700);
+    ctx.clearRect(0,0,700,700);
+
+    points = [];
+
+    for(let y=0;y<700;y+=4){
+        for(let x=0;x<700;x+=4){
+            const index = (y*700 + x)*4;
+            const alpha = imageData.data[index+3];
+            if(alpha > 128){
+                points.push({x,y});
+            }
+        }
     }
 
-    function random(){
-        seed = (seed * 9301 + 49297) % 233280;
-        return seed / 233280;
-    }
-
-    path = [];
-
-    let x = 300;
-    let y = 300;
-
-    for(let i=0;i<200;i++){
-
-        let angle = random() * Math.PI * 2;
-        let length = 40 + random()*120;
-
-        let newX = x + Math.cos(angle) * length;
-        let newY = y + Math.sin(angle) * length;
-
-        newX = Math.max(10, Math.min(590,newX));
-        newY = Math.max(10, Math.min(590,newY));
-
-        path.push({x:newX, y:newY});
-        x = newX;
-        y = newY;
-    }
-
-    animateBug();
+    shuffle(points);
+    animate();
 }
 
-function animateBug(){
+function shuffle(array){
+    for(let i=array.length-1;i>0;i--){
+        let j=Math.floor(Math.random()*(i+1));
+        [array[i],array[j]]=[array[j],array[i]];
+    }
+}
+
+function animate(){
 
     if(drawing) return;
-    drawing = true;
+    drawing=true;
 
-    let i = 0;
-    let currentX = 300;
-    let currentY = 300;
+    ctx.lineWidth=1;
+    ctx.lineCap="round";
+    ctx.strokeStyle="black";
 
-    ctx.lineWidth = 1;
-    ctx.lineCap = "round";
-    ctx.strokeStyle = "black";
+    let i=0;
 
     function step(){
 
-        if(i >= path.length){
-            drawing = false;
-            return;
-        }
+        for(let k=0;k<80 && i<points.length;k++,i++){
 
-        let target = path[i];
-
-        let dx = target.x - currentX;
-        let dy = target.y - currentY;
-        let dist = Math.sqrt(dx*dx + dy*dy);
-
-        if(dist < 2){
-            i++;
-        } else {
-
-            let speed = 3;
-
-            currentX += dx/dist * speed;
-            currentY += dy/dist * speed;
+            let p=points[i];
 
             ctx.beginPath();
-            ctx.moveTo(currentX, currentY);
-            ctx.lineTo(currentX - dx/dist * speed,
-                       currentY - dy/dist * speed);
+            ctx.moveTo(p.x,p.y);
+            ctx.lineTo(
+                p.x + (Math.random()-0.5)*20,
+                p.y + (Math.random()-0.5)*20
+            );
             ctx.stroke();
-
-            // Bug zeichnen (über der Linie)
-            ctx.beginPath();
-            ctx.arc(currentX, currentY, 4, 0, Math.PI*2);
-            ctx.fillStyle = "red";
-            ctx.fill();
         }
 
-        requestAnimationFrame(step);
+        if(i<points.length){
+            requestAnimationFrame(step);
+        } else {
+            drawing=false;
+        }
     }
 
     step();
