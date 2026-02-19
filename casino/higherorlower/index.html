@@ -1,219 +1,120 @@
-<!DOCTYPE html>
-<html lang="de">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Higher / Lower</title>
-
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@500;600;700&display=swap" rel="stylesheet">
-
-<style>
-*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
-
-:root{
-  --bg:#111;
-  --s1:#181818;
-  --b:#2c2c2c;
-  --t:#f0f0f0;
-  --m:#777;
-  --d:#333;
-}
-
-html,body{height:100%;}
-body{
-  background:var(--bg);
-  font-family:'Inter',sans-serif;
-  color:var(--t);
-  display:flex;
-  align-items:center;
-  justify-content:center;
-}
-
-.scr{display:none;flex-direction:column;gap:20px;width:100%;max-width:420px;padding:24px;}
-.scr.on{display:flex;}
-
-button{cursor:pointer}
-
-/* TOP */
-.g-top{display:flex;justify-content:space-between;font-size:12px;color:var(--m);}
-.g-val{font-family:'IBM Plex Mono',monospace;font-size:18px;color:var(--t);}
-
-.num-card{
-  background:var(--s1);
-  border:1px solid var(--d);
-  padding:40px 0;
-  text-align:center;
-}
-
-#cur-num{
-  font-family:'IBM Plex Mono',monospace;
-  font-size:110px;
-  font-weight:700;
-  letter-spacing:-4px;
-}
-
-.feedback{
-  font-family:'IBM Plex Mono',monospace;
-  font-size:14px;
-  text-align:center;
-  min-height:20px;
-  color:var(--m);
-}
-
-.choice-row{display:flex;gap:10px;}
-.choice-btn{
-  flex:1;
-  padding:16px 0;
-  background:transparent;
-  border:1px solid var(--d);
-  color:var(--m);
-  font-weight:600;
-}
-.choice-btn:hover{border-color:var(--t);color:var(--t);}
-
-#cashout-btn{
-  padding:12px;
-  border:1px solid var(--d);
-  background:transparent;
-  color:var(--m);
-  font-family:'IBM Plex Mono',monospace;
-}
-#cashout-btn.live{border-color:var(--t);color:var(--t);}
-
-.result-big{
-  font-family:'IBM Plex Mono',monospace;
-  font-size:60px;
-  text-align:center;
-}
-.result-sub{
-  font-family:'IBM Plex Mono',monospace;
-  text-align:center;
-  color:var(--m);
-}
-</style>
-</head>
-<body>
-
-<div id="game" class="scr on">
-
-  <div class="g-top">
-    <div>
-      Kontostand<br>
-      <span class="g-val" id="balance">1000 €</span>
-    </div>
-    <div>
-      Multiplikator<br>
-      <span class="g-val" id="mult">×1.00</span>
-    </div>
-  </div>
-
-  <div class="num-card">
-    <div id="cur-num">50</div>
-  </div>
-
-  <div class="feedback" id="feedback"></div>
-
-  <div class="choice-row">
-    <button class="choice-btn" onclick="guess('higher')">Higher</button>
-    <button class="choice-btn" onclick="guess('lower')">Lower</button>
-  </div>
-
-  <button id="cashout-btn" onclick="cashOut()">Cash Out</button>
-
-</div>
-
-<div id="result" class="scr">
-  <div class="result-big" id="final-balance"></div>
-  <div class="result-sub" id="profit"></div>
-  <button class="choice-btn" onclick="restart()">Nochmal</button>
-</div>
-
 <script>
-const MULT = 1.8;
-const BET = 50;
-const START = 1000;
-
-let balance = START;
-let cur = rand();
+let min = 1;
+let max = 100;
+let current = random();
+let balance = 1000;
+let bet = 100;
 let streak = 0;
-let pot = 0;
 
-function rand(){
-  return Math.floor(Math.random()*98)+2;
-}
+const MIN_RANGE_SIZE = 10;
+const HOUSE_EDGE = 0.95; // 5% house edge
 
-function guess(dir){
-  const next = rand();
-  const correct = dir==='higher' ? next>cur : next<cur;
+updateUI();
 
-  if(correct){
-    streak++;
-    pot = Math.floor(BET*Math.pow(MULT,streak));
-    document.getElementById('feedback').textContent =
-      cur+" → "+next+"  |  +" + pot + " € möglich";
-    cur = next;
-  } else {
-    balance -= BET;
-    document.getElementById('feedback').textContent =
-      cur+" → "+next+"  |  -" + BET + " €";
-    streak = 0;
-    pot = 0;
-    cur = rand();
-
-    if(balance<=0){
-      endGame();
-      return;
-    }
-  }
-
-  updateUI();
-}
-
-function cashOut(){
-  balance += pot;
-  document.getElementById('feedback').textContent =
-    "+ " + pot + " € ausgezahlt";
-  pot = 0;
-  streak = 0;
-  cur = rand();
-  updateUI();
+function random(){
+    return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
 function updateUI(){
-  document.getElementById('balance').textContent = balance + " €";
-  document.getElementById('mult').textContent =
-    "×"+(Math.pow(MULT,streak)).toFixed(2);
-  document.getElementById('cur-num').textContent = cur;
-  document.getElementById('cashout-btn')
-    .classList.toggle('live', streak>0);
+    document.getElementById("number").innerText = current;
+    document.getElementById("balance").innerText = "Kontostand: " + balance + "€";
+    document.getElementById("rangeDisplay").innerText = "Range: " + min + " - " + max;
+    document.getElementById("streak").innerText = "Streak: " + streak;
+
+    let total = (max - min);
+    let pHigher = current >= max ? 0 : (max - current) / total;
+    let pLower  = current <= min ? 0 : (current - min) / total;
+
+    document.getElementById("riskDisplay").innerText =
+        "Higher: " + (pHigher * 100).toFixed(1) + "% | Lower: " + (pLower * 100).toFixed(1) + "%";
 }
 
-function endGame(){
-  document.getElementById('game').classList.remove('on');
-  document.getElementById('result').classList.add('on');
+function guess(type){
 
-  const profit = balance-START;
+    if(balance < bet){
+        alert("Nicht genug Guthaben!");
+        return;
+    }
 
-  document.getElementById('final-balance').textContent =
-    balance+" €";
+    let next = random();
+    let win = false;
 
-  document.getElementById('profit').textContent =
-    profit>=0 ? "+ "+profit+" €" : "- "+Math.abs(profit)+" €";
+    let total = (max - min);
+    let p;
+
+    if(type === "higher"){
+        p = current >= max ? 0 : (max - current) / total;
+        if(next > current) win = true;
+    } else {
+        p = current <= min ? 0 : (current - min) / total;
+        if(next < current) win = true;
+    }
+
+    // Gleichstand = Loss
+    if(next === current) win = false;
+
+    if(win && p > 0){
+
+        let multiplier = (1 / p) * HOUSE_EDGE;
+
+        // multiplier cap
+        if(multiplier > 10) multiplier = 10;
+
+        let gain = Math.floor(bet * multiplier);
+
+        // streak bonus
+        if(streak >= 3){
+            gain += 20;
+        }
+
+        balance += gain;
+        document.getElementById("profit").innerText = "+" + gain + "€";
+        streak++;
+
+        // Range shrink nur wenn noch groß genug
+        if(streak % 3 === 0 && (max - min) > MIN_RANGE_SIZE){
+            min += 2;
+            max -= 2;
+        }
+
+        current = next;
+
+    } else {
+
+        balance -= bet;
+        document.getElementById("profit").innerText = "-" + bet + "€";
+        streak = 0;
+        resetRange();
+        current = random();
+    }
+
+    if(balance <= 0){
+        alert("Game Over");
+        balance = 1000;
+        streak = 0;
+        resetRange();
+        current = random();
+    }
+
+    updateUI();
 }
 
-function restart(){
-  balance = START;
-  streak = 0;
-  pot = 0;
-  cur = rand();
-  document.getElementById('result').classList.remove('on');
-  document.getElementById('game').classList.add('on');
-  document.getElementById('feedback').textContent="";
-  updateUI();
+function cashout(){
+
+    if(streak > 0){
+        let bonus = streak * 10;
+        balance += bonus;
+        document.getElementById("profit").innerText = "Cashout Bonus +" + bonus + "€";
+    }
+
+    streak = 0;
+    resetRange();
+    current = random();
+    updateUI();
 }
 
-updateUI();
+function resetRange(){
+    min = 1;
+    max = 100;
+}
 </script>
-
-</body>
-</html>
