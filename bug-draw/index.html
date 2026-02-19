@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Bug Draw</title>
+
+<style>
+body{
+    margin:0;
+    background:white;
+    font-family:sans-serif;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+}
+
+input{
+    margin:40px;
+    padding:15px;
+    width:300px;
+    font-size:18px;
+    border:3px solid black;
+    outline:none;
+}
+
+canvas{
+    border:2px solid black;
+}
+</style>
+</head>
+<body>
+
+<input id="word" placeholder="type something (cat, dog, tree...)">
+<canvas id="canvas" width="600" height="500"></canvas>
+
+<script>
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d");
+const input = document.getElementById("word");
+
+let drawing = [];
+let currentStroke = 0;
+let pointIndex = 0;
+let bugX = 0;
+let bugY = 0;
+
+input.addEventListener("keydown", async function(e){
+    if(e.key === "Enter"){
+        let word = input.value.toLowerCase();
+        loadDrawing(word);
+    }
+});
+
+async function loadDrawing(word){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+
+    try{
+        const res = await fetch(
+          "https://quickdrawfiles.appspot.com/drawing/" + word + "?format=json"
+        );
+        const data = await res.json();
+
+        drawing = data;
+        currentStroke = 0;
+        pointIndex = 0;
+
+        animate();
+
+    }catch{
+        alert("Word not found. Try simple English words like cat, dog, house.");
+    }
+}
+
+function animate(){
+    if(currentStroke >= drawing.length) return;
+
+    const stroke = drawing[currentStroke];
+    const xs = stroke[0];
+    const ys = stroke[1];
+
+    if(pointIndex >= xs.length-1){
+        currentStroke++;
+        pointIndex = 0;
+        animate();
+        return;
+    }
+
+    let x1 = xs[pointIndex];
+    let y1 = ys[pointIndex];
+    let x2 = xs[pointIndex+1];
+    let y2 = ys[pointIndex+1];
+
+    ctx.beginPath();
+    ctx.moveTo(x1, y1);
+    ctx.lineTo(x2, y2);
+    ctx.stroke();
+
+    bugX = x2;
+    bugY = y2;
+
+    drawBug();
+
+    pointIndex++;
+
+    requestAnimationFrame(animate);
+}
+
+function drawBug(){
+    ctx.beginPath();
+    ctx.fillStyle = "black";
+    ctx.arc(bugX, bugY, 4, 0, Math.PI*2);
+    ctx.fill();
+}
+</script>
+
+</body>
+</html>
