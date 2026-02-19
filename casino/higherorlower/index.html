@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>HIGHER / LOWER</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+
+:root{
+  --bg:#111;
+  --s1:#181818;
+  --s2:#202020;
+  --b:#2c2c2c;
+  --t:#f0f0f0;
+  --m:#777;
+  --d:#333;
+}
+
+html,body{height:100%;}
+body{
+  background:var(--bg);
+  font-family:'Inter',sans-serif;
+  color:var(--t);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  overflow:hidden;
+}
+
+/* SCREENS */
+.scr{
+  display:none;
+  flex-direction:column;
+  align-items:center;
+  width:100%;
+  max-width:420px;
+  padding:0 24px;
+}
+.scr.on{display:flex;}
+
+/* START */
+#ss{gap:28px;text-align:center;}
+
+.s-title{
+  font-size:12px;
+  letter-spacing:2px;
+  color:var(--m);
+  text-transform:uppercase;
+  font-weight:500;
+}
+
+.s-num{
+  font-family:'IBM Plex Mono',monospace;
+  font-size:120px;
+  font-weight:700;
+  letter-spacing:-4px;
+}
+
+.s-arrow{
+  font-size:28px;
+  color:var(--d);
+  margin-top:6px;
+}
+
+.s-desc{
+  font-size:13px;
+  line-height:1.6;
+  color:var(--m);
+  max-width:280px;
+}
+
+.bet-options{
+  display:flex;
+  gap:8px;
+  width:100%;
+}
+
+.bet-opt{
+  flex:1;
+  padding:10px 0;
+  background:transparent;
+  color:var(--m);
+  border:1px solid var(--d);
+  font-family:'IBM Plex Mono',monospace;
+  font-weight:600;
+  cursor:pointer;
+  transition:all 0.12s;
+}
+
+.bet-opt:hover{
+  border-color:var(--t);
+  color:var(--t);
+}
+
+.bet-opt.sel{
+  border-color:var(--t);
+  color:var(--t);
+}
+
+.play-btn{
+  width:100%;
+  padding:16px;
+  background:var(--t);
+  color:#000;
+  border:none;
+  font-weight:600;
+  letter-spacing:1px;
+  cursor:pointer;
+}
+
+/* GAME */
+#sg{gap:18px;}
+
+.g-top{
+  width:100%;
+  display:flex;
+  justify-content:space-between;
+}
+
+.g-bal-l,.g-streak-l{
+  font-size:11px;
+  color:var(--m);
+}
+
+.g-bal-v,.g-streak-v{
+  font-family:'IBM Plex Mono',monospace;
+  font-size:20px;
+  font-weight:600;
+}
+
+.div{
+  width:100%;
+  height:1px;
+  background:var(--d);
+}
+
+.num-card{
+  width:100%;
+  background:var(--s1);
+  border:1px solid var(--d);
+  padding:36px;
+  text-align:center;
+}
+
+#cur-num{
+  font-family:'IBM Plex Mono',monospace;
+  font-size:110px;
+  font-weight:700;
+  letter-spacing:-4px;
+}
+
+.num-range{
+  font-size:11px;
+  color:var(--m);
+  margin-top:6px;
+}
+
+.choice-row{
+  display:flex;
+  gap:10px;
+  width:100%;
+}
+
+.choice-btn{
+  flex:1;
+  padding:16px 0;
+  background:transparent;
+  border:1px solid var(--d);
+  color:var(--m);
+  font-weight:600;
+  cursor:pointer;
+}
+
+.choice-btn:hover{
+  border-color:var(--t);
+  color:var(--t);
+}
+
+#cashout-btn{
+  width:100%;
+  padding:14px;
+  background:transparent;
+  border:1px solid var(--d);
+  color:var(--m);
+  font-family:'IBM Plex Mono',monospace;
+  font-weight:600;
+  cursor:pointer;
+}
+
+#cashout-btn.live{
+  border-color:var(--t);
+  color:var(--t);
+}
+
+/* RESULT */
+#sr{
+  gap:20px;
+  text-align:center;
+}
+
+.r-big{
+  font-family:'IBM Plex Mono',monospace;
+  font-size:90px;
+  font-weight:700;
+}
+
+.r-btns{
+  display:flex;
+  gap:10px;
+  width:100%;
+}
+
+.r-ghost{
+  flex:1;
+  padding:14px;
+  background:transparent;
+  border:1px solid var(--d);
+  color:var(--m);
+  cursor:pointer;
+}
+
+.r-ghost:hover{
+  border-color:var(--t);
+  color:var(--t);
+}
+</style>
+</head>
+<body>
+
+<div id="ss" class="scr on">
+  <div class="s-title">Das Spiel</div>
+  <div class="s-num">50</div> 
+  <div class="s-arrow">↑ ↓</div>
+  <div class="s-desc">
+    Eine Zahl zwischen 1–100.<br>
+    Higher oder Lower — lieg richtig.<br>
+    Jede richtige Antwort = mehr Geld.
+  </div>
+  <div class="bet-options">
+    <div class="bet-opt sel">25</div>
+    <div class="bet-opt">50</div>
+    <div class="bet-opt">100</div>
+  </div>
+  <button class="play-btn">Spielen</button>
+</div>
+
+</body>
+</html>
