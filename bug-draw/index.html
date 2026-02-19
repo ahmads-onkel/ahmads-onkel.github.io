@@ -57,8 +57,8 @@ function generate(text){
 
     path=[];
 
-    for(let y=0;y<400;y+=3){
-        for(let x=0;x<900;x+=3){
+    for(let y=0;y<400;y+=4){
+        for(let x=0;x<900;x+=4){
             let i=(y*900+x)*4;
             if(imageData.data[i+3]>128){
                 path.push({x,y});
@@ -66,8 +66,11 @@ function generate(text){
         }
     }
 
-    // Sort left to right for clean drawing
-    path.sort((a,b)=>a.x-b.x);
+    // Sortiere sauber nach Y und dann X
+    path.sort((a,b)=>{
+        if(a.y === b.y) return a.x - b.x;
+        return a.y - b.y;
+    });
 
     animateBug();
 }
@@ -78,7 +81,7 @@ function animateBug(){
     drawing=true;
 
     let i=0;
-    let current=path[0];
+    let current={...path[0]};
 
     ctx.lineWidth=2;
     ctx.lineCap="round";
@@ -101,7 +104,7 @@ function animateBug(){
             i++;
         } else {
 
-            let speed=2;
+            let speed=3;
 
             let vx=dx/dist*speed;
             let vy=dy/dist*speed;
@@ -112,11 +115,13 @@ function animateBug(){
             current.x+=vx;
             current.y+=vy;
 
-            // Draw trail
-            ctx.beginPath();
-            ctx.moveTo(prevX,prevY);
-            ctx.lineTo(current.x,current.y);
-            ctx.stroke();
+            // Trail nur bei kurzen Abständen
+            if(dist < 10){
+                ctx.beginPath();
+                ctx.moveTo(prevX,prevY);
+                ctx.lineTo(current.x,current.y);
+                ctx.stroke();
+            }
 
             // Draw bug body
             drawBug(current.x,current.y,vx,vy);
