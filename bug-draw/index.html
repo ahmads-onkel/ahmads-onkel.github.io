@@ -8,16 +8,16 @@
 body{
     margin:0;
     background:white;
-    font-family:sans-serif;
     display:flex;
     flex-direction:column;
     align-items:center;
+    font-family:sans-serif;
 }
 
 input{
     margin:40px;
     padding:15px;
-    width:300px;
+    width:350px;
     font-size:18px;
     border:3px solid black;
     outline:none;
@@ -30,92 +30,88 @@ canvas{
 </head>
 <body>
 
-<input id="word" placeholder="type something (cat, dog, tree...)">
-<canvas id="canvas" width="600" height="500"></canvas>
+<input id="prompt" placeholder="type anything and press enter">
+<canvas id="canvas" width="600" height="600"></canvas>
 
 <script>
 const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
-const input = document.getElementById("word");
+const input = document.getElementById("prompt");
 
-let drawing = [];
-let strokeIndex = 0;
-let pointIndex = 0;
-let scale = 1.8;
+let path = [];
 
-input.addEventListener("keydown", function(e){
-    if(e.key === "Enter"){
-        loadDrawing(input.value.toLowerCase());
+input.addEventListener("keydown", (e)=>{
+    if(e.key==="Enter"){
+        generate(input.value);
     }
 });
 
-async function loadDrawing(word){
-    ctx.clearRect(0,0,canvas.width,canvas.height);
+function generate(text){
 
-    try{
-        const res = await fetch(
-            "https://storage.googleapis.com/quickdraw_dataset/full/simplified/" 
-            + word + ".ndjson"
-        );
+    ctx.clearRect(0,0,600,600);
+    path = [];
 
-        if(!res.ok) throw new Error("not found");
-
-        const text = await res.text();
-        const lines = text.trim().split("\n");
-
-        // zufällige Zeichnung auswählen
-        const randomLine = lines[Math.floor(Math.random()*lines.length)];
-        const data = JSON.parse(randomLine);
-
-        drawing = data.drawing;
-        strokeIndex = 0;
-        pointIndex = 0;
-
-        animate();
-
-    }catch{
-        alert("Word not found. Try simple English words like: cat, dog, tree, house, bicycle.");
-    }
-}
-
-function animate(){
-
-    if(strokeIndex >= drawing.length) return;
-
-    const stroke = drawing[strokeIndex];
-    const xs = stroke[0];
-    const ys = stroke[1];
-
-    if(pointIndex >= xs.length-1){
-        strokeIndex++;
-        pointIndex = 0;
-        requestAnimationFrame(animate);
-        return;
+    // Seed aus Text erzeugen
+    let seed = 0;
+    for(let i=0;i<text.length;i++){
+        seed += text.charCodeAt(i);
     }
 
-    let x1 = xs[pointIndex] * scale + 50;
-    let y1 = ys[pointIndex] * scale + 50;
-    let x2 = xs[pointIndex+1] * scale + 50;
-    let y2 = ys[pointIndex+1] * scale + 50;
+    // Pseudo random basierend auf Text
+    function random(){
+        seed = (seed * 9301 + 49297) % 233280;
+        return seed / 233280;
+    }
 
-    // Linie zeichnen
-    ctx.beginPath();
-    ctx.moveTo(x1, y1);
-    ctx.lineTo(x2, y2);
-    ctx.stroke();
+    let x = 300;
+    let y = 300;
 
-    // Käfer zeichnen
-    drawBug(x2, y2);
+    for(let i=0;i<3000;i++){
+        let angle = random() * Math.PI * 2;
+        let distance = random() * 10;
 
-    pointIndex++;
-    requestAnimationFrame(animate);
+        x += Math.cos(angle) * distance;
+        y += Math.sin(angle) * distance;
+
+        // im Canvas bleiben
+        x = Math.max(10, Math.min(590,x));
+        y = Math.max(10, Math.min(590,y));
+
+        path.push({x,y});
+    }
+
+    animateBug();
 }
 
-function drawBug(x, y){
-    ctx.beginPath();
-    ctx.fillStyle = "black";
-    ctx.arc(x, y, 4, 0, Math.PI*2);
-    ctx.fill();
+function animateBug(){
+    let i = 0;
+
+    function step(){
+        if(i >= path.length) return;
+
+        let p = path[i];
+
+        // Linie zeichnen
+        if(i > 0){
+            ctx.beginPath();
+            ctx.moveTo(path[i-1].x, path[i-1].y);
+            ctx.lineTo(p.x, p.y);
+            ctx.strokeStyle = "black";
+            ctx.lineWidth = 1;
+            ctx.stroke();
+        }
+
+        // Käfer zeichnen
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, 4, 0, Math.PI*2);
+        ctx.fillStyle = "black";
+        ctx.fill();
+
+        i++;
+        requestAnimationFrame(step);
+    }
+
+    step();
 }
 </script>
 
