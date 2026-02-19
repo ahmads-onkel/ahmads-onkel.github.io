@@ -1,47 +1,42 @@
 <!DOCTYPE html>
 <html>
 <head>
-<meta charset="UTF-8">
-<title>Bug Draw</title>
-
+<title>Bug Painter</title>
 <style>
 body{
-    margin:0;
-    background:white;
+    background:#eee;
     display:flex;
     flex-direction:column;
     align-items:center;
     font-family:sans-serif;
 }
-
-input{
-    margin:40px;
-    padding:15px;
-    width:350px;
-    font-size:18px;
-    border:3px solid black;
-    outline:none;
-}
-
 canvas{
+    background:white;
     border:2px solid black;
+}
+input{
+    margin:20px;
+    padding:10px;
+    font-size:18px;
+    width:300px;
 }
 </style>
 </head>
 <body>
 
-<input id="prompt" placeholder="type anything and press enter">
+<input id="textInput" placeholder="type something..." />
 <canvas id="canvas" width="600" height="600"></canvas>
 
 <script>
 const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
-const input = document.getElementById("prompt");
+const input = document.getElementById("textInput");
 
 let path = [];
+let drawing = false;
 
-input.addEventListener("keydown", (e)=>{
-    if(e.key==="Enter"){
+input.addEventListener("keydown", e=>{
+    if(e.key === "Enter"){
         generate(input.value);
     }
 });
@@ -49,65 +44,89 @@ input.addEventListener("keydown", (e)=>{
 function generate(text){
 
     ctx.clearRect(0,0,600,600);
-    path = [];
 
-    // Seed aus Text erzeugen
     let seed = 0;
     for(let i=0;i<text.length;i++){
         seed += text.charCodeAt(i);
     }
 
-    // Pseudo random basierend auf Text
     function random(){
         seed = (seed * 9301 + 49297) % 233280;
         return seed / 233280;
     }
 
+    path = [];
+
     let x = 300;
     let y = 300;
 
-    for(let i=0;i<3000;i++){
+    for(let i=0;i<200;i++){
+
         let angle = random() * Math.PI * 2;
-        let distance = random() * 10;
+        let length = 40 + random()*120;
 
-        x += Math.cos(angle) * distance;
-        y += Math.sin(angle) * distance;
+        let newX = x + Math.cos(angle) * length;
+        let newY = y + Math.sin(angle) * length;
 
-        // im Canvas bleiben
-        x = Math.max(10, Math.min(590,x));
-        y = Math.max(10, Math.min(590,y));
+        newX = Math.max(10, Math.min(590,newX));
+        newY = Math.max(10, Math.min(590,newY));
 
-        path.push({x,y});
+        path.push({x:newX, y:newY});
+        x = newX;
+        y = newY;
     }
 
     animateBug();
 }
 
 function animateBug(){
+
+    if(drawing) return;
+    drawing = true;
+
     let i = 0;
+    let currentX = 300;
+    let currentY = 300;
+
+    ctx.lineWidth = 1;
+    ctx.lineCap = "round";
+    ctx.strokeStyle = "black";
 
     function step(){
-        if(i >= path.length) return;
 
-        let p = path[i];
-
-        // Linie zeichnen
-        if(i > 0){
-            ctx.beginPath();
-            ctx.moveTo(path[i-1].x, path[i-1].y);
-            ctx.lineTo(p.x, p.y);
-            ctx.strokeStyle = "black";
-            ctx.lineWidth = 1;
-            ctx.stroke();
+        if(i >= path.length){
+            drawing = false;
+            return;
         }
 
-        // Käfer zeichnen
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, 4, 0, Math.PI*2);
-        ctx.fillStyle = "black";
-        ctx.fill();
+        let target = path[i];
 
-        i++;
+        let dx = target.x - currentX;
+        let dy = target.y - currentY;
+        let dist = Math.sqrt(dx*dx + dy*dy);
+
+        if(dist < 2){
+            i++;
+        } else {
+
+            let speed = 3;
+
+            currentX += dx/dist * speed;
+            currentY += dy/dist * speed;
+
+            ctx.beginPath();
+            ctx.moveTo(currentX, currentY);
+            ctx.lineTo(currentX - dx/dist * speed,
+                       currentY - dy/dist * speed);
+            ctx.stroke();
+
+            // Bug zeichnen (über der Linie)
+            ctx.beginPath();
+            ctx.arc(currentX, currentY, 4, 0, Math.PI*2);
+            ctx.fillStyle = "red";
+            ctx.fill();
+        }
+
         requestAnimationFrame(step);
     }
 
