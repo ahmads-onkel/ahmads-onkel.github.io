@@ -39,15 +39,13 @@ const ctx = canvas.getContext("2d");
 const input = document.getElementById("word");
 
 let drawing = [];
-let currentStroke = 0;
+let strokeIndex = 0;
 let pointIndex = 0;
-let bugX = 0;
-let bugY = 0;
+let scale = 1.8;
 
-input.addEventListener("keydown", async function(e){
+input.addEventListener("keydown", function(e){
     if(e.key === "Enter"){
-        let word = input.value.toLowerCase();
-        loadDrawing(word);
+        loadDrawing(input.value.toLowerCase());
     }
 });
 
@@ -56,59 +54,67 @@ async function loadDrawing(word){
 
     try{
         const res = await fetch(
-          "https://quickdrawfiles.appspot.com/drawing/" + word + "?format=json"
+            "https://storage.googleapis.com/quickdraw_dataset/full/simplified/" 
+            + word + ".ndjson"
         );
-        const data = await res.json();
 
-        drawing = data;
-        currentStroke = 0;
+        if(!res.ok) throw new Error("not found");
+
+        const text = await res.text();
+        const lines = text.trim().split("\n");
+
+        // zufällige Zeichnung auswählen
+        const randomLine = lines[Math.floor(Math.random()*lines.length)];
+        const data = JSON.parse(randomLine);
+
+        drawing = data.drawing;
+        strokeIndex = 0;
         pointIndex = 0;
 
         animate();
 
     }catch{
-        alert("Word not found. Try simple English words like cat, dog, house.");
+        alert("Word not found. Try simple English words like: cat, dog, tree, house, bicycle.");
     }
 }
 
 function animate(){
-    if(currentStroke >= drawing.length) return;
 
-    const stroke = drawing[currentStroke];
+    if(strokeIndex >= drawing.length) return;
+
+    const stroke = drawing[strokeIndex];
     const xs = stroke[0];
     const ys = stroke[1];
 
     if(pointIndex >= xs.length-1){
-        currentStroke++;
+        strokeIndex++;
         pointIndex = 0;
-        animate();
+        requestAnimationFrame(animate);
         return;
     }
 
-    let x1 = xs[pointIndex];
-    let y1 = ys[pointIndex];
-    let x2 = xs[pointIndex+1];
-    let y2 = ys[pointIndex+1];
+    let x1 = xs[pointIndex] * scale + 50;
+    let y1 = ys[pointIndex] * scale + 50;
+    let x2 = xs[pointIndex+1] * scale + 50;
+    let y2 = ys[pointIndex+1] * scale + 50;
 
+    // Linie zeichnen
     ctx.beginPath();
     ctx.moveTo(x1, y1);
     ctx.lineTo(x2, y2);
     ctx.stroke();
 
-    bugX = x2;
-    bugY = y2;
-
-    drawBug();
+    // Käfer zeichnen
+    drawBug(x2, y2);
 
     pointIndex++;
-
     requestAnimationFrame(animate);
 }
 
-function drawBug(){
+function drawBug(x, y){
     ctx.beginPath();
     ctx.fillStyle = "black";
-    ctx.arc(bugX, bugY, 4, 0, Math.PI*2);
+    ctx.arc(x, y, 4, 0, Math.PI*2);
     ctx.fill();
 }
 </script>
