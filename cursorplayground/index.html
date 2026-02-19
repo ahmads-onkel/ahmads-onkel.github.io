@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cursor Playground</title>
+
+<style>
+body {
+  margin: 0;
+  font-family: system-ui, sans-serif;
+  background: #fafafa;
+  height: 100vh;
+  overflow: hidden;
+}
+
+h1 {
+  text-align: center;
+  margin-top: 40px;
+}
+
+.trail {
+  position: fixed;
+  width: 10px;
+  height: 10px;
+  background: #3b82f6;
+  border-radius: 50%;
+  pointer-events: none;
+  opacity: 0.6;
+  transform: translate(-50%, -50%);
+}
+
+a {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  text-decoration: none;
+  color: #3b82f6;
+}
+</style>
+</head>
+<body>
+
+<a href="/">← Zurück</a>
+<h1>Beweg deine Maus.</h1>
+
+<script>
+document.addEventListener("mousemove", (e) => {
+  const dot = document.createElement("div");
+  dot.classList.add("trail");
+  dot.style.left = e.clientX + "px";
+  dot.style.top = e.clientY + "px";
+  document.body.appendChild(dot);
+
+  setTimeout(() => dot.remove(), 300);
+});
+</script>
+
+</body>
+</html>
