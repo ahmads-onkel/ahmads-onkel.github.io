@@ -3,8 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>HIGHER / LOWER</title>
+<title>Higher / Lower</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@500;600;700&display=swap" rel="stylesheet">
 
@@ -14,7 +13,6 @@
 :root{
   --bg:#111;
   --s1:#181818;
-  --s2:#202020;
   --b:#2c2c2c;
   --t:#f0f0f0;
   --m:#777;
@@ -29,124 +27,33 @@ body{
   display:flex;
   align-items:center;
   justify-content:center;
-  overflow:hidden;
 }
 
-/* SCREENS */
-.scr{
-  display:none;
-  flex-direction:column;
-  align-items:center;
-  width:100%;
-  max-width:420px;
-  padding:0 24px;
-}
+.scr{display:none;flex-direction:column;gap:20px;width:100%;max-width:420px;padding:24px;}
 .scr.on{display:flex;}
 
+button{cursor:pointer}
+
 /* START */
-#ss{gap:28px;text-align:center;}
-
-.s-title{
-  font-size:12px;
-  letter-spacing:2px;
-  color:var(--m);
-  text-transform:uppercase;
-  font-weight:500;
-}
-
-.s-num{
-  font-family:'IBM Plex Mono',monospace;
-  font-size:120px;
-  font-weight:700;
-  letter-spacing:-4px;
-}
-
-.s-arrow{
-  font-size:28px;
-  color:var(--d);
-  margin-top:6px;
-}
-
-.s-desc{
-  font-size:13px;
-  line-height:1.6;
-  color:var(--m);
-  max-width:280px;
-}
-
-.bet-options{
-  display:flex;
-  gap:8px;
-  width:100%;
-}
-
-.bet-opt{
-  flex:1;
-  padding:10px 0;
-  background:transparent;
-  color:var(--m);
-  border:1px solid var(--d);
-  font-family:'IBM Plex Mono',monospace;
-  font-weight:600;
-  cursor:pointer;
-  transition:all 0.12s;
-}
-
-.bet-opt:hover{
-  border-color:var(--t);
-  color:var(--t);
-}
-
-.bet-opt.sel{
-  border-color:var(--t);
-  color:var(--t);
-}
-
+.s-title{font-size:12px;letter-spacing:2px;color:var(--m);}
+.s-num{font-family:'IBM Plex Mono',monospace;font-size:110px;font-weight:700;letter-spacing:-4px;text-align:center;}
 .play-btn{
-  width:100%;
-  padding:16px;
+  padding:14px;
   background:var(--t);
-  color:#000;
   border:none;
   font-weight:600;
-  letter-spacing:1px;
-  cursor:pointer;
+  color:#000;
 }
 
 /* GAME */
-#sg{gap:18px;}
-
-.g-top{
-  width:100%;
-  display:flex;
-  justify-content:space-between;
-}
-
-.g-bal-l,.g-streak-l{
-  font-size:11px;
-  color:var(--m);
-}
-
-.g-bal-v,.g-streak-v{
-  font-family:'IBM Plex Mono',monospace;
-  font-size:20px;
-  font-weight:600;
-}
-
-.div{
-  width:100%;
-  height:1px;
-  background:var(--d);
-}
-
+.g-top{display:flex;justify-content:space-between;font-size:13px;color:var(--m);}
+.g-val{font-family:'IBM Plex Mono',monospace;font-size:18px;color:var(--t);}
 .num-card{
-  width:100%;
   background:var(--s1);
   border:1px solid var(--d);
-  padding:36px;
+  padding:40px 0;
   text-align:center;
 }
-
 #cur-num{
   font-family:'IBM Plex Mono',monospace;
   font-size:110px;
@@ -154,18 +61,7 @@ body{
   letter-spacing:-4px;
 }
 
-.num-range{
-  font-size:11px;
-  color:var(--m);
-  margin-top:6px;
-}
-
-.choice-row{
-  display:flex;
-  gap:10px;
-  width:100%;
-}
-
+.choice-row{display:flex;gap:10px;}
 .choice-btn{
   flex:1;
   padding:16px 0;
@@ -173,81 +69,131 @@ body{
   border:1px solid var(--d);
   color:var(--m);
   font-weight:600;
-  cursor:pointer;
 }
-
-.choice-btn:hover{
-  border-color:var(--t);
-  color:var(--t);
-}
+.choice-btn:hover{border-color:var(--t);color:var(--t);}
 
 #cashout-btn{
-  width:100%;
-  padding:14px;
-  background:transparent;
+  padding:12px;
   border:1px solid var(--d);
+  background:transparent;
   color:var(--m);
   font-family:'IBM Plex Mono',monospace;
-  font-weight:600;
-  cursor:pointer;
 }
-
-#cashout-btn.live{
-  border-color:var(--t);
-  color:var(--t);
-}
+#cashout-btn.live{border-color:var(--t);color:var(--t);}
 
 /* RESULT */
-#sr{
-  gap:20px;
-  text-align:center;
-}
-
 .r-big{
   font-family:'IBM Plex Mono',monospace;
-  font-size:90px;
-  font-weight:700;
+  font-size:80px;
+  text-align:center;
 }
-
-.r-btns{
-  display:flex;
-  gap:10px;
-  width:100%;
-}
-
-.r-ghost{
-  flex:1;
-  padding:14px;
-  background:transparent;
-  border:1px solid var(--d);
-  color:var(--m);
-  cursor:pointer;
-}
-
-.r-ghost:hover{
-  border-color:var(--t);
-  color:var(--t);
-}
+.r-btn{padding:12px;border:1px solid var(--d);background:transparent;color:var(--m);}
+.r-btn:hover{border-color:var(--t);color:var(--t);}
 </style>
 </head>
 <body>
 
-<div id="ss" class="scr on">
-  <div class="s-title">Das Spiel</div>
-  <div class="s-num">50</div> 
-  <div class="s-arrow">↑ ↓</div>
-  <div class="s-desc">
-    Eine Zahl zwischen 1–100.<br>
-    Higher oder Lower — lieg richtig.<br>
-    Jede richtige Antwort = mehr Geld.
-  </div>
-  <div class="bet-options">
-    <div class="bet-opt sel">25</div>
-    <div class="bet-opt">50</div>
-    <div class="bet-opt">100</div>
-  </div>
-  <button class="play-btn">Spielen</button>
+<!-- START -->
+<div id="start" class="scr on">
+  <div class="s-title">Higher / Lower</div>
+  <div class="s-num">?</div>
+  <button class="play-btn" onclick="startGame()">Spielen</button>
 </div>
+
+<!-- GAME -->
+<div id="game" class="scr">
+  <div class="g-top">
+    <div>Balance<br><span class="g-val" id="balance">1000</span></div>
+    <div>Streak<br><span class="g-val" id="streak">×1.00</span></div>
+  </div>
+
+  <div class="num-card">
+    <div id="cur-num">50</div>
+  </div>
+
+  <div class="choice-row">
+    <button class="choice-btn" onclick="guess('higher')">Higher</button>
+    <button class="choice-btn" onclick="guess('lower')">Lower</button>
+  </div>
+
+  <button id="cashout-btn" onclick="cashOut()">Cash Out</button>
+</div>
+
+<!-- RESULT -->
+<div id="result" class="scr">
+  <div class="r-big" id="final"></div>
+  <button class="r-btn" onclick="restart()">Nochmal</button>
+</div>
+
+<script>
+const MULT = 1.8;
+let balance = 1000;
+let bet = 50;
+let cur = 50;
+let streak = 0;
+let pot = 0;
+
+function show(id){
+  document.querySelectorAll('.scr').forEach(s=>s.classList.remove('on'));
+  document.getElementById(id).classList.add('on');
+}
+
+function startGame(){
+  balance = 1000;
+  streak = 0;
+  pot = 0;
+  cur = rand();
+  updateUI();
+  show('game');
+}
+
+function rand(){
+  return Math.floor(Math.random()*98)+2;
+}
+
+function guess(dir){
+  const next = rand();
+  const correct = dir==='higher' ? next>cur : next<cur;
+
+  if(correct){
+    streak++;
+    pot = Math.floor(bet*Math.pow(MULT,streak));
+    cur = next;
+  } else {
+    balance -= bet;
+    if(balance<=0){ endGame(); return; }
+    streak = 0;
+    pot = 0;
+    cur = rand();
+  }
+
+  updateUI();
+}
+
+function cashOut(){
+  balance += pot;
+  pot = 0;
+  streak = 0;
+  cur = rand();
+  updateUI();
+}
+
+function updateUI(){
+  document.getElementById('balance').textContent = balance;
+  document.getElementById('streak').textContent = "×"+(Math.pow(MULT,streak)).toFixed(2);
+  document.getElementById('cur-num').textContent = cur;
+  document.getElementById('cashout-btn').classList.toggle('live', streak>0);
+}
+
+function endGame(){
+  document.getElementById('final').textContent = balance;
+  show('result');
+}
+
+function restart(){
+  show('start');
+}
+</script>
 
 </body>
 </html>
