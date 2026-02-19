@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Line Image Generator</title>
+<title>Name Bug</title>
 <style>
 body{
-    background:#111;
+    background:#eaeaea;
     display:flex;
     flex-direction:column;
     align-items:center;
@@ -12,106 +12,150 @@ body{
 }
 canvas{
     background:white;
-    border:2px solid #444;
+    border:3px solid black;
 }
 input{
     margin:20px;
     padding:10px;
-    font-size:20px;
-    width:300px;
+    font-size:24px;
+    width:350px;
 }
 </style>
 </head>
 <body>
 
-<input id="textInput" placeholder="type word and press enter"/>
-<canvas id="canvas" width="700" height="700"></canvas>
+<input id="nameInput" placeholder="Type your name and press Enter">
+<canvas id="canvas" width="900" height="400"></canvas>
 
 <script>
 const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
-const input = document.getElementById("textInput");
+const input = document.getElementById("nameInput");
 
-let points = [];
+let path = [];
 let drawing = false;
 
 input.addEventListener("keydown", e=>{
     if(e.key === "Enter"){
-        generate(input.value);
+        generate(e.target.value);
     }
 });
 
 function generate(text){
 
-    ctx.clearRect(0,0,700,700);
+    ctx.clearRect(0,0,900,400);
 
-    // Text unsichtbar rendern
-    ctx.fillStyle = "black";
-    ctx.font = "bold 200px Arial";
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    ctx.fillText(text,350,350);
+    // Unsichtbaren Text rendern
+    ctx.fillStyle="black";
+    ctx.font="bold 180px Arial";
+    ctx.textAlign="center";
+    ctx.textBaseline="middle";
+    ctx.fillText(text,450,200);
 
-    const imageData = ctx.getImageData(0,0,700,700);
-    ctx.clearRect(0,0,700,700);
+    const imageData = ctx.getImageData(0,0,900,400);
+    ctx.clearRect(0,0,900,400);
 
-    points = [];
+    path=[];
 
-    for(let y=0;y<700;y+=4){
-        for(let x=0;x<700;x+=4){
-            const index = (y*700 + x)*4;
-            const alpha = imageData.data[index+3];
-            if(alpha > 128){
-                points.push({x,y});
+    for(let y=0;y<400;y+=3){
+        for(let x=0;x<900;x+=3){
+            let i=(y*900+x)*4;
+            if(imageData.data[i+3]>128){
+                path.push({x,y});
             }
         }
     }
 
-    shuffle(points);
-    animate();
+    // Sort left to right for clean drawing
+    path.sort((a,b)=>a.x-b.x);
+
+    animateBug();
 }
 
-function shuffle(array){
-    for(let i=array.length-1;i>0;i--){
-        let j=Math.floor(Math.random()*(i+1));
-        [array[i],array[j]]=[array[j],array[i]];
-    }
-}
-
-function animate(){
+function animateBug(){
 
     if(drawing) return;
     drawing=true;
 
-    ctx.lineWidth=1;
+    let i=0;
+    let current=path[0];
+
+    ctx.lineWidth=2;
     ctx.lineCap="round";
     ctx.strokeStyle="black";
 
-    let i=0;
-
     function step(){
 
-        for(let k=0;k<80 && i<points.length;k++,i++){
-
-            let p=points[i];
-
-            ctx.beginPath();
-            ctx.moveTo(p.x,p.y);
-            ctx.lineTo(
-                p.x + (Math.random()-0.5)*20,
-                p.y + (Math.random()-0.5)*20
-            );
-            ctx.stroke();
-        }
-
-        if(i<points.length){
-            requestAnimationFrame(step);
-        } else {
+        if(i>=path.length){
             drawing=false;
+            return;
         }
+
+        let target=path[i];
+
+        let dx=target.x-current.x;
+        let dy=target.y-current.y;
+        let dist=Math.sqrt(dx*dx+dy*dy);
+
+        if(dist<1){
+            i++;
+        } else {
+
+            let speed=2;
+
+            let vx=dx/dist*speed;
+            let vy=dy/dist*speed;
+
+            let prevX=current.x;
+            let prevY=current.y;
+
+            current.x+=vx;
+            current.y+=vy;
+
+            // Draw trail
+            ctx.beginPath();
+            ctx.moveTo(prevX,prevY);
+            ctx.lineTo(current.x,current.y);
+            ctx.stroke();
+
+            // Draw bug body
+            drawBug(current.x,current.y,vx,vy);
+        }
+
+        requestAnimationFrame(step);
     }
 
     step();
+}
+
+function drawBug(x,y,vx,vy){
+
+    let angle=Math.atan2(vy,vx);
+
+    ctx.save();
+    ctx.translate(x,y);
+    ctx.rotate(angle);
+
+    // Body
+    ctx.fillStyle="black";
+    ctx.beginPath();
+    ctx.ellipse(0,0,8,5,0,0,Math.PI*2);
+    ctx.fill();
+
+    // Head
+    ctx.beginPath();
+    ctx.arc(8,0,4,0,Math.PI*2);
+    ctx.fill();
+
+    // Antennae
+    ctx.beginPath();
+    ctx.moveTo(10,-3);
+    ctx.lineTo(14,-8);
+    ctx.moveTo(10,3);
+    ctx.lineTo(14,8);
+    ctx.stroke();
+
+    ctx.restore();
 }
 </script>
 
