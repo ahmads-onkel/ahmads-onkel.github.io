@@ -1,240 +1,57 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Ahmads Spielplatz</title>
 
 <style>
-:root {
-  --bg: #f4f4f4;
-  --card: #ffffff;
-  --accent: #3b82f6;
-  --text: #222;
-}
-
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-  background: var(--bg);
-  color: var(--text);
-  overflow-x: hidden;
+  font-family: system-ui, sans-serif;
+  background: #f4f4f4;
+  display: flex;
+  height: 100vh;
+  align-items: center;
+  justify-content: center;
 }
 
-header {
-  padding: 60px 20px 30px;
+.container {
   text-align: center;
 }
 
 h1 {
-  margin: 0;
-  font-size: 2.3rem;
-  font-weight: 700;
-}
-
-p {
-  opacity: 0.6;
-}
-
-.container {
-  max-width: 900px;
-  margin: auto;
-  padding: 20px;
-  display: grid;
-  gap: 25px;
-}
-
-.card {
-  background: var(--card);
-  padding: 25px;
-  border-radius: 18px;
-  box-shadow: 0 8px 25px rgba(0,0,0,0.05);
-  transition: transform 0.2s ease;
-}
-
-.card:hover {
-  transform: translateY(-3px);
+  margin-bottom: 40px;
 }
 
 button {
-  padding: 10px 18px;
+  padding: 15px 30px;
+  margin: 10px;
+  font-size: 16px;
   border-radius: 12px;
   border: none;
-  background: var(--accent);
-  color: white;
   cursor: pointer;
-  transition: all 0.2s ease;
+  background: #3b82f6;
+  color: white;
+  transition: 0.2s;
 }
 
 button:hover {
-  opacity: 0.9;
-}
-
-input[type="range"] {
-  width: 100%;
-}
-
-.trail {
-  position: fixed;
-  width: 8px;
-  height: 8px;
-  background: var(--accent);
-  border-radius: 50%;
-  pointer-events: none;
-  opacity: 0.6;
-  transform: translate(-50%, -50%);
+  opacity: 0.85;
 }
 </style>
 </head>
 <body>
 
-<header>
-  <h1>Ahmads Spielplatz</h1>
-  <p>hi ahmad war hier haha ok bye</p>
-</header>
-
 <div class="container">
-
-  <!-- Button Ding -->
-  <div class="card">
-    <h3>Dieser Button</h3>
-    <button id="curiousBtn">Nicht drücken</button>
-  </div>
-
-  <!-- Reaktionstest -->
-  <div class="card">
-    <h3>Reaktionstest</h3>
-    <button id="reactionBtn">Start</button>
-    <p id="reactionResult"></p>
-  </div>
-
-  <!-- Chaos -->
-  <div class="card">
-    <h3>Chaos Regler</h3>
-    <input type="range" min="0" max="20" value="0" id="chaosSlider">
-  </div>
-
-  <!-- Cursor Zeug -->
-  <div class="card">
-    <h3>Maus Effekte</h3>
-    <label>
-      <input type="checkbox" id="trailToggle"> Schweif an
-    </label>
-    <br>
-    <label>
-      <input type="checkbox" id="magnetToggle"> Magnet Buttons
-    </label>
-  </div>
-
+  <h1>Ahmads Spielplatz</h1>
+  <button onclick="location.href='/cursorplayground/'">
+    Cursor Playground
+  </button>
+  <button onclick="location.href='/exp/'">
+    Weird Experiments
+  </button>
 </div>
-
-<script>
-
-/* ===========================
-   Button Ding
-=========================== */
-const curiousBtn = document.getElementById("curiousBtn");
-let clickCount = 0;
-
-curiousBtn.addEventListener("click", () => {
-  clickCount++;
-  const messages = [
-    "Bro warum?",
-    "Ich hab doch gesagt nicht drücken.",
-    "Du hörst echt nie zu.",
-    "Respekt für die Ausdauer.",
-    "Okay du hast gewonnen."
-  ];
-  curiousBtn.textContent = messages[clickCount % messages.length];
-});
-
-/* ===========================
-   Reaktionstest
-=========================== */
-const reactionBtn = document.getElementById("reactionBtn");
-const reactionResult = document.getElementById("reactionResult");
-let startTime;
-
-reactionBtn.addEventListener("click", () => {
-  reactionBtn.textContent = "Warte...";
-  reactionBtn.style.background = "#888";
-  reactionResult.textContent = "";
-
-  const delay = Math.random() * 2000 + 1000;
-
-  setTimeout(() => {
-    reactionBtn.textContent = "JETZT KLICKEN!";
-    reactionBtn.style.background = "#16a34a";
-    startTime = Date.now();
-  }, delay);
-});
-
-reactionBtn.addEventListener("mousedown", () => {
-  if (reactionBtn.textContent === "JETZT KLICKEN!") {
-    const reactionTime = Date.now() - startTime;
-    reactionResult.textContent = `Deine Zeit: ${reactionTime} ms`;
-    reactionBtn.textContent = "Nochmal?";
-    reactionBtn.style.background = "var(--accent)";
-  }
-});
-
-/* ===========================
-   Chaos Regler
-=========================== */
-const chaosSlider = document.getElementById("chaosSlider");
-
-chaosSlider.addEventListener("input", () => {
-  const intensity = chaosSlider.value;
-  document.body.style.transform =
-    `rotate(${intensity * 0.1}deg) scale(${1 + intensity * 0.002})`;
-});
-
-/* ===========================
-   Cursor Schweif
-=========================== */
-const trailToggle = document.getElementById("trailToggle");
-let trailEnabled = false;
-
-trailToggle.addEventListener("change", () => {
-  trailEnabled = trailToggle.checked;
-});
-
-document.addEventListener("mousemove", (e) => {
-  if (!trailEnabled) return;
-
-  const dot = document.createElement("div");
-  dot.classList.add("trail");
-  dot.style.left = e.clientX + "px";
-  dot.style.top = e.clientY + "px";
-  document.body.appendChild(dot);
-
-  setTimeout(() => {
-    dot.remove();
-  }, 250);
-});
-
-/* ===========================
-   Magnet Buttons
-=========================== */
-const magnetToggle = document.getElementById("magnetToggle");
-
-document.querySelectorAll("button").forEach(btn => {
-  btn.addEventListener("mousemove", e => {
-    if (!magnetToggle.checked) return;
-
-    const rect = btn.getBoundingClientRect();
-    const x = e.clientX - rect.left - rect.width / 2;
-    const y = e.clientY - rect.top - rect.height / 2;
-
-    btn.style.transform = `translate(${x * 0.2}px, ${y * 0.2}px)`;
-  });
-
-  btn.addEventListener("mouseleave", () => {
-    btn.style.transform = "translate(0, 0)";
-  });
-});
-
-</script>
 
 </body>
 </html>
