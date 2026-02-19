@@ -3,475 +3,245 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AHMAD'S LAB</title>
-<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;600&display=swap" rel="stylesheet">
+<title>Ahmad's Lab</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 <style>
   *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
-  :root {
-    --bg: #03050f;
-    --cyan: #00f5ff;
-    --orange: #ff6b1a;
-    --white: #e0f0ff;
-    --dim: rgba(224,240,255,0.35);
-  }
-
   body {
-    background: var(--bg);
-    font-family: 'Rajdhani', sans-serif;
     min-height: 100vh;
+    background: #f5f5f0;
+    font-family: 'Nunito', sans-serif;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     overflow: hidden;
-    cursor: none;
+    position: relative;
   }
 
-  /* Custom cursor */
-  #cursor {
+  .bubbles {
     position: fixed;
-    width: 10px; height: 10px;
-    background: var(--cyan);
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+  }
+  .bubble {
+    position: absolute;
     border-radius: 50%;
-    pointer-events: none;
-    z-index: 9999;
-    transform: translate(-50%, -50%);
-    transition: width .15s, height .15s;
-    box-shadow: 0 0 16px var(--cyan), 0 0 40px rgba(0,245,255,0.5);
+    background: rgba(0,0,0,0.04);
+    border: 1.5px solid rgba(0,0,0,0.06);
+    animation: float linear infinite;
   }
-  #cursor-ring {
-    position: fixed;
-    width: 38px; height: 38px;
-    border: 1.5px solid rgba(0,245,255,0.45);
-    border-radius: 50%;
-    pointer-events: none;
-    z-index: 9998;
-    transform: translate(-50%, -50%);
-    transition: left .07s, top .07s, width .2s, height .2s;
-  }
-  body:has(.btn:hover) #cursor { width: 20px; height: 20px; }
-  body:has(.btn:hover) #cursor-ring { width: 70px; height: 70px; border-color: rgba(0,245,255,0.8); }
-
-  /* Grid background */
-  .grid {
-    position: fixed;
-    inset: 0;
-    background-image:
-      linear-gradient(rgba(0,245,255,0.04) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(0,245,255,0.04) 1px, transparent 1px);
-    background-size: 70px 70px;
-    animation: gridMove 25s linear infinite;
-  }
-  @keyframes gridMove {
-    to { background-position: 0 70px; }
+  @keyframes float {
+    0%   { transform: translateY(110vh); opacity: 0; }
+    10%  { opacity: 1; }
+    90%  { opacity: 1; }
+    100% { transform: translateY(-20vh); opacity: 0; }
   }
 
-  /* Scanline overlay */
-  .scanlines {
-    position: fixed;
-    inset: 0;
-    background: repeating-linear-gradient(
-      to bottom,
-      transparent 0px,
-      transparent 3px,
-      rgba(0,0,0,0.12) 3px,
-      rgba(0,0,0,0.12) 4px
-    );
-    pointer-events: none;
-    z-index: 100;
-  }
-
-  /* Canvas for particles */
-  canvas {
-    position: fixed;
-    inset: 0;
-    z-index: 1;
-    pointer-events: none;
-  }
-
-  /* Main content */
-  .container {
+  .card {
     position: relative;
     z-index: 10;
-    text-align: center;
+    background: #fff;
+    border-radius: 40px;
+    padding: 52px 60px;
+    box-shadow:
+      0 2px 0 rgba(0,0,0,0.08),
+      0 8px 32px rgba(0,0,0,0.08),
+      0 32px 64px rgba(0,0,0,0.05);
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 60px;
+    gap: 32px;
+    max-width: 500px;
+    width: calc(100vw - 48px);
+    animation: popIn 0.6s cubic-bezier(0.34,1.56,0.64,1) both;
+  }
+  @keyframes popIn {
+    from { opacity: 0; transform: scale(0.88) translateY(20px); }
+    to   { opacity: 1; transform: scale(1) translateY(0); }
   }
 
-  /* Title */
-  .title-block {
+  .header {
+    text-align: center;
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 10px;
-    animation: fadeInDown 1s ease both;
   }
-  @keyframes fadeInDown {
-    from { opacity: 0; transform: translateY(-30px); }
-    to { opacity: 1; transform: translateY(0); }
+  .avatar {
+    width: 70px; height: 70px;
+    background: #111;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    box-shadow: 0 4px 0 #000, 0 8px 20px rgba(0,0,0,0.18);
+    margin-bottom: 2px;
   }
-
-  .eyebrow {
-    font-family: 'Rajdhani', sans-serif;
-    font-size: 12px;
-    letter-spacing: 6px;
-    color: var(--cyan);
-    text-transform: uppercase;
-    opacity: 0.7;
-  }
-
   h1 {
-    font-family: 'Orbitron', sans-serif;
-    font-size: clamp(36px, 7vw, 80px);
+    font-size: 26px;
     font-weight: 900;
-    color: var(--white);
-    letter-spacing: 4px;
-    line-height: 1;
-    text-shadow: 0 0 40px rgba(0,245,255,0.3);
+    color: #111;
+    letter-spacing: -0.5px;
   }
-  h1 span { color: var(--cyan); }
-
-  .subtitle {
-    font-size: 16px;
-    color: var(--dim);
-    letter-spacing: 3px;
-    margin-top: 6px;
+  .sub {
+    font-size: 13px;
+    color: #aaa;
+    font-weight: 700;
   }
 
-  /* Glowing line */
   .divider {
-    width: 200px;
-    height: 1px;
-    background: linear-gradient(to right, transparent, var(--cyan), transparent);
-    box-shadow: 0 0 12px var(--cyan);
-    animation: pulse 2.5s ease-in-out infinite;
-  }
-  @keyframes pulse {
-    0%,100% { opacity: 0.6; }
-    50% { opacity: 1; }
+    width: 100%;
+    height: 1.5px;
+    background: #f0f0ee;
+    border-radius: 2px;
   }
 
-  /* Button wrapper */
   .buttons {
     display: flex;
-    gap: 60px;
-    align-items: center;
-    flex-wrap: wrap;
-    justify-content: center;
-    animation: fadeInUp 1s ease 0.3s both;
+    flex-direction: column;
+    gap: 14px;
+    width: 100%;
+    animation: fadeUp 0.5s ease 0.15s both;
   }
-  @keyframes fadeInUp {
-    from { opacity: 0; transform: translateY(40px); }
-    to { opacity: 1; transform: translateY(0); }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(14px); }
+    to   { opacity: 1; transform: translateY(0); }
   }
 
-  /* The big round buttons */
   .btn {
-    position: relative;
-    width: 200px;
-    height: 200px;
-    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 18px 22px;
+    border-radius: 22px;
+    text-decoration: none;
+    border: 2px solid transparent;
+    transition: transform 0.18s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.18s;
+    cursor: pointer;
+  }
+  .btn:hover  { transform: scale(1.03) translateY(-2px); }
+  .btn:active { transform: scale(0.97); }
+
+  .btn-dark {
+    background: #111;
+    box-shadow: 0 4px 0 #000, 0 8px 24px rgba(0,0,0,0.2);
+  }
+  .btn-dark:hover  { box-shadow: 0 6px 0 #000, 0 12px 32px rgba(0,0,0,0.25); }
+  .btn-dark:active { box-shadow: 0 1px 0 #000; }
+
+  .btn-light {
+    background: #fff;
+    border-color: #e8e8e4;
+    box-shadow: 0 4px 0 #dedede, 0 8px 20px rgba(0,0,0,0.06);
+  }
+  .btn-light:hover  { box-shadow: 0 6px 0 #d4d4d4, 0 12px 28px rgba(0,0,0,0.1); }
+  .btn-light:active { box-shadow: 0 1px 0 #d4d4d4; }
+
+  .btn-icon {
+    width: 46px; height: 46px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    flex-shrink: 0;
+  }
+  .btn-dark  .btn-icon { background: rgba(255,255,255,0.1); }
+  .btn-light .btn-icon { background: #f5f5f0; }
+
+  .btn-text {
+    flex: 1;
     display: flex;
     flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    text-decoration: none;
-    border: none;
-    cursor: none;
-    overflow: visible;
-    transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1);
+    gap: 3px;
   }
-  .btn:hover { transform: scale(1.08) translateY(-6px); }
-  .btn:active { transform: scale(0.96); }
+  .btn-title {
+    font-size: 15px;
+    font-weight: 800;
+    letter-spacing: -0.2px;
+  }
+  .btn-dark  .btn-title { color: #fff; }
+  .btn-light .btn-title { color: #111; }
 
-  /* Rotating ring around button */
-  .btn::before {
-    content: '';
-    position: absolute;
-    inset: -8px;
-    border-radius: 50%;
-    border: 2px dashed transparent;
-    transition: border-color 0.3s;
-    animation: spin 8s linear infinite;
+  .btn-desc {
+    font-size: 12px;
+    font-weight: 600;
   }
-  @keyframes spin { to { transform: rotate(360deg); } }
+  .btn-dark  .btn-desc { color: rgba(255,255,255,0.4); }
+  .btn-light .btn-desc { color: #bbb; }
 
-  .btn:hover::before { border-color: rgba(0,245,255,0.5); }
+  .btn-arrow {
+    font-size: 16px;
+    flex-shrink: 0;
+    transition: transform 0.18s;
+  }
+  .btn-dark  .btn-arrow { color: rgba(255,255,255,0.35); }
+  .btn-light .btn-arrow { color: #ccc; }
+  .btn:hover .btn-arrow { transform: translateX(4px); }
 
-  /* Outer glow ring */
-  .btn::after {
-    content: '';
-    position: absolute;
-    inset: -20px;
-    border-radius: 50%;
-    opacity: 0;
-    transition: opacity 0.3s;
-    filter: blur(20px);
-  }
-  .btn:hover::after { opacity: 1; }
-
-  /* Cyan button */
-  .btn-cyan {
-    background: radial-gradient(circle at 40% 35%, #0a2a40, #020810);
-    box-shadow:
-      0 0 0 1.5px rgba(0,245,255,0.4),
-      0 0 30px rgba(0,245,255,0.15),
-      inset 0 1px 0 rgba(0,245,255,0.2),
-      inset 0 0 40px rgba(0,245,255,0.05);
-  }
-  .btn-cyan:hover {
-    box-shadow:
-      0 0 0 2px rgba(0,245,255,0.8),
-      0 0 60px rgba(0,245,255,0.35),
-      0 20px 60px rgba(0,0,0,0.5),
-      inset 0 1px 0 rgba(0,245,255,0.4),
-      inset 0 0 60px rgba(0,245,255,0.1);
-  }
-  .btn-cyan::after { background: rgba(0,245,255,0.2); }
-
-  /* Orange button */
-  .btn-orange {
-    background: radial-gradient(circle at 40% 35%, #2a1408, #080200);
-    box-shadow:
-      0 0 0 1.5px rgba(255,107,26,0.4),
-      0 0 30px rgba(255,107,26,0.15),
-      inset 0 1px 0 rgba(255,107,26,0.2),
-      inset 0 0 40px rgba(255,107,26,0.05);
-  }
-  .btn-orange:hover {
-    box-shadow:
-      0 0 0 2px rgba(255,107,26,0.9),
-      0 0 60px rgba(255,107,26,0.35),
-      0 20px 60px rgba(0,0,0,0.5),
-      inset 0 1px 0 rgba(255,107,26,0.4),
-      inset 0 0 60px rgba(255,107,26,0.1);
-  }
-  .btn-orange::after { background: rgba(255,107,26,0.2); }
-  .btn-orange::before { animation-direction: reverse; }
-
-  /* Icon */
-  .btn-icon {
-    font-size: 40px;
-    margin-bottom: 10px;
-    transition: transform 0.3s;
-    filter: drop-shadow(0 0 8px currentColor);
-  }
-  .btn:hover .btn-icon { transform: scale(1.2) rotate(-5deg); }
-
-  .btn-label {
-    font-family: 'Orbitron', sans-serif;
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 2px;
-    text-align: center;
-    line-height: 1.4;
-    text-transform: uppercase;
-    padding: 0 20px;
-  }
-  .btn-cyan .btn-label { color: var(--cyan); text-shadow: 0 0 12px var(--cyan); }
-  .btn-orange .btn-label { color: var(--orange); text-shadow: 0 0 12px var(--orange); }
-
-  .btn-sub {
-    font-family: 'Rajdhani', sans-serif;
-    font-size: 10px;
-    letter-spacing: 2px;
-    opacity: 0.5;
-    margin-top: 4px;
-    color: var(--white);
-  }
-
-  /* Connector line between buttons */
-  .connector {
-    width: 60px;
-    height: 1px;
-    background: linear-gradient(to right, var(--cyan), var(--orange));
-    opacity: 0.3;
-    position: relative;
-  }
-  .connector::after {
-    content: '◆';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    font-size: 8px;
-    color: var(--white);
-    opacity: 0.5;
-    background: var(--bg);
-    padding: 0 4px;
-  }
-
-  /* Footer */
   .footer {
-    position: fixed;
-    bottom: 24px;
-    font-size: 11px;
-    letter-spacing: 3px;
-    color: rgba(224,240,255,0.2);
-    animation: fadeInUp 1s ease 0.6s both;
+    font-size: 12px;
+    color: #ccc;
+    font-weight: 700;
+    animation: fadeUp 0.5s ease 0.3s both;
   }
-
-  /* Corner decorations */
-  .corner {
-    position: fixed;
-    width: 40px; height: 40px;
-    opacity: 0.3;
-  }
-  .corner-tl { top: 20px; left: 20px; border-top: 1px solid var(--cyan); border-left: 1px solid var(--cyan); }
-  .corner-tr { top: 20px; right: 20px; border-top: 1px solid var(--cyan); border-right: 1px solid var(--cyan); }
-  .corner-bl { bottom: 20px; left: 20px; border-bottom: 1px solid var(--cyan); border-left: 1px solid var(--cyan); }
-  .corner-br { bottom: 20px; right: 20px; border-bottom: 1px solid var(--cyan); border-right: 1px solid var(--cyan); }
-
-  /* Status dots */
-  .status-bar {
-    display: flex;
-    gap: 20px;
-    align-items: center;
-    animation: fadeInUp 1s ease 0.5s both;
-  }
-  .status-item {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 10px;
-    letter-spacing: 2px;
-    color: var(--dim);
-    text-transform: uppercase;
-  }
-  .dot {
-    width: 6px; height: 6px;
-    border-radius: 50%;
-    animation: blink 1.5s ease-in-out infinite;
-  }
-  .dot-cyan { background: var(--cyan); box-shadow: 0 0 6px var(--cyan); }
-  .dot-orange { background: var(--orange); box-shadow: 0 0 6px var(--orange); animation-delay: 0.75s; }
-  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
 </style>
 </head>
 <body>
 
-<div class="grid"></div>
-<div class="scanlines"></div>
-<canvas id="c"></canvas>
+<div class="bubbles" id="bubbles"></div>
 
-<div id="cursor"></div>
-<div id="cursor-ring"></div>
-
-<div class="corner corner-tl"></div>
-<div class="corner corner-tr"></div>
-<div class="corner corner-bl"></div>
-<div class="corner corner-br"></div>
-
-<div class="container">
-  <div class="title-block">
-    <div class="eyebrow">Ahmad's Digital Universe</div>
-    <h1>THE <span>LAB</span></h1>
-    <div class="subtitle">Choose Your Experiment</div>
+<div class="card">
+  <div class="header">
+    <div class="avatar">🧪</div>
+    <h1>Ahmad's Lab</h1>
+    <div class="sub">Pick your experiment</div>
   </div>
 
   <div class="divider"></div>
 
   <div class="buttons">
-    <a class="btn btn-cyan" href="https://ahmads-onkel.github.io/cursorplayground">
+    <a class="btn btn-dark" href="https://ahmads-onkel.github.io/cursorplayground">
       <div class="btn-icon">🖱️</div>
-      <div class="btn-label">Cursor<br>Playground</div>
-      <div class="btn-sub">PLAY</div>
+      <div class="btn-text">
+        <div class="btn-title">Cursor Playground</div>
+        <div class="btn-desc">Draw, paint & play with particles</div>
+      </div>
+      <div class="btn-arrow">→</div>
     </a>
 
-    <div class="connector"></div>
-
-    <a class="btn btn-orange" href="https://ahmads-onkel.github.io/exp">
+    <a class="btn btn-light" href="https://ahmads-onkel.github.io/exp">
       <div class="btn-icon">⚗️</div>
-      <div class="btn-label">Experimental<br>Lab</div>
-      <div class="btn-sub">EXPLORE</div>
+      <div class="btn-text">
+        <div class="btn-title">Experimental Lab</div>
+        <div class="btn-desc">Physics, gravity & weird stuff</div>
+      </div>
+      <div class="btn-arrow">→</div>
     </a>
   </div>
 
-  <div class="status-bar">
-    <div class="status-item"><div class="dot dot-cyan"></div>Playground Online</div>
-    <div class="status-item"><div class="dot dot-orange"></div>Lab Active</div>
-  </div>
+  <div class="footer">More experiments coming soon ✦</div>
 </div>
 
-<div class="footer">AHMAD'S SPIELPLATZ - MIR WAR LANGWEILIG</div>
-
 <script>
-  // Cursor
-  const cursor = document.getElementById('cursor');
-  const ring = document.getElementById('cursor-ring');
-  let mx = 0, my = 0, rx = 0, ry = 0;
-
-  document.addEventListener('mousemove', e => {
-    mx = e.clientX; my = e.clientY;
-    cursor.style.left = mx + 'px';
-    cursor.style.top = my + 'px';
-  });
-
-  function animRing() {
-    rx += (mx - rx) * 0.12;
-    ry += (my - ry) * 0.12;
-    ring.style.left = rx + 'px';
-    ring.style.top = ry + 'px';
-    requestAnimationFrame(animRing);
+  const container = document.getElementById('bubbles');
+  for (let i = 0; i < 18; i++) {
+    const b = document.createElement('div');
+    b.className = 'bubble';
+    const size = 28 + Math.random() * 110;
+    b.style.cssText = `
+      width:${size}px; height:${size}px;
+      left:${Math.random()*100}%;
+      bottom:-${size}px;
+      animation-duration:${8+Math.random()*14}s;
+      animation-delay:-${Math.random()*18}s;
+    `;
+    container.appendChild(b);
   }
-  animRing();
-
-  // Particle background
-  const canvas = document.getElementById('c');
-  const ctx = canvas.getContext('2d');
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
-  window.addEventListener('resize', () => {
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-  });
-
-  const particles = Array.from({length: 60}, () => ({
-    x: Math.random() * canvas.width,
-    y: Math.random() * canvas.height,
-    r: Math.random() * 1.5 + 0.3,
-    vx: (Math.random() - 0.5) * 0.3,
-    vy: (Math.random() - 0.5) * 0.3,
-    alpha: Math.random() * 0.5 + 0.1,
-    color: Math.random() > 0.5 ? '0,245,255' : '255,107,26'
-  }));
-
-  function draw() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    particles.forEach(p => {
-      p.x += p.vx; p.y += p.vy;
-      if (p.x < 0) p.x = canvas.width;
-      if (p.x > canvas.width) p.x = 0;
-      if (p.y < 0) p.y = canvas.height;
-      if (p.y > canvas.height) p.y = 0;
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-      ctx.fillStyle = `rgba(${p.color},${p.alpha})`;
-      ctx.fill();
-    });
-
-    // Draw connecting lines between nearby particles
-    for (let i = 0; i < particles.length; i++) {
-      for (let j = i + 1; j < particles.length; j++) {
-        const dx = particles[i].x - particles[j].x;
-        const dy = particles[i].y - particles[j].y;
-        const dist = Math.sqrt(dx * dx + dy * dy);
-        if (dist < 120) {
-          ctx.beginPath();
-          ctx.moveTo(particles[i].x, particles[i].y);
-          ctx.lineTo(particles[j].x, particles[j].y);
-          ctx.strokeStyle = `rgba(0,245,255,${0.08 * (1 - dist/120)})`;
-          ctx.lineWidth = 0.5;
-          ctx.stroke();
-        }
-      }
-    }
-    requestAnimationFrame(draw);
-  }
-  draw();
 </script>
 </body>
 </html>
