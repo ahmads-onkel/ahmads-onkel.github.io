@@ -1,998 +1,240 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="de">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>Mouse Arena</title>
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@400;600;700&display=swap" rel="stylesheet">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Ahmads Spielplatz</title>
+
 <style>
-* { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #f4f4f4;
+  --card: #ffffff;
+  --accent: #3b82f6;
+  --text: #222;
+}
 
 body {
-  background: #111;
-  font-family: 'Barlow Condensed', sans-serif;
-  color: #ddd;
-  overflow: hidden;
-  height: 100vh;
-  width: 100vw;
-  cursor: none;
-  user-select: none;
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  overflow-x: hidden;
 }
 
-/* ── ARENA ── */
-#arena {
-  position: fixed;
-  inset: 0;
-  background-color: #161616;
-  background-image:
-    linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
-  background-size: 40px 40px;
-}
-
-/* dirty corner stains */
-#arena::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  background:
-    radial-gradient(ellipse at 0% 0%,   rgba(0,0,0,0.6) 0%, transparent 50%),
-    radial-gradient(ellipse at 100% 0%,  rgba(0,0,0,0.6) 0%, transparent 50%),
-    radial-gradient(ellipse at 0% 100%,  rgba(0,0,0,0.6) 0%, transparent 50%),
-    radial-gradient(ellipse at 100% 100%,rgba(0,0,0,0.6) 0%, transparent 50%);
-  pointer-events: none;
-}
-
-/* ── WALLS ── */
-.wall {
-  position: absolute;
-  background: #2a2a2a;
-  border: 2px solid #333;
-}
-
-/* ── MENU ── */
-#menu {
-  position: fixed;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 200;
-  background: #0e0e0e;
-}
-
-.card {
-  width: 92%;
-  max-width: 400px;
-  border: 2px solid #2e2e2e;
-  background: #141414;
-  padding: 44px 36px 36px;
-}
-
-.card-title {
-  font-family: 'Bebas Neue', sans-serif;
-  font-size: 62px;
-  letter-spacing: 4px;
-  color: #fff;
-  line-height: 1;
-  margin-bottom: 2px;
-}
-
-.card-sub {
-  font-size: 13px;
-  letter-spacing: 3px;
-  text-transform: uppercase;
-  color: #555;
-  margin-bottom: 32px;
-  font-weight: 600;
-}
-
-.divider {
-  height: 2px;
-  background: #222;
-  margin-bottom: 28px;
-}
-
-.field { margin-bottom: 16px; }
-
-.field label {
-  display: block;
-  font-size: 11px;
-  letter-spacing: 3px;
-  text-transform: uppercase;
-  color: #555;
-  margin-bottom: 6px;
-  font-weight: 700;
-}
-
-.field input {
-  width: 100%;
-  background: #1c1c1c;
-  border: 1px solid #2e2e2e;
-  border-bottom: 2px solid #333;
-  padding: 12px 14px;
-  color: #eee;
-  font-family: 'Barlow Condensed', sans-serif;
-  font-size: 18px;
-  font-weight: 600;
-  outline: none;
-  transition: border-color 0.15s;
-  letter-spacing: 1px;
-}
-
-.field input:focus {
-  border-color: #555;
-  border-bottom-color: #aaa;
-  background: #202020;
-}
-
-.field input::placeholder { color: #3a3a3a; }
-
-#privField { display: none; }
-
-.btn-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px;
-  margin-top: 20px;
-}
-
-.btn-row-full {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px;
-  margin-top: 8px;
-  display: none;
-}
-
-.btn {
-  padding: 14px;
-  border: none;
-  font-family: 'Bebas Neue', sans-serif;
-  font-size: 20px;
-  letter-spacing: 2px;
-  cursor: pointer;
-  transition: all 0.1s;
-}
-
-.btn-main {
-  background: #eee;
-  color: #111;
-}
-.btn-main:hover { background: #fff; }
-.btn-main:active { transform: scale(0.97); }
-
-.btn-sec {
-  background: transparent;
-  color: #aaa;
-  border: 1px solid #333;
-}
-.btn-sec:hover { border-color: #666; color: #ddd; }
-
-.back-btn {
-  display: none;
-  margin-top: 10px;
-  width: 100%;
-  background: transparent;
-  border: none;
-  color: #444;
-  font-family: 'Barlow Condensed', sans-serif;
-  font-size: 12px;
-  letter-spacing: 3px;
-  text-transform: uppercase;
-  cursor: pointer;
-  padding: 6px;
-  font-weight: 700;
-}
-.back-btn:hover { color: #888; }
-
-.room-badge {
-  margin-top: 14px;
-  padding: 10px 14px;
-  background: #1c1c1c;
-  border-left: 3px solid #555;
-  font-size: 14px;
-  letter-spacing: 2px;
-  color: #aaa;
-  display: none;
-  font-weight: 700;
-}
-
-.status-msg {
-  margin-top: 12px;
-  font-size: 12px;
-  letter-spacing: 2px;
-  color: #555;
-  min-height: 18px;
-  font-weight: 700;
-  text-transform: uppercase;
-}
-
-/* ── HUD ── */
-#hud {
-  position: fixed;
-  top: 0; right: 0;
-  z-index: 50;
-  display: none;
-  background: #111;
-  border-left: 2px solid #222;
-  border-bottom: 2px solid #222;
-  padding: 14px 22px 12px;
-  text-align: right;
-  min-width: 110px;
-}
-
-.hud-kills {
-  font-family: 'Bebas Neue', sans-serif;
-  font-size: 52px;
-  color: #fff;
-  line-height: 1;
-}
-
-.hud-label {
-  font-size: 11px;
-  letter-spacing: 4px;
-  text-transform: uppercase;
-  color: #444;
-  font-weight: 700;
-}
-
-.hud-room {
-  font-size: 10px;
-  color: #333;
-  letter-spacing: 2px;
-  margin-top: 8px;
-  text-transform: uppercase;
-  font-weight: 700;
-}
-
-/* ── KILL FEED ── */
-#killfeed {
-  position: fixed;
-  top: 0; left: 0;
-  z-index: 50;
-  pointer-events: none;
-  display: none;
-  max-width: 300px;
-}
-
-.kf {
-  background: #111;
-  border-bottom: 1px solid #222;
-  border-right: 2px solid #333;
-  padding: 9px 14px;
-  font-size: 14px;
-  font-weight: 700;
-  letter-spacing: 0.5px;
-  animation: kfSlide 0.2s ease, kfFade 0.4s ease 3s forwards;
-  white-space: nowrap;
-}
-
-@keyframes kfSlide { from{transform:translateX(-100%)} to{transform:translateX(0)} }
-@keyframes kfFade  { to{opacity:0} }
-
-/* ── PLAYER COUNT ── */
-#pcount {
-  position: fixed;
-  top: 0; left: 0;
-  z-index: 50;
-  display: none;
-  background: #111;
-  border-right: 2px solid #222;
-  border-bottom: 2px solid #222;
-  padding: 8px 14px;
-  font-size: 12px;
-  letter-spacing: 3px;
-  text-transform: uppercase;
-  color: #444;
-  font-weight: 700;
-}
-
-/* ── SCOREBOARD ── */
-#scoreboard {
-  position: fixed;
-  top: 50%; left: 50%;
-  transform: translate(-50%, -50%);
-  z-index: 100;
-  background: #111;
-  border: 2px solid #2e2e2e;
-  padding: 28px 32px;
-  min-width: 320px;
-  display: none;
-}
-
-.sb-head {
-  font-family: 'Bebas Neue', sans-serif;
-  font-size: 32px;
-  letter-spacing: 4px;
-  color: #fff;
-  margin-bottom: 4px;
-}
-
-.sb-divider {
-  height: 2px;
-  background: #222;
-  margin-bottom: 16px;
-}
-
-.sb-row {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 8px 0;
-  border-bottom: 1px solid #1e1e1e;
-}
-
-.sb-num  { font-size: 13px; color: #444; width: 18px; font-weight: 700; }
-.sb-dot  { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
-.sb-name { flex: 1; font-size: 18px; font-weight: 700; letter-spacing: 1px; }
-.sb-k    { font-family: 'Bebas Neue', sans-serif; font-size: 28px; color: #fff; }
-
-.sb-hint {
-  margin-top: 14px;
-  font-size: 11px;
-  color: #333;
-  letter-spacing: 3px;
-  text-transform: uppercase;
-  font-weight: 700;
+header {
+  padding: 60px 20px 30px;
   text-align: center;
 }
 
-/* ── RESPAWN ── */
-#respawn {
-  position: fixed;
-  inset: 0;
-  display: none;
-  align-items: center;
-  justify-content: center;
-  flex-direction: column;
-  background: rgba(0,0,0,0.85);
-  z-index: 150;
-}
-
-.rsp-text {
-  font-family: 'Bebas Neue', sans-serif;
-  font-size: 18px;
-  letter-spacing: 8px;
-  color: #555;
-  margin-bottom: 8px;
-}
-
-.rsp-num {
-  font-family: 'Bebas Neue', sans-serif;
-  font-size: 120px;
-  color: #fff;
-  line-height: 1;
-  animation: blink 1s step-start infinite;
-}
-
-@keyframes blink { 50%{opacity:0.2} }
-
-/* ── PLAYERS ── */
-.pw {
-  position: absolute;
-  pointer-events: none;
-  transform: translate(-50%, -50%);
-  will-change: left, top;
-}
-
-.pname {
-  position: absolute;
-  top: -24px;
-  left: 50%;
-  transform: translateX(-50%);
-  font-size: 13px;
+h1 {
+  margin: 0;
+  font-size: 2.3rem;
   font-weight: 700;
-  white-space: nowrap;
-  letter-spacing: 1px;
-  text-transform: uppercase;
-  text-shadow: 1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000;
 }
 
-.psvg {
-  display: block;
-  transform-origin: center center;
+p {
+  opacity: 0.6;
 }
 
-.shield {
-  position: absolute;
-  top: 50%; left: 50%;
-  transform: translate(-50%, -50%);
-  width: 54px; height: 54px;
+.container {
+  max-width: 900px;
+  margin: auto;
+  padding: 20px;
+  display: grid;
+  gap: 25px;
+}
+
+.card {
+  background: var(--card);
+  padding: 25px;
+  border-radius: 18px;
+  box-shadow: 0 8px 25px rgba(0,0,0,0.05);
+  transition: transform 0.2s ease;
+}
+
+.card:hover {
+  transform: translateY(-3px);
+}
+
+button {
+  padding: 10px 18px;
+  border-radius: 12px;
+  border: none;
+  background: var(--accent);
+  color: white;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+button:hover {
+  opacity: 0.9;
+}
+
+input[type="range"] {
+  width: 100%;
+}
+
+.trail {
+  position: fixed;
+  width: 8px;
+  height: 8px;
+  background: var(--accent);
   border-radius: 50%;
-  border: 2px dashed #888;
-  animation: spin 2s linear infinite;
   pointer-events: none;
-}
-
-@keyframes spin { to { transform: translate(-50%,-50%) rotate(360deg); } }
-
-/* ── CURSOR ── */
-#cursor {
-  position: fixed;
-  width: 14px; height: 14px;
-  pointer-events: none;
+  opacity: 0.6;
   transform: translate(-50%, -50%);
-  z-index: 999;
-}
-
-#cursor::before, #cursor::after {
-  content: '';
-  position: absolute;
-  background: #fff;
-}
-#cursor::before { width: 2px; height: 14px; left: 6px; top: 0; }
-#cursor::after  { width: 14px; height: 2px; left: 0; top: 6px; }
-
-/* ── JOYSTICK ── */
-#joystick {
-  position: fixed;
-  bottom: 32px; left: 32px;
-  width: 120px; height: 120px;
-  border-radius: 50%;
-  background: rgba(255,255,255,0.04);
-  border: 2px solid #2e2e2e;
-  display: none;
-  touch-action: none;
-  z-index: 50;
-}
-
-#stick {
-  width: 48px; height: 48px;
-  background: #2e2e2e;
-  border: 2px solid #555;
-  border-radius: 50%;
-  position: absolute;
-  top: 36px; left: 36px;
-}
-
-/* ── TAB HINT ── */
-#tabHint {
-  position: fixed;
-  bottom: 16px; left: 50%;
-  transform: translateX(-50%);
-  font-size: 11px; letter-spacing: 3px;
-  color: #2e2e2e; text-transform: uppercase;
-  font-weight: 700; pointer-events: none; display: none;
-}
-
-/* ── DEATH FLASH ── */
-#dflash {
-  position: fixed; inset: 0;
-  background: rgba(200,0,0,0.35);
-  opacity: 0; pointer-events: none;
-  z-index: 140; transition: opacity 0.07s;
 }
 </style>
 </head>
 <body>
 
-<div id="arena"></div>
+<header>
+  <h1>Ahmads Spielplatz</h1>
+  <p>hi ahmad war hier haha ok bye</p>
+</header>
 
-<!-- MENU -->
-<div id="menu">
+<div class="container">
+
+  <!-- Button Ding -->
   <div class="card">
-    <div class="card-title">Mouse<br>Arena</div>
-    <div class="card-sub">Up to 8 players · eat or be eaten</div>
-    <div class="divider"></div>
-
-    <div class="field">
-      <label>Your Name</label>
-      <input id="nameInput" placeholder="ANONYMOUS" maxlength="14" autocomplete="off">
-    </div>
-
-    <div class="field" id="privField">
-      <label>Room Code</label>
-      <input id="roomInput" placeholder="TYPE CODE HERE" maxlength="10"
-        style="text-transform:uppercase;letter-spacing:3px" autocomplete="off">
-    </div>
-
-    <div class="room-badge" id="roomBadge"></div>
-
-    <!-- Public buttons -->
-    <div class="btn-row" id="pubBtns">
-      <button class="btn btn-main" onclick="joinPublic()">PLAY NOW</button>
-      <button class="btn btn-sec"  onclick="showPrivate()">PRIVATE</button>
-    </div>
-
-    <!-- Private buttons -->
-    <div class="btn-row" id="privBtns" style="display:none">
-      <button class="btn btn-main" onclick="doCreate()">CREATE</button>
-      <button class="btn btn-sec"  onclick="doJoin()">JOIN</button>
-    </div>
-
-    <button class="back-btn" id="backBtn" onclick="hidePrivate()">← Back to public</button>
-    <div class="status-msg" id="statusMsg"></div>
+    <h3>Dieser Button</h3>
+    <button id="curiousBtn">Nicht drücken</button>
   </div>
+
+  <!-- Reaktionstest -->
+  <div class="card">
+    <h3>Reaktionstest</h3>
+    <button id="reactionBtn">Start</button>
+    <p id="reactionResult"></p>
+  </div>
+
+  <!-- Chaos -->
+  <div class="card">
+    <h3>Chaos Regler</h3>
+    <input type="range" min="0" max="20" value="0" id="chaosSlider">
+  </div>
+
+  <!-- Cursor Zeug -->
+  <div class="card">
+    <h3>Maus Effekte</h3>
+    <label>
+      <input type="checkbox" id="trailToggle"> Schweif an
+    </label>
+    <br>
+    <label>
+      <input type="checkbox" id="magnetToggle"> Magnet Buttons
+    </label>
+  </div>
+
 </div>
 
-<!-- HUD -->
-<div id="hud">
-  <div class="hud-kills" id="killNum">0</div>
-  <div class="hud-label">KILLS</div>
-  <div class="hud-room"  id="roomLbl"></div>
-</div>
+<script>
 
-<!-- Kill feed -->
-<div id="killfeed"></div>
+/* ===========================
+   Button Ding
+=========================== */
+const curiousBtn = document.getElementById("curiousBtn");
+let clickCount = 0;
 
-<!-- Player count -->
-<div id="pcount">0/8</div>
-
-<!-- Scoreboard -->
-<div id="scoreboard">
-  <div class="sb-head">Scores</div>
-  <div class="sb-divider"></div>
-  <div id="sbList"></div>
-  <div class="sb-hint">Release TAB to close</div>
-</div>
-
-<!-- Respawn -->
-<div id="respawn">
-  <div class="rsp-text">YOU GOT EATEN</div>
-  <div class="rsp-num" id="rspNum">3</div>
-</div>
-
-<!-- Misc -->
-<div id="cursor"></div>
-<div id="joystick"><div id="stick"></div></div>
-<div id="tabHint">TAB — Scoreboard</div>
-<div id="dflash"></div>
-
-<script type="module">
-import { initializeApp }   from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
-import { getDatabase, ref, set, get, onValue, onDisconnect, remove }
-  from "https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js";
-
-/* ── Firebase ── */
-const db = getDatabase(initializeApp({
-  apiKey: "AIzaSyB8eIlsvx6fz7RaVy1EeRSgqVsopqyoeyI",
-  authDomain: "ahmad-5ea27.firebaseapp.com",
-  databaseURL: "https://ahmad-5ea27-default-rtdb.firebaseio.com",
-  projectId: "ahmad-5ea27",
-  storageBucket: "ahmad-5ea27.firebasestorage.app",
-  messagingSenderId: "168368947306",
-  appId: "1:168368947306:web:605abc8ba0b91acfad4a13"
-}));
-
-/* ── Constants ── */
-const COLORS = ['#e05555','#55b855','#5588e0','#e0b855','#a055e0','#e07830','#40c8c8','#c8c840'];
-const PID    = 'p_' + Date.now().toString(36) + Math.random().toString(36).slice(2,5);
-const COLOR  = COLORS[Math.floor(Math.random() * COLORS.length)];
-const SPEED  = 0.15;
-const RADIUS = 22; // collision radius
-
-/* ── State ── */
-let roomId = '', pRef;
-let players = {};
-let x = 400, y = 300, tx = 400, ty = 300, px = 400, py = 300;
-let angle = 0, kills = 0;
-let alive = true, spawnProt = true, hasWritten = false;
-let joyDX = 0, joyDY = 0, lastUp = 0;
-let _name = 'Mouse';
-let WALLS = [];
-
-/* ─────────────────────────────────────────
-   WALLS
-───────────────────────────────────────── */
-function buildWalls() {
-  document.querySelectorAll('.wall').forEach(e => e.remove());
-  const W = innerWidth, H = innerHeight;
-
-  WALLS = [
-    /* top-left box */
-    { x:160,   y:130,   w:200, h:14 },
-    { x:160,   y:130,   w:14,  h:180 },
-    /* top-right box */
-    { x:W-360, y:130,   w:200, h:14 },
-    { x:W-174, y:130,   w:14,  h:180 },
-    /* bottom-left box */
-    { x:160,   y:H-144, w:200, h:14 },
-    { x:160,   y:H-320, w:14,  h:180 },
-    /* bottom-right box */
-    { x:W-360, y:H-144, w:200, h:14 },
-    { x:W-174, y:H-320, w:14,  h:180 },
-    /* centre cross */
-    { x:W/2-100, y:H/2-7, w:200, h:14 },
-    { x:W/2-7, y:H/2-100, w:14, h:200 },
+curiousBtn.addEventListener("click", () => {
+  clickCount++;
+  const messages = [
+    "Bro warum?",
+    "Ich hab doch gesagt nicht drücken.",
+    "Du hörst echt nie zu.",
+    "Respekt für die Ausdauer.",
+    "Okay du hast gewonnen."
   ];
+  curiousBtn.textContent = messages[clickCount % messages.length];
+});
 
-  WALLS.forEach(w => {
-    const d = document.createElement('div');
-    d.className = 'wall';
-    d.style.cssText = `left:${w.x}px;top:${w.y}px;width:${w.w}px;height:${w.h}px`;
-    document.body.appendChild(d);
-  });
-}
+/* ===========================
+   Reaktionstest
+=========================== */
+const reactionBtn = document.getElementById("reactionBtn");
+const reactionResult = document.getElementById("reactionResult");
+let startTime;
 
-/* ─────────────────────────────────────────
-   MOUSE SVG
-───────────────────────────────────────── */
-function shade(hex, n) {
-  const h = hex.replace('#','').replace(/^(.)(.)(.)$/,'$1$1$2$2$3$3');
-  return '#' + [0,2,4].map(i =>
-    Math.min(255,Math.max(0,parseInt(h.slice(i,i+2),16)+n)).toString(16).padStart(2,'0')
-  ).join('');
-}
+reactionBtn.addEventListener("click", () => {
+  reactionBtn.textContent = "Warte...";
+  reactionBtn.style.background = "#888";
+  reactionResult.textContent = "";
 
-function mouseSVG(col) {
-  const dark  = shade(col, -40);
-  const light = shade(col,  30);
-  const pink  = '#d4748c';
+  const delay = Math.random() * 2000 + 1000;
 
-  return `<svg class="psvg" xmlns="http://www.w3.org/2000/svg"
-      viewBox="-26 -22 52 34" width="52" height="34">
-    <!-- tail -->
-    <path d="M-20 6 Q-32 -2 -24 -16"
-      stroke="${dark}" stroke-width="3" fill="none"
-      stroke-linecap="round" opacity="0.7"/>
-
-    <!-- body -->
-    <ellipse cx="-5" cy="4" rx="15" ry="10" fill="${col}"/>
-
-    <!-- head -->
-    <circle cx="10" cy="1" r="11" fill="${col}"/>
-
-    <!-- left ear (back) -->
-    <ellipse cx="5" cy="-13" rx="7" ry="7" fill="${dark}"/>
-    <ellipse cx="5" cy="-13" rx="4" ry="4" fill="${pink}" opacity="0.6"/>
-
-    <!-- right ear -->
-    <ellipse cx="16" cy="-12" rx="6" ry="6" fill="${dark}"/>
-    <ellipse cx="16" cy="-12" rx="3.5" ry="3.5" fill="${pink}" opacity="0.6"/>
-
-    <!-- body highlight -->
-    <ellipse cx="-6" cy="1" rx="6" ry="4" fill="${light}" opacity="0.2"/>
-    <ellipse cx="10" cy="-2" rx="5" ry="4" fill="${light}" opacity="0.15"/>
-
-    <!-- eye -->
-    <circle cx="14" cy="-1" r="2.8" fill="#111"/>
-    <circle cx="15" cy="-2" r="1"   fill="#fff"/>
-
-    <!-- nose -->
-    <ellipse cx="21" cy="2" rx="2.2" ry="1.6" fill="${pink}"/>
-
-    <!-- whiskers -->
-    <line x1="19" y1="1"   x2="27" y2="-2" stroke="${light}" stroke-width="0.8" opacity="0.5"/>
-    <line x1="19" y1="2"   x2="27" y2="5"  stroke="${light}" stroke-width="0.8" opacity="0.5"/>
-    <line x1="19" y1="1.5" x2="27" y2="1.5" stroke="${light}" stroke-width="0.8" opacity="0.5"/>
-
-    <!-- feet -->
-    <ellipse cx="-14" cy="11" rx="4" ry="2.5" fill="${dark}" opacity="0.8"/>
-    <ellipse cx="-6"  cy="13" rx="4" ry="2.5" fill="${dark}" opacity="0.8"/>
-    <ellipse cx="2"   cy="13" rx="4" ry="2.5" fill="${dark}" opacity="0.8"/>
-  </svg>`;
-}
-
-/* ─────────────────────────────────────────
-   SPAWN
-───────────────────────────────────────── */
-function randSpawn() {
-  const W = innerWidth, H = innerHeight;
-  const pts = [
-    {x:80,y:80},{x:W-80,y:80},{x:80,y:H-80},{x:W-80,y:H-80},
-    {x:W/2,y:80},{x:W/2,y:H-80},{x:80,y:H/2},{x:W-80,y:H/2}
-  ];
-  return pts[Math.floor(Math.random()*pts.length)];
-}
-
-/* ─────────────────────────────────────────
-   MENU
-───────────────────────────────────────── */
-window.showPrivate = () => {
-  document.getElementById('privField').style.display = 'block';
-  document.getElementById('pubBtns').style.display   = 'none';
-  document.getElementById('privBtns').style.display  = 'grid';
-  document.getElementById('backBtn').style.display   = 'block';
-  document.getElementById('roomBadge').style.display = 'none';
-  document.getElementById('statusMsg').textContent   = '';
-};
-
-window.hidePrivate = () => {
-  document.getElementById('privField').style.display = 'none';
-  document.getElementById('pubBtns').style.display   = 'grid';
-  document.getElementById('privBtns').style.display  = 'none';
-  document.getElementById('backBtn').style.display   = 'none';
-  document.getElementById('roomBadge').style.display = 'none';
-  document.getElementById('statusMsg').textContent   = '';
-};
-
-window.doCreate = () => {
-  let code = document.getElementById('roomInput').value.trim().toUpperCase().replace(/\s/g,'');
-  if (!code) code = Math.random().toString(36).slice(2,8).toUpperCase();
-  document.getElementById('roomInput').value = code;
-  const badge = document.getElementById('roomBadge');
-  badge.textContent = '📋 Share code: ' + code;
-  badge.style.display = 'block';
-  roomId = 'priv_' + code;
-  go(document.getElementById('nameInput').value.trim() || 'Mouse');
-};
-
-window.doJoin = () => {
-  const code = document.getElementById('roomInput').value.trim().toUpperCase().replace(/\s/g,'');
-  if (!code) { document.getElementById('statusMsg').textContent = 'TYPE A CODE FIRST'; return; }
-  roomId = 'priv_' + code;
-  go(document.getElementById('nameInput').value.trim() || 'Mouse');
-};
-
-window.joinPublic = async () => {
-  document.getElementById('statusMsg').textContent = 'Finding room...';
-  document.getElementById('pubBtns').style.pointerEvents = 'none';
-  roomId = await findRoom();
-  go(document.getElementById('nameInput').value.trim() || 'Mouse');
-};
-
-async function findRoom() {
-  try {
-    const snap = await get(ref(db, 'rooms'));
-    const all  = snap.val() || {};
-    for (let i = 1; i <= 30; i++) {
-      const rid = 'pub_' + i;
-      if (all[rid]?.players) {
-        const n = Object.keys(all[rid].players).length;
-        if (n >= 1 && n < 8) return rid;
-      }
-    }
-    for (let i = 1; i <= 30; i++) {
-      if (!all['pub_' + i]) return 'pub_' + i;
-    }
-  } catch(e) { console.warn(e); }
-  return 'pub_1';
-}
-
-/* ─────────────────────────────────────────
-   START GAME
-───────────────────────────────────────── */
-function go(name) {
-  _name = name;
-  hasWritten = false;
-
-  document.getElementById('menu').style.display   = 'none';
-  document.getElementById('hud').style.display    = 'block';
-  document.getElementById('killfeed').style.display = 'block';
-  document.getElementById('pcount').style.display = 'block';
-  document.getElementById('tabHint').style.display = 'block';
-  document.getElementById('roomLbl').textContent  =
-    roomId.startsWith('pub_') ? 'PUBLIC #' + roomId.replace('pub_','') : roomId.replace('priv_','');
-
-  buildWalls();
-  const sp = randSpawn();
-  x=sp.x; y=sp.y; tx=x; ty=y; px=x; py=y;
-  kills=0; alive=true; spawnProt=true;
-
-  pRef = ref(db, `rooms/${roomId}/players/${PID}`);
-  onDisconnect(pRef).remove();
-
-  /* Write self first, THEN listen — prevents false death on first snapshot */
-  set(pRef, { x:Math.round(x), y:Math.round(y), color:COLOR, name:_name, kills:0, angle:0, sp:true })
-    .then(() => { hasWritten = true; });
-
-  onValue(ref(db, `rooms/${roomId}/players`), snap => {
-    const data = snap.val() || {};
-
-    if (hasWritten && alive && !data[PID]) die();
-
-    players = data;
-    drawOthers();
-    refreshSB();
-    document.getElementById('pcount').textContent = Object.keys(data).length + '/8 mice';
-  });
-
-  requestAnimationFrame(loop);
-  setTimeout(() => { spawnProt = false; }, 2000);
-  if ('ontouchstart' in window) setupJoy();
-}
-
-/* ─────────────────────────────────────────
-   GAME LOOP
-───────────────────────────────────────── */
-function loop(ts) {
-  requestAnimationFrame(loop);
-  if (!alive) return;
-
-  /* movement */
-  if ('ontouchstart' in window) { x += joyDX; y += joyDY; }
-  else { x += (tx-x)*SPEED; y += (ty-y)*SPEED; }
-
-  /* bounds */
-  x = Math.max(20, Math.min(innerWidth-20,  x));
-  y = Math.max(20, Math.min(innerHeight-20, y));
-
-  /* wall collision */
-  for (const w of WALLS) {
-    const r = RADIUS;
-    if (x+r > w.x && x-r < w.x+w.w && y+r > w.y && y-r < w.y+w.h) {
-      const oL = x+r - w.x,        oR = w.x+w.w - (x-r);
-      const oT = y+r - w.y,        oB = w.y+w.h - (y-r);
-      const m  = Math.min(oL,oR,oT,oB);
-      if      (m===oL) x -= oL;
-      else if (m===oR) x += oR;
-      else if (m===oT) y -= oT;
-      else             y += oB;
-      tx=x; ty=y;
-    }
-  }
-
-  /* angle */
-  const dx=x-px, dy=y-py;
-  if (Math.hypot(dx,dy) > 0.5) angle = Math.atan2(dy,dx)*180/Math.PI;
-  px=x; py=y;
-
-  drawSelf();
-
-  /* Firebase upload + collision at ~50ms */
-  if (ts - lastUp > 50) {
-    lastUp = ts;
-    if (hasWritten) {
-      set(pRef, { x:Math.round(x), y:Math.round(y), color:COLOR, name:_name, kills, angle, sp:spawnProt });
-    }
-    if (!spawnProt && hasWritten) {
-      for (const id in players) {
-        if (id === PID) continue;
-        const p = players[id];
-        if (p.sp) continue;
-        if (Math.hypot(p.x-x, p.y-y) < RADIUS*2) {
-          kills++;
-          document.getElementById('killNum').textContent = kills;
-          addKF(_name, p.name, COLOR);
-          remove(ref(db, `rooms/${roomId}/players/${id}`));
-        }
-      }
-    }
-  }
-}
-
-/* ─────────────────────────────────────────
-   DOM — local player
-───────────────────────────────────────── */
-function drawSelf() {
-  let el = document.getElementById('me');
-  if (!el) {
-    el = document.createElement('div');
-    el.className = 'pw'; el.id = 'me';
-    el.innerHTML = `<div class="pname" style="color:${COLOR}">${_name}</div>` + mouseSVG(COLOR);
-    document.body.appendChild(el);
-  }
-  el.style.left = x+'px'; el.style.top = y+'px';
-  const svg = el.querySelector('.psvg');
-  if (svg) svg.style.transform = `rotate(${angle}deg)`;
-  let ring = el.querySelector('.shield');
-  if  (spawnProt && !ring) { ring=document.createElement('div'); ring.className='shield'; el.appendChild(ring); }
-  else if (!spawnProt && ring) ring.remove();
-}
-
-/* ─────────────────────────────────────────
-   DOM — remote players
-───────────────────────────────────────── */
-function drawOthers() {
-  /* remove gone */
-  document.querySelectorAll('.pw:not(#me)').forEach(el => {
-    if (!players[el.id.replace('pw_','')]) el.remove();
-  });
-
-  for (const id in players) {
-    if (id === PID) continue;
-    const p = players[id];
-    let el = document.getElementById('pw_'+id);
-    if (!el) {
-      el = document.createElement('div');
-      el.className = 'pw'; el.id = 'pw_'+id;
-      el.innerHTML = `<div class="pname" style="color:${p.color}">${p.name}</div>` + mouseSVG(p.color);
-      document.body.appendChild(el);
-    }
-    el.style.left = p.x+'px'; el.style.top = p.y+'px';
-    const svg = el.querySelector('.psvg');
-    if (svg) svg.style.transform = `rotate(${p.angle||0}deg)`;
-    const nm = el.querySelector('.pname');
-    if (nm) nm.textContent = p.name + ' (' + (p.kills||0) + ')';
-    let ring = el.querySelector('.shield');
-    if  (p.sp && !ring) { ring=document.createElement('div'); ring.className='shield'; el.appendChild(ring); }
-    else if (!p.sp && ring) ring.remove();
-  }
-}
-
-/* ─────────────────────────────────────────
-   SCOREBOARD
-───────────────────────────────────────── */
-function refreshSB() {
-  const list = Object.entries(players).sort((a,b)=>(b[1].kills||0)-(a[1].kills||0));
-  document.getElementById('sbList').innerHTML = list.map(([id,p],i) => `
-    <div class="sb-row">
-      <div class="sb-num">${i+1}</div>
-      <div class="sb-dot" style="background:${p.color}"></div>
-      <div class="sb-name">${p.name}${id===PID?' <span style="color:#333;font-size:12px">(you)</span>':''}</div>
-      <div class="sb-k" style="color:${p.color}">${p.kills||0}</div>
-    </div>`).join('');
-}
-
-/* ─────────────────────────────────────────
-   KILL FEED
-───────────────────────────────────────── */
-function addKF(killer, victim, col) {
-  const feed = document.getElementById('killfeed');
-  const el   = document.createElement('div');
-  el.className = 'kf';
-  el.innerHTML = `<span style="color:${col}">${killer}</span> ate ${victim}`;
-  feed.appendChild(el);
-  setTimeout(() => el.remove(), 3600);
-}
-
-/* ─────────────────────────────────────────
-   DEATH / RESPAWN
-───────────────────────────────────────── */
-function die() {
-  alive = false; hasWritten = false;
-  const f = document.getElementById('dflash');
-  f.style.opacity='1'; setTimeout(()=>f.style.opacity='0', 200);
-  document.getElementById('me')?.remove();
-  const rsp = document.getElementById('respawn');
-  rsp.style.display = 'flex';
-  let cd = 3;
-  document.getElementById('rspNum').textContent = cd;
-  const iv = setInterval(() => {
-    cd--;
-    document.getElementById('rspNum').textContent = cd;
-    if (cd <= 0) { clearInterval(iv); respawn(); }
-  }, 1000);
-}
-
-function respawn() {
-  const sp = randSpawn();
-  x=sp.x; y=sp.y; tx=x; ty=y;
-  alive=true; spawnProt=true;
-  document.getElementById('respawn').style.display = 'none';
-  set(pRef, { x, y, color:COLOR, name:_name, kills, angle:0, sp:true })
-    .then(() => { hasWritten = true; });
   setTimeout(() => {
-    spawnProt = false;
-    set(ref(db,`rooms/${roomId}/players/${PID}/sp`), false);
-  }, 2000);
-}
-
-/* ─────────────────────────────────────────
-   INPUT
-───────────────────────────────────────── */
-document.addEventListener('mousemove', e => {
-  const c = document.getElementById('cursor');
-  c.style.left = e.clientX+'px'; c.style.top = e.clientY+'px';
-  if (alive) { tx=e.clientX; ty=e.clientY; }
+    reactionBtn.textContent = "JETZT KLICKEN!";
+    reactionBtn.style.background = "#16a34a";
+    startTime = Date.now();
+  }, delay);
 });
 
-document.addEventListener('keydown', e => {
-  if (e.key==='Tab') { e.preventDefault(); document.getElementById('scoreboard').style.display='block'; }
-});
-document.addEventListener('keyup', e => {
-  if (e.key==='Tab') document.getElementById('scoreboard').style.display='none';
+reactionBtn.addEventListener("mousedown", () => {
+  if (reactionBtn.textContent === "JETZT KLICKEN!") {
+    const reactionTime = Date.now() - startTime;
+    reactionResult.textContent = `Deine Zeit: ${reactionTime} ms`;
+    reactionBtn.textContent = "Nochmal?";
+    reactionBtn.style.background = "var(--accent)";
+  }
 });
 
-/* ─────────────────────────────────────────
-   JOYSTICK
-───────────────────────────────────────── */
-function setupJoy() {
-  const js = document.getElementById('joystick');
-  const st = document.getElementById('stick');
-  document.getElementById('cursor').style.display = 'none';
-  js.style.display = 'block';
-  let active=false, bx=0, by=0;
-  const R=42;
-  js.addEventListener('touchstart', e=>{
-    e.preventDefault(); active=true;
-    const r=js.getBoundingClientRect(); bx=r.left+60; by=r.top+60;
-  },{passive:false});
-  js.addEventListener('touchmove', e=>{
-    e.preventDefault(); if(!active) return;
-    const t=e.touches[0];
-    let ddx=t.clientX-bx, ddy=t.clientY-by;
-    const dist=Math.min(Math.hypot(ddx,ddy),R);
-    const ang=Math.atan2(ddy,ddx);
-    ddx=Math.cos(ang)*dist; ddy=Math.sin(ang)*dist;
-    st.style.left=(36+ddx)+'px'; st.style.top=(36+ddy)+'px';
-    const spd=(dist/R)*5;
-    joyDX=Math.cos(ang)*spd; joyDY=Math.sin(ang)*spd;
-  },{passive:false});
-  const end=()=>{ active=false; st.style.left='36px'; st.style.top='36px'; joyDX=0; joyDY=0; };
-  js.addEventListener('touchend',end); js.addEventListener('touchcancel',end);
-}
+/* ===========================
+   Chaos Regler
+=========================== */
+const chaosSlider = document.getElementById("chaosSlider");
+
+chaosSlider.addEventListener("input", () => {
+  const intensity = chaosSlider.value;
+  document.body.style.transform =
+    `rotate(${intensity * 0.1}deg) scale(${1 + intensity * 0.002})`;
+});
+
+/* ===========================
+   Cursor Schweif
+=========================== */
+const trailToggle = document.getElementById("trailToggle");
+let trailEnabled = false;
+
+trailToggle.addEventListener("change", () => {
+  trailEnabled = trailToggle.checked;
+});
+
+document.addEventListener("mousemove", (e) => {
+  if (!trailEnabled) return;
+
+  const dot = document.createElement("div");
+  dot.classList.add("trail");
+  dot.style.left = e.clientX + "px";
+  dot.style.top = e.clientY + "px";
+  document.body.appendChild(dot);
+
+  setTimeout(() => {
+    dot.remove();
+  }, 250);
+});
+
+/* ===========================
+   Magnet Buttons
+=========================== */
+const magnetToggle = document.getElementById("magnetToggle");
+
+document.querySelectorAll("button").forEach(btn => {
+  btn.addEventListener("mousemove", e => {
+    if (!magnetToggle.checked) return;
+
+    const rect = btn.getBoundingClientRect();
+    const x = e.clientX - rect.left - rect.width / 2;
+    const y = e.clientY - rect.top - rect.height / 2;
+
+    btn.style.transform = `translate(${x * 0.2}px, ${y * 0.2}px)`;
+  });
+
+  btn.addEventListener("mouseleave", () => {
+    btn.style.transform = "translate(0, 0)";
+  });
+});
+
 </script>
+
 </body>
 </html>
