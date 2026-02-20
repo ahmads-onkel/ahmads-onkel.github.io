@@ -644,7 +644,7 @@ async function doMerge(a,b){
 async function ask(na,ea,nb,eb){
   const r=await fetch("https://openrouter.ai/api/v1/chat/completions",{
     method:"POST",
-    headers:{"Content-Type":"application/json","Authorization":"Bearer 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"},
+    headers:{"Content-Type":"application/json","Authorization":"Bearer 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"},
     body:JSON.stringify({
       model:"meta-llama/llama-3.3-8b-instruct:free",
       max_tokens:40,
