@@ -444,7 +444,7 @@ function renderList(f=''){
     const d = document.createElement('div');
     d.className = 'chip' + (el.isNew?' isnew':'');
     d.innerHTML = `<span class="em">${el.emoji}</span><span>${el.name}</span>`;
-    d.onclick = () => spawn(el);
+    // spawn handled by mousedown/mouseup
     // drag from sidebar to canvas
     d.addEventListener('mousedown', e => {
       const startX=e.clientX, startY=e.clientY;
@@ -640,21 +640,23 @@ async function doMerge(a,b){
   busy=false;
 }
 
-/* FIX: German output in system prompt */
+/* OpenRouter API */
 async function ask(na,ea,nb,eb){
-  const r=await fetch('https://api.anthropic.com/v1/messages',{
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
+  const r=await fetch("https://openrouter.ai/api/v1/chat/completions",{
+    method:"POST",
+    headers:{"Content-Type":"application/json","Authorization":"Bearer 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"},
     body:JSON.stringify({
-      model:'claude-sonnet-4-20250514',
-      max_tokens:35,
-      system:`Du bist die KI hinter dem Spiel Ahmad Craft. Kombiniere zwei Elemente kreativ. Antworte NUR mit JSON, kein Markdown: {"emoji":"🌋","name":"Lava"} — 1 Emoji, 1-2 deutsche Wörter, kreativ und überraschend. Beispiele: Feuer+Wasser=Dampf, Erde+Wind=Sturm, Wasser+Erde=Schlamm.`,
-      messages:[{role:'user',content:`${ea} ${na} + ${eb} ${nb}`}]
+      model:"meta-llama/llama-3.3-8b-instruct:free",
+      max_tokens:40,
+      messages:[
+        {role:"system",content:"Du bist die KI hinter dem Spiel Ahmad Craft. Kombiniere zwei Elemente kreativ. Antworte NUR mit JSON, kein Markdown: {\"emoji\":\"🌋\",\"name\":\"Lava\"} — 1 Emoji, 1-2 deutsche Wörter. Beispiele: Feuer+Wasser=Dampf, Erde+Wind=Sturm."},
+        {role:"user",content:ea+' '+na+' + '+eb+' '+nb}
+      ]
     })
   });
-  if(!r.ok) throw new Error('API error '+r.status);
+  if(!r.ok) throw new Error("API error "+r.status);
   const d=await r.json();
-  const txt=d.content[0].text.trim().replace(/```json|```/g,'').trim();
+  const txt=d.choices[0].message.content.trim().replace(/```json|```/g,"").trim();
   return JSON.parse(txt);
 }
 
