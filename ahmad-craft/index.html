@@ -644,20 +644,27 @@ async function doMerge(a,b){
 async function ask(na,ea,nb,eb){
   const r=await fetch("https://openrouter.ai/api/v1/chat/completions",{
     method:"POST",
-    headers:{"Content-Type":"application/json","Authorization":"Bearer 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"},
+    headers:{
+      "Content-Type":"application/json",
+      "Authorization":"Bearer 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",
+      "HTTP-Referer":"https://ahmads-onkel.github.io",
+      "X-Title":"Ahmad Craft"
+    },
     body:JSON.stringify({
       model:"meta-llama/llama-3.3-8b-instruct:free",
-      max_tokens:40,
+      max_tokens:60,
       messages:[
-        {role:"system",content:"Du bist die KI hinter dem Spiel Ahmad Craft. Kombiniere zwei Elemente kreativ. Antworte NUR mit JSON, kein Markdown: {\"emoji\":\"🌋\",\"name\":\"Lava\"} — 1 Emoji, 1-2 deutsche Wörter. Beispiele: Feuer+Wasser=Dampf, Erde+Wind=Sturm."},
+        {role:"system",content:'You are a crafting game AI. Combine two elements. Reply ONLY with raw JSON: {"emoji":"🌋","name":"Lava"} — 1 emoji, 1-2 German words, nothing else.'},
         {role:"user",content:ea+' '+na+' + '+eb+' '+nb}
       ]
     })
   });
-  if(!r.ok) throw new Error("API error "+r.status);
   const d=await r.json();
-  const txt=d.choices[0].message.content.trim().replace(/```json|```/g,"").trim();
-  return JSON.parse(txt);
+  if(!r.ok) throw new Error("API "+r.status);
+  const raw=d.choices[0].message.content;
+  const match=raw.match(/\{[^}]+\}/);
+  if(!match) throw new Error("No JSON: "+raw);
+  return JSON.parse(match[0]);
 }
 
 /* ── TOAST ── */
