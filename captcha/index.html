@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sicherheitsüberprüfung</title>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+
+:root{
+  --blue:#4a90d9;
+  --green:#34a853;
+  --red:#d93025;
+  --yellow:#fbbc05;
+  --text:#202124;
+  --muted:#5f6368;
+  --border:#dadce0;
+  --bg:#f8f9fa;
+}
+
+body{
+  min-height:100vh;
+  background:#f2f2f2;
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  gap:18px;padding:32px 12px;
+  font-family:'Roboto',sans-serif;
+}
+
+
+
+/* ═══════════════════════════════════════
+   WIDGET  (304 × 78px — exact reCAPTCHA size)
+═══════════════════════════════════════ */
+.rc-widget{
+  width:304px;height:78px;
+  background:#f9f9f9;
+  border:1px solid #c1c1c1;
+  border-radius:3px;
+  box-shadow:0 2px 4px rgba(0,0,0,.08),0 0 0 1px rgba(0,0,0,.04) inset;
+  display:flex;align-items:center;
+  cursor:pointer;
+  user-select:none;
+  position:relative;
+  overflow:hidden;
+  transition:box-shadow .15s;
+}
+.rc-widget:hover{box-shadow:0 3px 8px rgba(0,0,0,.14),0 0 0 1px rgba(0,0,0,.04) inset;}
+
+/* left blue stripe */
+.rc-widget::before{
+  content:'';
+  position:absolute;left:0;top:0;bottom:0;width:4px;
+  background:#4a90d9;
+}
+
+.rc-widget-inner{
+  display:flex;align-items:center;
+  width:100%;padding:0 14px 0 20px;
+}
+
+/* checkbox */
+.rc-cb{
+  width:28px;height:28px;flex-shrink:0;
+  border:2px solid #c1c1c1;border-radius:2px;
+  background:#fff;
+  display:flex;align-items:center;justify-content:center;
+  transition:border-color .15s,box-shadow .15s;
+  position:relative;
+}
+.rc-widget:hover .rc-cb{border-color:#ababab;}
+.rc-spinner{
+  width:22px;height:22px;display:none;
+  border:3px solid #e8e8e8;
+  border-top-color:var(--blue);
+  border-radius:50%;
+  animation:spin .7s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+.rc-check{display:none;}
+
+/* label */
+.rc-label{
+  flex:1;padding:0 14px 0 16px;
+  font-size:14px;color:var(--text);font-weight:400;
+  white-space:nowrap;letter-spacing:.01em;
+}
+
+/* logo */
+.rc-logo{
+  display:flex;flex-direction:column;
+  align-items:center;gap:2px;flex-shrink:0;
+}
+.rc-logo-icon{width:32px;height:32px;object-fit:contain;}
+.rc-logo-text{font-size:8px;color:#9aa0a6;font-weight:400;letter-spacing:.3px;}
+.rc-logo-links{font-size:7px;color:#9aa0a6;text-align:center;line-height:1.6;}
+.rc-logo-links a{color:#9aa0a6;text-decoration:none;}
+.rc-logo-links a:hover{text-decoration:underline;}
+
+/* ═══════════════════════════════════════
+   POPUP
+═══════════════════════════════════════ */
+.rc-popup{
+  width:400px;max-width:calc(100vw - 12px);
+  background:#fff;
+  border:1px solid rgba(0,0,0,.18);
+  border-radius:3px;
+  box-shadow:0 4px 18px rgba(0,0,0,.22),0 1px 4px rgba(0,0,0,.12);
+  display:none;flex-direction:column;
+  overflow:hidden;
+  position:relative;
+}
+.rc-popup.open{
+  display:flex;
+  animation:popIn .2s cubic-bezier(.34,1.28,.64,1);
+}
+@keyframes popIn{
+  from{opacity:0;transform:scale(.95) translateY(8px)}
+  to{opacity:1;transform:none}
+}
+
+/* header */
+.rc-header{
+  background:#3d4043;
+  padding:14px 14px 12px;
+  display:flex;align-items:flex-start;
+  justify-content:space-between;gap:10px;
+}
+.rc-header-text{flex:1}
+.rc-title{font-size:15.5px;font-weight:400;color:#fff;line-height:1.4;}
+.rc-subtitle{font-size:11px;color:rgba(255,255,255,.68);margin-top:3px;font-weight:300;}
+.rc-close{
+  background:none;border:none;color:rgba(255,255,255,.65);
+  font-size:18px;cursor:pointer;
+  width:28px;height:28px;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  border-radius:50%;transition:background .12s,color .12s;
+}
+.rc-close:hover{background:rgba(255,255,255,.12);color:#fff;}
+
+/* error */
+.rc-err{
+  background:#d93025;color:#fff;
+  font-size:12px;padding:7px 14px;
+  display:none;align-items:center;gap:6px;
+  font-weight:400;
+}
+.rc-err.on{display:flex;}
+.rc-err::before{content:'⚠';font-size:14px;}
+
+/* ── GRID ── */
+.rc-grid{
+  display:grid;gap:0;
+  background:#c8c8c8;
+}
+.rc-grid.s3{grid-template-columns:repeat(3,1fr);}
+.rc-grid.s4{grid-template-columns:repeat(4,1fr);}
+
+.rc-cell{
+  position:relative;cursor:pointer;overflow:hidden;
+  background:#e8e8e8;
+  outline:1.5px solid #c8c8c8;
+}
+.rc-grid.s3 .rc-cell{height:121px;}
+.rc-grid.s4 .rc-cell{height:91px;}
+
+.rc-cell img{
+  width:100%;height:100%;object-fit:cover;
+  display:block;pointer-events:none;user-select:none;
+  transition:filter .15s;
+}
+
+/* selected overlay */
+.rc-cell.sel::after{
+  content:'';position:absolute;inset:0;
+  border:4px solid #4a90e2;z-index:3;pointer-events:none;
+  background:rgba(74,144,226,.08);
+}
+.rc-tick{
+  position:absolute;top:5px;right:5px;
+  width:26px;height:26px;border-radius:50%;
+  background:#4a90e2;
+  display:none;align-items:center;justify-content:center;
+  z-index:4;box-shadow:0 1px 4px rgba(0,0,0,.4);
+  animation:tickPop .18s cubic-bezier(.34,1.4,.64,1);
+}
+@keyframes tickPop{from{transform:scale(0)}to{transform:scale(1)}}
+.rc-tick svg{width:13px;height:13px;}
+.rc-cell.sel .rc-tick{display:flex;}
+
+.rc-cell:not(.sel):hover::before{
+  content:'';position:absolute;inset:0;
+  background:rgba(0,0,0,.1);z-index:2;pointer-events:none;
+}
+
+/* shimmer */
+.shimmer{
+  position:absolute;inset:0;
+  background:linear-gradient(90deg,#e8e8e8 25%,#f2f2f2 50%,#e8e8e8 75%);
+  background-size:200% 100%;
+  animation:shimmer 1.3s infinite;
+}
+@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+
+/* ── BODY ── */
+.rc-body{
+  padding:16px 14px 12px;
+  display:flex;flex-direction:column;
+  gap:12px;align-items:center;
+}
+.rc-q{font-size:14.5px;color:var(--text);text-align:center;line-height:1.55;}
+
+/* input */
+.rc-input{
+  width:100%;padding:9px 12px;
+  border:1px solid var(--border);border-radius:3px;
+  font-size:14px;font-family:'Roboto',sans-serif;color:var(--text);
+  outline:none;background:#fff;
+  transition:border-color .15s,box-shadow .15s;
+}
+.rc-input:focus{border-color:var(--blue);box-shadow:0 0 0 2px rgba(74,144,226,.16);}
+
+/* option list */
+.rc-list{width:100%;display:flex;flex-direction:column;
+  border:1px solid var(--border);border-radius:3px;overflow:hidden;}
+.rc-list-grid{display:grid;grid-template-columns:1fr 1fr;
+  border:1px solid var(--border);border-radius:3px;overflow:hidden;}
+.rc-opt{
+  background:#fff;border:none;border-bottom:1px solid var(--border);
+  padding:10px 13px;font-size:14px;
+  font-family:'Roboto',sans-serif;font-weight:400;
+  cursor:pointer;color:var(--text);text-align:left;
+  transition:background .1s;
+  display:flex;align-items:center;gap:8px;
+  line-height:1.4;
+}
+.rc-list-grid .rc-opt{border-right:1px solid var(--border);}
+.rc-list-grid .rc-opt:nth-child(2n){border-right:none;}
+.rc-opt:last-child,.rc-list-grid .rc-opt:nth-last-child(-n+2){border-bottom:none;}
+.rc-opt:hover:not(:disabled){background:#f1f3f4;}
+.rc-opt:disabled{cursor:default;}
+.rc-opt.ok{background:#e6f4ea;color:#137333;}
+.rc-opt.ok::before{content:'✓';font-weight:700;font-size:15px;}
+.rc-opt.bad{background:#fce8e6;color:#c5221f;}
+.rc-opt.bad::before{content:'✗';font-weight:700;font-size:15px;}
+
+/* info box */
+.rc-box{
+  width:100%;background:#f8f9fa;border:1px solid var(--border);
+  border-radius:3px;padding:12px;
+  display:flex;flex-direction:column;align-items:center;gap:5px;
+}
+.rc-box-lbl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;font-weight:500;}
+.rc-box-val{font-size:26px;font-weight:700;letter-spacing:9px;color:var(--text);font-family:'Courier New',monospace;}
+
+.rc-captcha-img{
+  background:#f1f3f4;border:1px solid var(--border);
+  border-radius:3px;padding:8px;width:100%;text-align:center;
+}
+
+/* Slider */
+.rc-slider-wrap{width:100%;display:flex;flex-direction:column;gap:7px;}
+.rc-slider-track{
+  width:100%;height:52px;background:#f1f3f4;
+  border:1px solid var(--border);border-radius:3px;
+  position:relative;overflow:visible;
+}
+.rc-groove{position:absolute;top:50%;left:22px;right:22px;height:3px;background:#bdc1c6;transform:translateY(-50%);border-radius:2px;}
+.rc-tgt{position:absolute;top:50%;transform:translateY(-50%);width:42px;height:42px;border:2px dashed #9aa0a6;border-radius:3px;background:rgba(0,0,0,.02);transition:border-color .15s,background .15s;}
+.rc-tgt.near{border-color:var(--blue);background:rgba(74,144,226,.08);}
+.rc-piece{position:absolute;top:50%;left:22px;width:42px;height:42px;background:var(--blue);border-radius:3px;transform:translateY(-50%);cursor:grab;display:flex;align-items:center;justify-content:center;color:#fff;font-size:18px;user-select:none;box-shadow:0 2px 6px rgba(0,0,0,.25);}
+.rc-piece:active{cursor:grabbing;box-shadow:0 4px 12px rgba(0,0,0,.3);}
+.rc-slider-hint{font-size:12px;color:#9aa0a6;text-align:center;}
+
+/* Hold */
+.rc-hold{width:100%;height:52px;background:#f1f3f4;border:1px solid var(--border);border-radius:3px;position:relative;cursor:pointer;overflow:hidden;user-select:none;}
+.rc-hold-fill{position:absolute;inset:0;width:0%;background:rgba(74,144,226,.2);transition:none;}
+.rc-hold-lbl{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;gap:7px;font-size:14px;font-weight:500;color:var(--blue);}
+
+/* Counter */
+.rc-cnt-row{display:flex;gap:14px;align-items:center;justify-content:center;}
+.rc-cnt-btn{width:40px;height:40px;border-radius:50%;border:1px solid var(--border);background:#fff;font-size:20px;cursor:pointer;color:var(--muted);display:flex;align-items:center;justify-content:center;transition:background .1s;}
+.rc-cnt-btn:hover{background:#f1f3f4;}
+.rc-cnt-val{font-size:36px;font-weight:700;min-width:54px;text-align:center;font-family:'Courier New',monospace;}
+
+/* Timer */
+.rc-tbar-wrap{width:100%;height:4px;background:#e8eaed;border-radius:2px;overflow:hidden;}
+.rc-tbar{height:100%;background:var(--blue);border-radius:2px;transition:background .3s;}
+
+/* Reaction */
+.rc-light{width:88px;height:88px;border-radius:50%;background:#e8eaed;border:3px solid var(--border);margin:4px auto;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:30px;transition:background .15s,box-shadow .15s,border-color .15s;}
+
+/* ── FOOTER ── */
+.rc-footer{
+  background:#f8f9fa;border-top:1px solid #e8eaed;
+  padding:9px 12px;
+  display:flex;align-items:center;
+  justify-content:space-between;gap:8px;
+}
+.rc-footer-brand{display:flex;flex-direction:column;gap:2px;}
+.rc-footer-name{font-size:9px;color:#9aa0a6;font-weight:500;letter-spacing:.2px;}
+.rc-footer-links{display:flex;gap:8px;}
+.rc-footer-links a{font-size:8px;color:#9aa0a6;text-decoration:none;}
+.rc-footer-links a:hover{text-decoration:underline;}
+.rc-footer-right{display:flex;align-items:center;gap:6px;}
+.rc-dots{display:flex;gap:4px;align-items:center;}
+.rc-dot{width:7px;height:7px;border-radius:50%;background:#d3d3d3;transition:background .2s,transform .2s;}
+.rc-dot.done{background:var(--green);}
+.rc-dot.cur{background:var(--blue);animation:dotBlink .9s ease-in-out infinite;}
+@keyframes dotBlink{0%,100%{transform:scale(1)}50%{transform:scale(1.45)}}
+
+.rc-btn-refresh{background:none;border:none;color:#9aa0a6;font-size:19px;cursor:pointer;width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;transition:background .12s,transform .2s,color .12s;}
+.rc-btn-refresh:hover{background:#e8eaed;color:var(--muted);transform:rotate(90deg);}
+
+.rc-btn-next{
+  background:var(--blue);color:#fff;border:none;
+  border-radius:3px;padding:0 20px;height:36px;
+  font-size:14px;font-weight:500;font-family:'Roboto',sans-serif;
+  cursor:pointer;transition:background .12s,box-shadow .12s;
+  box-shadow:0 1px 3px rgba(0,0,0,.25);
+  letter-spacing:.01em;
+}
+.rc-btn-next:hover{background:#3b7dd8;box-shadow:0 2px 6px rgba(0,0,0,.25);}
+.rc-btn-next:active{background:#2f6cc9;}
+
+.page-links{font-size:11px;color:#9aa0a6;display:flex;gap:16px;}
+.page-links a{color:#9aa0a6;text-decoration:none;}
+.page-links a:hover{text-decoration:underline;}
+
+/* verified state */
+.rc-widget.verified{cursor:default;}
+.rc-widget.verified .rc-cb{border-color:var(--green);background:#e6f4ea;}
+
+@keyframes shake{0%,100%{transform:none}15%{transform:translateX(-5px)}30%{transform:translateX(5px)}50%{transform:translateX(-4px)}70%{transform:translateX(4px)}85%{transform:translateX(-2px)}}
+@keyframes checkDraw{from{stroke-dashoffset:40}to{stroke-dashoffset:0}}
+</style>
+</head>
+<body>
+
+  <!-- ── WIDGET ── -->
+  <div class="rc-widget" id="widget" onclick="open_challenge()" tabindex="0"
+       role="checkbox" aria-checked="false" aria-label="Ich bin kein Roboter">
+    <div class="rc-widget-inner">
+      <div class="rc-cb" id="cb">
+        <div class="rc-spinner" id="sp"></div>
+        <svg class="rc-check" id="cksvg" style="display:none" viewBox="0 0 20 20" width="20" height="20">
+          <path d="M4 10l5 5 7-8" stroke="#34a853" stroke-width="2.4"
+                stroke-linecap="round" stroke-linejoin="round" fill="none"
+                stroke-dasharray="40" stroke-dashoffset="40"
+                style="animation:checkDraw .3s ease forwards .05s"/>
+        </svg>
+      </div>
+      <span class="rc-label" id="lbl">Ich bin kein Roboter</span>
+      <div class="rc-logo">
+        <img class="rc-logo-icon" src="https://raw.githubusercontent.com/ahmads-onkel/ahmads-onkel.github.io/refs/heads/main/1200px-RecaptchaLogo.svg_.png" alt="reCAPTCHA">
+        <div class="rc-logo-text">reCAPTCHA</div>
+        <div class="rc-logo-links"><a href="#">Datenschutz</a><br><a href="#">Bedingungen</a></div>
+      </div>
+    </div>
+  </div>
+
+<!-- ── POPUP ── -->
+<div class="rc-popup" id="popup">
+  <div class="rc-header">
+    <div class="rc-header-text">
+      <div class="rc-title" id="ptitle">Wähle alle Bilder mit Ampeln</div>
+      <div class="rc-subtitle" id="psub">Klicke alle passenden Bilder an. Wenn keine vorhanden sind, klicke „Weiter".</div>
+    </div>
+    <button class="rc-close" onclick="close_popup()" aria-label="Schließen">✕</button>
+  </div>
+  <div class="rc-err" id="err"></div>
+  <div id="body"></div>
+  <div class="rc-footer">
+    <div class="rc-footer-brand">
+      <div class="rc-footer-name">🔒 reCAPTCHA</div>
+      <div class="rc-footer-links"><a href="#">Datenschutz</a><a href="#">Bedingungen</a></div>
+    </div>
+    <div class="rc-footer-right">
+      <div class="rc-dots" id="dots"></div>
+      <button class="rc-btn-refresh" onclick="refresh()" title="Neue Aufgabe">↻</button>
+      <button class="rc-btn-next" onclick="verify()">Weiter</button>
+    </div>
+  </div>
+</div>
+
+<div class="page-links">
+  <a href="#">Datenschutz</a><a href="#">Nutzungsbedingungen</a><a href="#">Hilfe</a>
+</div>
+
+<script>
+'use strict';
+
+let step=0, S={}, recent=[], slAC=null;
+
+const PHOTO_POOLS = {
+  'Ampeln':['https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=300&h=300&fit=crop','https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=300&h=300&fit=crop','https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300&h=300&fit=crop','https://images.unsplash.com/photo-1519003722824-194d4455a60c?w=300&h=300&fit=crop','https://images.unsplash.com/photo-1534430480872-3498386e7856?w=300&h=300&fit=crop'],
+  'Bussen':['https://images.unsplash.com/photo-1570125909232-eb263c188f7e?w=300&h=300&fit=crop','https://images.unsplash.com/photo-1464219789935-c2d9d9aba644?w=300&h=300&fit=crop','https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?w=300&h=300&fit=crop'],
+  'Fahrrädern':['https://images.unsplash.com/photo-1485965120184-e220f721d03e?w=300&h=300&fit=crop','https://images.unsplash.com/photo-1571333250630-f0230c320b6d?w=300&h=300&fit=crop','https://images.unsplash.com/photo-1511994298241-608e28f14fde?w=300&h=300&fit=crop','https://images.unsplash.com/photo-1532298229144-0ec0c57515c7?w=300&h=300&fit=crop'],
+  'Autos':['https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?w=300&h=300&fit=crop','https://images.unsplash.com/photo-1603386329225-868f9b1ee6c9?w=300&h=300&fit=crop','https://images.unsplash.com/photo-1541899481282-d53bffe3c35d?w=300&h=300&fit=crop','https://images.unsplash.com/photo-1555215695-3004980ad54e?w=300&h=300&fit=crop','https://images.unsplash.com/photo-1502877338535-766e1452684a?w=300&h=300&fit=crop'],
+  'Brücken':['https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?w=300&h=300&fit=crop','https://images.unsplash.com/photo-1545558014-8692077e9b5c?w=300&h=300&fit=crop','https://images.unsplash.com/photo-1519741497674-611481863552?w=300&h=300&fit=crop'],
+  'Flugzeugen':['https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=300&h=300&fit=crop','https://images.unsplash.com/photo-1540962351504-03099e0a754b?w=300&h=300&fit=crop','https://images.unsplash.com/photo-1569629743817-70d8db6c323b?w=300&h=300&fit=crop','https://images.unsplash.com/photo-1474302771604-21f76dc9a519?w=300&h=300&fit=crop'],
+  'Zügen':['https://images.unsplash.com/photo-1474487548417-781cb71495f3?w=300&h=300&fit=crop','https://images.unsplash.com/photo-1523474253046-8cd2748b5fd2?w=300&h=300&fit=crop','https://images.unsplash.com/photo-1532375810709-75b1da00537c?w=300&h=300&fit=crop'],
+  '_street':['https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?w=300&h=300&fit=crop','https://images.unsplash.com/photo-1519003722824-194d4455a60c?w=300&h=300&fit=crop','https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=300&h=300&fit=crop','https://images.unsplash.com/photo-1514890547357-a9ee288728e0?w=300&h=300&fit=crop','https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?w=300&h=300&fit=crop','https://images.unsplash.com/photo-1530631673369-bc20fdb32077?w=300&h=300&fit=crop','https://images.unsplash.com/photo-1504384308090-c894fdcc538d?w=300&h=300&fit=crop','https://images.unsplash.com/photo-1498889444388-e67ea62c464b?w=300&h=300&fit=crop'],
+};
+
+function rnd(arr){return arr[Math.floor(Math.random()*arr.length)];}
+function shuf(arr){return [...arr].sort(()=>Math.random()-.5);}
+function picks(a){return a[Math.floor(Math.random()*a.length)];}
+function raf(fn){requestAnimationFrame(fn);}
+function el_val(id){return document.getElementById(id)?.value??'';}
+
+const ALL=[
+  photoGrid,photoGrid,photoGrid,photoGrid,
+  photoGrid4,photoGrid4,
+  textCaptcha,
+  mathQ,mathMul,mathComplex,
+  colorPick,
+  reverseNum,
+  countEmoji,
+  typeSentence,typeWord,
+  clickOrder,seqMemory,
+  patternQ,
+  romanQ,binaryQ,
+  vowelQ,digitSumQ,
+  capitalQ,countryQ,
+  animalSoundQ,fruitVegQ,
+  trueOrFalseQ,scienceQ,
+  palindromeQ,rhymeQ,spellingQ,
+  longestWordQ,lastLetterQ,reverseWordQ,
+  seasonQ,clockQ,emojiQ,
+  flagQ,
+  reactionQ,
+  timedMathQ,
+  holdBtnQ,
+  sliderQ,
+  evenOddQ,
+  logicQ,
+];
+
+function pick(){
+  const idx=ALL.map((_,i)=>i).filter(i=>!recent.includes(i));
+  const pool=idx.length?idx:ALL.map((_,i)=>i);
+  const i=pool[Math.floor(Math.random()*pool.length)];
+  recent.push(i);if(recent.length>12)recent.shift();
+  return ALL[i];
+}
+
+function render_dots(){
+  const d=document.getElementById('dots');d.innerHTML='';
+  const n=Math.min(step,10);
+  for(let i=0;i<n;i++){const x=document.createElement('div');x.className='rc-dot done';d.appendChild(x);}
+  const c=document.createElement('div');c.className='rc-dot cur';d.appendChild(c);
+}
+
+function open_challenge(){
+  if(document.getElementById('widget').classList.contains('verified'))return;
+  const s=document.getElementById('sp');s.style.display='block';
+  document.getElementById('widget').style.pointerEvents='none';
+  setTimeout(()=>{
+    s.style.display='none';
+    document.getElementById('widget').style.pointerEvents='';
+    document.getElementById('popup').classList.add('open');
+    load();
+  },600+Math.random()*600);
+}
+
+function close_popup(){
+  document.getElementById('popup').classList.remove('open');
+  if(slAC){slAC.abort();slAC=null;}
+}
+
+function refresh(){load();}
+
+function load(){
+  if(slAC){slAC.abort();slAC=null;}
+  document.getElementById('err').classList.remove('on');
+  S={};
+  pick()();
+  render_dots();
+}
+
+function setHdr(t,s){
+  document.getElementById('ptitle').textContent=t;
+  document.getElementById('psub').textContent=s;
+}
+function setBody(t,s,html){
+  setHdr(t,s);
+  document.getElementById('body').innerHTML=`<div class="rc-body">${html}</div>`;
+}
+function showErr(msg){const e=document.getElementById('err');e.textContent=msg;e.classList.add('on');}
+
+function verify(){
+  const r=S.verify?S.verify():true;
+  if(r===true){
+    step++;
+    if(step%10===0){
+      close_popup();
+      // show verified checkmark
+      const w=document.getElementById('widget');
+      w.classList.add('verified');
+      const ck=document.getElementById('cksvg');
+      ck.style.display='block';
+      document.getElementById('lbl').textContent='Verifiziert';
+      document.getElementById('lbl').style.color='#137333';
+      // re-open after 3s
+      setTimeout(()=>{
+        w.classList.remove('verified');
+        ck.style.display='none';
+        document.getElementById('lbl').textContent='Ich bin kein Roboter';
+        document.getElementById('lbl').style.color='';
+        document.getElementById('popup').classList.add('open');
+        load();
+      },3000);
+    } else {load();}
+  } else {
+    showErr(r);
+    const p=document.getElementById('popup');
+    p.style.animation='none';void p.offsetWidth;p.style.animation='shake .35s ease';
+  }
+}
+
+function inputOK(id,correct,emsg,xf){
+  raf(()=>{
+    const el=document.getElementById(id);
+    if(el){el.focus();el.addEventListener('keydown',e=>{if(e.key==='Enter')verify();});}
+  });
+  S.verify=()=>{
+    const v=el_val(id);
+    const r=xf?xf(v):v.trim().toLowerCase();
+    return r===correct?true:(emsg||'Falsche Antwort.');
+  };
+}
+
+function mcBuild(title,sub,opts,ci,grid=false){
+  const cls=grid?'rc-list-grid':'rc-list';
+  setBody(title,sub,`<div class="${cls}" id="mc">${opts.map((o,i)=>`<button class="rc-opt" data-i="${i}">${o}</button>`).join('')}</div>`);
+  raf(()=>{
+    document.querySelectorAll('#mc .rc-opt').forEach(btn=>{
+      btn.onclick=()=>{
+        const i=+btn.dataset.i;
+        document.querySelectorAll('#mc .rc-opt').forEach(b=>b.disabled=true);
+        btn.classList.add(i===ci?'ok':'bad');
+        if(i===ci){S._ok=true;setTimeout(verify,400);}
+        else{setTimeout(()=>{document.querySelectorAll('#mc .rc-opt').forEach(b=>{b.disabled=false;b.classList.remove('bad');});},700);showErr('Falsch – bitte nochmal versuchen.');}
+      };
+    });
+  });
+  S.verify=()=>S._ok?true:'Bitte wähle eine Antwort.';
+}
+
+/* ── PHOTO GRID ── */
+const GRID_THEMES=[
+  {label:'Bussen',pool:'Bussen',distractors:'_street',count:3},
+  {label:'Fahrrädern',pool:'Fahrrädern',distractors:'_street',count:3},
+  {label:'Autos',pool:'Autos',distractors:'_street',count:3},
+  {label:'Flugzeugen',pool:'Flugzeugen',distractors:'_street',count:2},
+  {label:'Zügen',pool:'Zügen',distractors:'_street',count:2},
+  {label:'Brücken',pool:'Brücken',distractors:'_street',count:2},
+];
+
+function photoGrid(){_buildPhotoGrid(3,picks(GRID_THEMES));}
+function photoGrid4(){_buildPhotoGrid(4,picks(GRID_THEMES));}
+
+function _buildPhotoGrid(cols,theme){
+  const total=cols*cols;
+  const positives=shuf(PHOTO_POOLS[theme.pool]||[]).slice(0,theme.count);
+  const negatives=shuf(PHOTO_POOLS[theme.distractors]||[]).slice(0,total-positives.length);
+  const cells=shuf([...positives.map(u=>({url:u,target:true})),...negatives.map(u=>({url:u,target:false}))]);
+  setHdr(`Wähle alle Bilder mit ${theme.label}`,'Klicke alle passenden Bilder an. Wenn keine vorhanden sind, klicke „Weiter".');
+  const body=document.getElementById('body');body.innerHTML='';
+  const grid=document.createElement('div');grid.className=`rc-grid s${cols}`;
+  const selected=new Set();
+  cells.forEach((cell,i)=>{
+    const div=document.createElement('div');div.className='rc-cell';div.tabIndex=0;div.role='checkbox';div.ariaChecked='false';
+    const shim=document.createElement('div');shim.className='shimmer';div.appendChild(shim);
+    const tick=document.createElement('div');tick.className='rc-tick';
+    tick.innerHTML='<svg viewBox="0 0 16 16" fill="none"><path d="M3 8l4 4 6-7" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+    div.appendChild(tick);
+    const img=document.createElement('img');img.src=cell.url;img.alt='';img.loading='lazy';
+    img.onload=()=>{if(shim.parentNode)shim.remove();};
+    img.onerror=()=>{div.style.background=cell.target?'#c8e6c9':'#e3f2fd';div.style.display='flex';div.style.alignItems='center';div.style.justifyContent='center';div.style.fontSize='11px';div.style.color='#555';div.style.padding='4px';if(shim.parentNode)shim.remove();};
+    div.appendChild(img);
+    const tog=()=>{div.classList.toggle('sel');selected.has(i)?selected.delete(i):selected.add(i);div.ariaChecked=selected.has(i).toString();};
+    div.onclick=tog;div.onkeydown=e=>{if(e.key===' '||e.key==='Enter'){e.preventDefault();tog();}};
+    grid.appendChild(div);
+  });
+  body.appendChild(grid);
+  const correctSet=new Set(cells.reduce((a,c,i)=>c.target?[...a,i]:a,[]));
+  S={verify:()=>{
+    if(selected.size===0)return'Bitte wähle alle passenden Bilder aus.';
+    const ok=[...correctSet].every(i=>selected.has(i))&&[...selected].every(i=>correctSet.has(i));
+    return ok?true:'Einige Bilder fehlen oder sind falsch. Bitte erneut versuchen.';
+  }};
+}
+
+/* ── TEXT CAPTCHA ── */
+function textCaptcha(){
+  const words=['Brücke','Fenster','Wolke','Garten','Spiegel','Markt','Birne','Lampe','Schloss','Pinsel'];
+  const word=picks(words);
+  setBody('Gib den Text im Bild ein','Groß- und Kleinschreibung wird ignoriert.',
+    `<div class="rc-captcha-img"><canvas id="tc" width="290" height="78"></canvas></div>
+     <input class="rc-input" id="ti" placeholder="Text eingeben" autocomplete="off" autocorrect="off" spellcheck="false">`);
+  raf(()=>{
+    const cv=document.getElementById('tc'),ctx=cv.getContext('2d');
+    ctx.fillStyle='#eef0f2';ctx.fillRect(0,0,290,78);
+    for(let i=0;i<12;i++){ctx.strokeStyle=`rgba(${~~(Math.random()*120)},${~~(Math.random()*120)},${~~(Math.random()*120)},.2)`;ctx.lineWidth=1+Math.random();ctx.beginPath();ctx.moveTo(Math.random()*290,Math.random()*78);ctx.bezierCurveTo(Math.random()*290,Math.random()*78,Math.random()*290,Math.random()*78,Math.random()*290,Math.random()*78);ctx.stroke();}
+    const cols=['#1a1a2e','#16213e','#0f3460','#3d1f6d','#1b4332','#4a2040'];
+    const sp=260/word.length;
+    word.split('').forEach((ch,i)=>{ctx.save();ctx.translate(12+i*sp+(Math.random()*6-3),50+(Math.random()*12-6));ctx.rotate((Math.random()-.5)*.3);ctx.font=`bold ${23+~~(Math.random()*10)}px 'Courier New',monospace`;ctx.fillStyle=picks(cols);ctx.fillText(ch,0,0);ctx.restore();});
+    for(let i=0;i<40;i++){ctx.fillStyle=`rgba(0,0,0,${Math.random()*.12})`;ctx.fillRect(Math.random()*290,Math.random()*78,1.5,1.5);}
+  });
+  inputOK('ti',word.toLowerCase(),'Text stimmt nicht überein.');
+}
+
+/* ── MATH ── */
+function mathQ(){const a=~~(Math.random()*30)+4,b=~~(Math.random()*30)+4;const ops=[{s:'+',f:(x,y)=>x+y},{s:'−',f:(x,y)=>x-y},{s:'×',f:(x,y)=>x*y}];const op=picks(ops),ans=op.f(a,b);setBody('Löse die Rechenaufgabe','Ergebnis eingeben.',`<div class="rc-q" style="font-size:30px;font-weight:700;font-family:'Courier New',monospace">${a} ${op.s} ${b} = ?</div><input class="rc-input" id="mi" type="number" placeholder="Antwort" style="text-align:center;font-size:22px">`);inputOK('mi',String(ans),`Falsch! ${a} ${op.s} ${b} = ${ans}`,v=>v.trim());}
+function mathMul(){const a=~~(Math.random()*12)+2,b=~~(Math.random()*12)+2,ans=a*b;setBody(`Was ist ${a} × ${b}?`,'Ergebnis eingeben.',`<input class="rc-input" id="mi" type="number" placeholder="Ergebnis" style="text-align:center;font-size:24px">`);inputOK('mi',String(ans),`Falsch! ${a} × ${b} = ${ans}`,v=>v.trim());}
+function mathComplex(){const a=~~(Math.random()*10)+2,b=~~(Math.random()*10)+2,c=~~(Math.random()*10)+1,ans=a*b+c;setBody('Berechne das Ergebnis','Schritt für Schritt.',`<div class="rc-q" style="font-size:24px;font-weight:700;font-family:'Courier New',monospace">(${a} × ${b}) + ${c} = ?</div><input class="rc-input" id="mi" type="number" placeholder="Antwort" style="text-align:center;font-size:20px">`);inputOK('mi',String(ans),`Falsch! Richtig: ${ans}`,v=>v.trim());}
+
+/* ── MC CHALLENGES ── */
+function colorPick(){const colors=[{n:'Rot',h:'#ea4335'},{n:'Blau',h:'#4285f4'},{n:'Grün',h:'#34a853'},{n:'Gelb',h:'#fbbc05'},{n:'Lila',h:'#9334e6'},{n:'Orange',h:'#fa7b17'},{n:'Rosa',h:'#e91e8c'},{n:'Grau',h:'#5f6368'}];const c=picks(colors),wrong=colors.filter(x=>x!==c).sort(()=>Math.random()-.5).slice(0,3);const opts=shuf([c,...wrong]),ci=opts.indexOf(c);setBody('Welche Farbe siehst du?','Wähle den richtigen Namen.',`<div style="width:80px;height:80px;border-radius:50%;background:${c.h};margin:4px auto;box-shadow:0 4px 14px ${c.h}66"></div><div class="rc-list-grid" id="mc">${opts.map((o,i)=>`<button class="rc-opt" data-i="${i}">${o.n}</button>`).join('')}</div>`);raf(()=>{document.querySelectorAll('#mc .rc-opt').forEach(btn=>{btn.onclick=()=>{const i=+btn.dataset.i;document.querySelectorAll('#mc .rc-opt').forEach(b=>b.disabled=true);btn.classList.add(i===ci?'ok':'bad');if(i===ci){S._ok=true;setTimeout(verify,400);}else{setTimeout(()=>{document.querySelectorAll('#mc .rc-opt').forEach(b=>{b.disabled=false;b.classList.remove('bad');});},700);}};});});S.verify=()=>S._ok?true:'Bitte wähle eine Antwort.';}
+function reverseNum(){const d=Array.from({length:5},()=>~~(Math.random()*10));const rev=[...d].reverse().join('');setBody('Zahlenfolge rückwärts eingeben','Ziffern merken, dann rückwärts.',`<div class="rc-box"><div class="rc-box-lbl">Vorwärts lesen:</div><div class="rc-box-val">${d.join(' ')}</div></div><input class="rc-input" id="ri" placeholder="Rückwärts" type="text" autocomplete="off" maxlength="5" style="letter-spacing:8px;font-size:20px;text-align:center">`);S.verify=()=>{const v=el_val('ri').replace(/\s/g,'').trim();return v===rev?true:'Falsch! Ziffern rückwärts eingeben.';};raf(()=>{const el=document.getElementById('ri');if(el){el.focus();el.addEventListener('keydown',e=>{if(e.key==='Enter')verify();});}});}
+function countEmoji(){const em=['⭐','🔥','💎','🍕','🚗','🐶'];const t=picks(em),oth=em.filter(e=>e!==t);const n=3+~~(Math.random()*7),dec=2+~~(Math.random()*4),all=[];for(let i=0;i<n;i++)all.push(t);for(let i=0;i<dec;i++)all.push(picks(oth));all.sort(()=>Math.random()-.5);let cnt=0;setBody(`Zähle alle ${t}`,'Mit +/− einstellen.',`<div style="font-size:24px;line-height:2;text-align:center;letter-spacing:3px;background:#f8f9fa;padding:10px;border:1px solid var(--border);border-radius:3px">${all.join(' ')}</div><div class="rc-cnt-row"><button class="rc-cnt-btn" id="cm">−</button><div class="rc-cnt-val" id="cv">0</div><button class="rc-cnt-btn" id="cp">+</button></div>`);raf(()=>{const v=document.getElementById('cv');document.getElementById('cm').onclick=()=>{cnt=Math.max(0,cnt-1);v.textContent=cnt;};document.getElementById('cp').onclick=()=>{cnt++;v.textContent=cnt;};});S.verify=()=>cnt===n?true:`Falsch! Es waren ${n} ${t}.`;}
+function typeSentence(){const p=picks(['Ich bin ein Mensch','Roboter lügen nicht','Nur Menschen klicken','Sicherheit geht vor']);setBody('Tippe den Satz exakt ab','Groß-/Kleinschreibung beachten.',`<div class="rc-box" style="font-family:'Courier New',monospace;font-size:14px">"${p}"</div><input class="rc-input" id="tyi" placeholder="Hier tippen" autocomplete="off" autocorrect="off" spellcheck="false">`);S.verify=()=>{const v=el_val('tyi').trim();return v===p?true:'Nicht exakt! Groß-/Kleinschreibung beachten.';};raf(()=>{const el=document.getElementById('tyi');if(el){el.focus();el.addEventListener('keydown',e=>{if(e.key==='Enter')verify();})}});}
+function typeWord(){const w=picks(['MENSCHLICH','HUMAN','VERIFY','KEIN BOT','ZUGANG']);setBody('Schreib das Wort exakt ab','In Großbuchstaben.',`<div class="rc-q" style="font-size:28px;font-weight:700;letter-spacing:8px;font-family:'Courier New',monospace">${w}</div><input class="rc-input" id="twi" placeholder="Eingabe" autocomplete="off" autocorrect="off" spellcheck="false" style="text-align:center;letter-spacing:5px;font-size:18px">`);S.verify=()=>{const v=el_val('twi').trim();return v===w?true:`Schreib: „${w}"`;};raf(()=>{const el=document.getElementById('twi');if(el){el.focus();el.addEventListener('keydown',e=>{if(e.key==='Enter')verify();})}});}
+function clickOrder(){const all=['🍎','🎯','⭐','💡','🎈','🔮'];const order=shuf(all).slice(0,4),shuffled=shuf(order);let clicked=[];setHdr('Symbole in der richtigen Reihenfolge anklicken','Reihenfolge wie oben angegeben.');document.getElementById('body').innerHTML=`<div class="rc-body"><div class="rc-box" style="flex-direction:row;gap:12px;font-size:26px">${order.join(' ')}</div><div style="font-size:11px;color:var(--muted)">Klicke in dieser Reihenfolge:</div><div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap" id="cob">${shuffled.map(e=>`<button class="rc-opt" style="width:58px;height:58px;font-size:26px;text-align:center;padding:0;border:1px solid var(--border);border-radius:3px" data-e="${e}">${e}</button>`).join('')}</div><div id="cop" style="font-size:20px;letter-spacing:8px;min-height:30px;text-align:center"></div></div>`;raf(()=>{document.querySelectorAll('#cob button').forEach(btn=>{btn.onclick=()=>{const e=btn.dataset.e;if(clicked.length>=order.length)return;if(e!==order[clicked.length]){btn.classList.add('bad');showErr('Falsche Reihenfolge! Neu versuchen.');clicked=[];document.getElementById('cop').textContent='';setTimeout(()=>{document.querySelectorAll('#cob button').forEach(b=>{b.classList.remove('bad','ok');b.disabled=false;});},600);return;}btn.classList.add('ok');btn.disabled=true;clicked.push(e);document.getElementById('cop').textContent=clicked.join(' ');if(clicked.length===order.length){S._ok=true;setTimeout(verify,400);}};});});S.verify=()=>S._ok?true:'Klicke alle Symbole in der richtigen Reihenfolge.';}
+function seqMemory(){const em=['🍕','🎮','🐶','🔥','⭐','💎','🌈'];const len=3+~~(Math.random()*2),seq=Array.from({length:len},()=>picks(em));let ans=[];setHdr('Merke dir die Reihenfolge','Sequenz einprägen, dann anklicken.');document.getElementById('body').innerHTML=`<div class="rc-body"><div id="sq" style="display:flex;gap:8px;justify-content:center;font-size:34px">${seq.map(e=>`<span>${e}</span>`).join('')}</div><div id="sqst" style="font-size:11px;color:var(--muted)">Einprägen …</div><div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center" id="sqb">${shuf(em).map(e=>`<button class="rc-opt" style="width:48px;height:48px;font-size:24px;text-align:center;padding:0;border:1px solid var(--border);border-radius:3px;display:none" data-e="${e}">${e}</button>`).join('')}</div><div id="sqa" style="font-size:26px;letter-spacing:8px;min-height:34px;text-align:center"></div></div>`;setTimeout(()=>{document.getElementById('sq').style.filter='blur(8px)';document.getElementById('sqst').textContent='Jetzt nachklicken:';document.querySelectorAll('#sqb button').forEach(b=>{b.style.display='flex';b.onclick=()=>{if(ans.length>=seq.length)return;ans.push(b.dataset.e);document.getElementById('sqa').textContent=ans.join(' ');if(ans.length===seq.length){if(JSON.stringify(ans)===JSON.stringify(seq)){S._ok=true;setTimeout(verify,400);}else{showErr('Falsche Reihenfolge!');ans=[];document.getElementById('sqa').textContent='';}}};});},2500);S.verify=()=>S._ok?true:'Klicke die Symbole in der richtigen Reihenfolge.';}
+function patternQ(){const ps=[{s:[2,4,6,8],n:10},{s:[1,3,6,10],n:15},{s:[1,2,4,8],n:16},{s:[5,10,15,20],n:25},{s:[100,90,80,70],n:60},{s:[1,4,9,16],n:25},{s:[1,1,2,3,5],n:8}];const p=picks(ps);setBody('Was kommt als Nächstes?','Muster erkennen.',`<div class="rc-q" style="font-size:24px;font-weight:700;font-family:'Courier New',monospace">${p.s.join(', ')}, ?</div><input class="rc-input" id="pi" type="number" placeholder="Nächste Zahl" style="text-align:center;font-size:22px">`);inputOK('pi',String(p.n),`Falsch! Antwort: ${p.n}`,v=>v.trim());}
+function romanQ(){const n=picks([{r:'IV',n:4},{r:'IX',n:9},{r:'XIV',n:14},{r:'XLII',n:42},{r:'LXVII',n:67},{r:'XCI',n:91}]);setBody(`Was ist „${n.r}" in Dezimal?`,'Römische Zahl umrechnen.',`<input class="rc-input" id="ri2" type="number" placeholder="Zahl" style="text-align:center;font-size:24px">`);inputOK('ri2',String(n.n),`Falsch! ${n.r} = ${n.n}`,v=>v.trim());}
+function binaryQ(){const n=~~(Math.random()*15)+1,bin=n.toString(2),dir=Math.random()<0.5;if(dir){setBody(`Was ist ${n} in Binär?`,'Dezimal → Binär.',`<input class="rc-input" id="bi" placeholder="z.B. 1010" style="text-align:center;font-size:20px;letter-spacing:5px">`);inputOK('bi',bin,`Falsch! ${n} = ${bin}`,v=>v.trim());}else{setBody(`Was ist ${bin} in Dezimal?`,'Binär → Dezimal.',`<input class="rc-input" id="bi" type="number" placeholder="Zahl" style="text-align:center;font-size:22px">`);inputOK('bi',String(n),`Falsch! ${bin} = ${n}`,v=>v.trim());}}
+function vowelQ(){const ss=['Die Katze sitzt auf der Matte','Ein Hund bellt laut im Garten','Wir essen heute Pizza','Der Roboter kann nicht fühlen'];const s=picks(ss),count=(s.match(/[aeiouäöüAEIOUÄÖÜ]/g)||[]).length;setBody('Vokale zählen','a e i o u ä ö ü – alle Vokale.',`<div class="rc-box" style="font-style:italic;font-size:14px">"${s}"</div><input class="rc-input" id="vi" type="number" placeholder="Anzahl" style="text-align:center;font-size:24px">`);inputOK('vi',String(count),`Falsch! Es sind ${count} Vokale.`,v=>v.trim());}
+function digitSumQ(){const n=~~(Math.random()*900)+100,d=String(n).split('').map(Number),sum=d.reduce((a,b)=>a+b,0);setBody(`Alle Ziffern von ${n} addieren`,'Jede Ziffer einzeln.',`<input class="rc-input" id="ds" type="number" placeholder="Summe" style="text-align:center;font-size:24px">`);inputOK('ds',String(sum),`Falsch! ${d.join('+')}=${sum}`,v=>v.trim());}
+function capitalQ(){const d=picks([{c:'Deutschland',opts:['Berlin','München','Hamburg','Frankfurt'],a:'Berlin'},{c:'Frankreich',opts:['Paris','Lyon','Marseille','Nizza'],a:'Paris'},{c:'Japan',opts:['Tokio','Osaka','Kyoto','Hiroshima'],a:'Tokio'},{c:'Australien',opts:['Canberra','Sydney','Melbourne','Brisbane'],a:'Canberra'}]);const opts=shuf(d.opts);mcBuild(`Hauptstadt von ${d.c}?`,'',opts,opts.indexOf(d.a));}
+function countryQ(){const d=picks([{cap:'Wien',opts:['Österreich','Schweiz','Deutschland','Ungarn'],a:'Österreich'},{cap:'Madrid',opts:['Spanien','Portugal','Italien','Frankreich'],a:'Spanien'},{cap:'Rom',opts:['Italien','Spanien','Griechenland','Portugal'],a:'Italien'}]);const opts=shuf(d.opts);mcBuild(`In welchem Land liegt ${d.cap}?`,'',opts,opts.indexOf(d.a));}
+function animalSoundQ(){const d=picks([{a:'Katze',s:'miaut',o:['miaut','bellt','grunzt','muht']},{a:'Hund',s:'bellt',o:['bellt','miaut','muht','grunzt']},{a:'Kuh',s:'muht',o:['muht','grunzt','bellt','miaut']}]);const opts=shuf(d.o);mcBuild(`Was macht eine ${d.a}?`,'',opts,opts.indexOf(d.s));}
+function fruitVegQ(){const f=['Apfel','Banane','Kirsche','Mango','Birne'];const v=['Karotte','Brokkoli','Zucchini','Kohl','Paprika'];const isF=Math.random()<0.5,item=isF?picks(f):picks(v);mcBuild(`Ist „${item}" Obst oder Gemüse?`,'',['Obst','Gemüse'],isF?0:1,true);}
+function trueOrFalseQ(){const d=picks([{q:'Die Erde ist flach.',a:false},{q:'Wasser kocht bei 100°C.',a:true},{q:'Der Mond ist größer als die Sonne.',a:false},{q:'Menschen haben 206 Knochen.',a:true},{q:'Schall ist schneller als Licht.',a:false},{q:'Ein Oktopus hat 8 Arme.',a:true}]);mcBuild(d.q,'Wahr oder Falsch?',['Wahr','Falsch'],d.a?0:1,true);}
+function scienceQ(){const d=picks([{q:'Was ist H₂O?',opts:['Wasser','Sauerstoff','Salz','Zucker'],a:'Wasser'},{q:'Planeten im Sonnensystem?',opts:['8','9','7','10'],a:'8'},{q:'Häufigstes Gas in der Luft?',opts:['Stickstoff','Sauerstoff','CO₂','Argon'],a:'Stickstoff'}]);const opts=shuf(d.opts);mcBuild(d.q,'Wissenschaft.',opts,opts.indexOf(d.a));}
+function palindromeQ(){const pal=['Rentner','Level','Anna','Otto','Ebbe'];const np=['Hund','Tisch','Fenster','Brot','Lampe'];const isP=Math.random()<0.5,w=isP?picks(pal):picks(np);mcBuild(`Ist „${w}" ein Palindrom?`,'Vorwärts wie rückwärts?',['Ja','Nein'],isP?0:1,true);}
+function rhymeQ(){const d=picks([{w:'Hund',opts:['Mund','Wald','Tisch','Berg'],a:'Mund'},{w:'Baum',opts:['Raum','Fluss','Berg','Tisch'],a:'Raum'},{w:'Nacht',opts:['Macht','Tisch','Hund','Brot'],a:'Macht'}]);const opts=shuf(d.opts);mcBuild(`Was reimt sich auf „${d.w}"?`,'',opts,opts.indexOf(d.a));}
+function spellingQ(){const d=picks([{q:'Welches Wort ist korrekt?',opts:['Definitiv','Definitief','Defenitev'],a:'Definitiv'},{q:'Richtig geschrieben?',opts:['Brücke','Brüke','Bruecke'],a:'Brücke'},{q:'Korrekte Schreibweise?',opts:['Schmetterling','Schmetterlink','Schmeterling'],a:'Schmetterling'}]);const opts=shuf(d.opts);mcBuild(d.q,'Rechtschreibung.',opts,opts.indexOf(d.a));}
+function longestWordQ(){const d=picks([{words:['Hund','Brücke','Apfel','Sonnenschein'],a:'Sonnenschein'},{words:['Tisch','Fensterrahmen','Buch','Hut'],a:'Fensterrahmen'}]);const opts=shuf(d.words);mcBuild('Welches ist das längste Wort?','',opts,opts.indexOf(d.a));}
+function lastLetterQ(){const w=picks(['Telefon','Gabel','Hund','Schrank','Teppich','Birne','Schloss']);const last=w[w.length-1].toLowerCase();setBody(`Letzter Buchstabe von „${w}"?`,'Nur diesen Buchstaben eingeben.',`<input class="rc-input" id="ll" placeholder="Buchstabe" autocomplete="off" maxlength="1" style="text-align:center;font-size:40px">`);inputOK('ll',last,`Falsch! Letzter Buchstabe = „${last.toUpperCase()}"`);}
+function reverseWordQ(){const w=picks(['MENSCH','ROBOT','ZUGANG','SICHER','DIGITAL']);const rev=w.split('').reverse().join('');setBody('Rückwärts gelesen ergibt …','Wort rückwärts eintippen.',`<div class="rc-q" style="font-size:26px;font-weight:700;letter-spacing:7px;font-family:'Courier New',monospace">${rev}</div><input class="rc-input" id="rw" placeholder="Vorwärts" autocomplete="off" style="text-align:center;font-size:20px;letter-spacing:4px">`);inputOK('rw',w.toLowerCase(),`Falsch! ${rev} rückwärts = ${w}`);}
+function seasonQ(){const d=picks([{m:'Januar',s:'Winter'},{m:'Juli',s:'Sommer'},{m:'April',s:'Frühling'},{m:'Oktober',s:'Herbst'},{m:'Dezember',s:'Winter'}]);const opts=['Frühling','Sommer','Herbst','Winter'];mcBuild(`In welcher Jahreszeit liegt der ${d.m}?`,'',opts,opts.indexOf(d.s),true);}
+function emojiQ(){const d=picks([{e:'🍕',a:'Pizza',o:['Pizza','Hamburger','Sushi','Taco']},{e:'🚀',a:'Rakete',o:['Rakete','Flugzeug','Auto','Boot']},{e:'🦁',a:'Löwe',o:['Löwe','Tiger','Bär','Wolf']},{e:'⚡',a:'Blitz',o:['Blitz','Feuer','Wasser','Eis']}]);const opts=shuf(d.o);mcBuild(`Was bedeutet ${d.e}?`,'',opts,opts.indexOf(d.a),true);}
+function logicQ(){const d=picks([{q:'Du hast 3 Äpfel und gibst 2 weg. Wie viele?',opts:['1','2','0','3'],a:'1'},{q:'Was ist größer: ½ von 100 oder Doppeltes von 20?',opts:['½ von 100','Doppeltes von 20','Gleich','Weiß nicht'],a:'Gleich'}]);const opts=shuf(d.opts);mcBuild(d.q,'Logik!',opts,opts.indexOf(d.a));}
+function evenOddQ(){const n=~~(Math.random()*99)+1;mcBuild(`Ist ${n} gerade oder ungerade?`,'',['Gerade','Ungerade'],n%2===0?0:1,true);}
+
+/* ── CLOCK ── */
+function clockQ(){
+  const h=~~(Math.random()*12)+1,m=picks([0,15,30,45]);
+  const fmt=(hh,mm)=>`${hh}:${String(mm).padStart(2,'0')} Uhr`;
+  const correct=fmt(h,m);
+  const opts=shuf([correct,fmt(h===12?1:h+1,m),fmt(h,(m+15)%60),fmt(h===1?12:h-1,m)]);
+  const ci=opts.indexOf(correct);
+  setHdr('Welche Uhrzeit zeigt die Uhr?','');
+  document.getElementById('body').innerHTML=`<div class="rc-body"><canvas id="ck" width="150" height="150"></canvas><div class="rc-list-grid" id="mc">${opts.map((o,i)=>`<button class="rc-opt" data-i="${i}" style="font-family:'Courier New',monospace;font-size:13px">${o}</button>`).join('')}</div></div>`;
+  raf(()=>{
+    const cv=document.getElementById('ck'),ctx=cv.getContext('2d'),cx=75,cy=75,r=67;
+    ctx.beginPath();ctx.arc(cx,cy,r,0,2*Math.PI);const g=ctx.createRadialGradient(cx,cy-15,4,cx,cy,r);g.addColorStop(0,'#fff');g.addColorStop(1,'#f8f9fa');ctx.fillStyle=g;ctx.fill();ctx.strokeStyle='#dadce0';ctx.lineWidth=2.5;ctx.stroke();
+    for(let i=0;i<12;i++){const a=i/12*2*Math.PI-Math.PI/2,maj=i%3===0;ctx.strokeStyle=maj?'#3c4043':'#9aa0a6';ctx.lineWidth=maj?2.5:1.5;const i1=maj?r*.77:r*.88;ctx.beginPath();ctx.moveTo(cx+Math.cos(a)*i1,cy+Math.sin(a)*i1);ctx.lineTo(cx+Math.cos(a)*(r-4),cy+Math.sin(a)*(r-4));ctx.stroke();}
+    const ha=((h%12)+m/60)/12*2*Math.PI-Math.PI/2;ctx.strokeStyle='#202124';ctx.lineWidth=4.5;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(cx-Math.cos(ha)*7,cy-Math.sin(ha)*7);ctx.lineTo(cx+Math.cos(ha)*r*.52,cy+Math.sin(ha)*r*.52);ctx.stroke();
+    const ma=m/60*2*Math.PI-Math.PI/2;ctx.strokeStyle='#5f6368';ctx.lineWidth=2.5;ctx.beginPath();ctx.moveTo(cx-Math.cos(ma)*7,cy-Math.sin(ma)*7);ctx.lineTo(cx+Math.cos(ma)*r*.73,cy+Math.sin(ma)*r*.73);ctx.stroke();
+    ctx.beginPath();ctx.arc(cx,cy,5,0,2*Math.PI);ctx.fillStyle='#202124';ctx.fill();ctx.beginPath();ctx.arc(cx,cy,2,0,2*Math.PI);ctx.fillStyle='#fff';ctx.fill();
+    document.querySelectorAll('#mc .rc-opt').forEach(btn=>{btn.onclick=()=>{const i=+btn.dataset.i;document.querySelectorAll('#mc .rc-opt').forEach(b=>b.disabled=true);btn.classList.add(i===ci?'ok':'bad');if(i===ci){S._ok=true;setTimeout(verify,400);}else{setTimeout(()=>{document.querySelectorAll('#mc .rc-opt').forEach(b=>{b.disabled=false;b.classList.remove('bad');});},700);}};});
+  });
+  S.verify=()=>S._ok?true:'Bitte wähle eine Uhrzeit.';
+}
+
+/* ── FLAG ── */
+function flagQ(){
+  const f=picks([{e:'🇩🇪',c:'Deutschland'},{e:'🇫🇷',c:'Frankreich'},{e:'🇯🇵',c:'Japan'},{e:'🇮🇹',c:'Italien'},{e:'🇧🇷',c:'Brasilien'},{e:'🇨🇦',c:'Kanada'},{e:'🇦🇺',c:'Australien'}]);
+  const all=['Deutschland','Frankreich','Japan','Italien','Brasilien','Kanada','Australien','Spanien','Polen'];
+  const opts=shuf([f.c,...shuf(all.filter(c=>c!==f.c)).slice(0,3)]);
+  setBody('Welchem Land gehört diese Flagge?','',`<div style="font-size:80px;text-align:center;line-height:1.1;padding:4px 0">${f.e}</div><div class="rc-list-grid" id="mc">${opts.map((o,i)=>`<button class="rc-opt" data-i="${i}">${o}</button>`).join('')}</div>`);
+  const ci=opts.indexOf(f.c);
+  raf(()=>{document.querySelectorAll('#mc .rc-opt').forEach(btn=>{btn.onclick=()=>{const i=+btn.dataset.i;document.querySelectorAll('#mc .rc-opt').forEach(b=>b.disabled=true);btn.classList.add(i===ci?'ok':'bad');if(i===ci){S._ok=true;setTimeout(verify,400);}else{setTimeout(()=>{document.querySelectorAll('#mc .rc-opt').forEach(b=>{b.disabled=false;b.classList.remove('bad');});},700);}};});});
+  S.verify=()=>S._ok?true:'Bitte wähle eine Antwort.';
+}
+
+/* ── REACTION ── */
+function reactionQ(){
+  setHdr('Klicke wenn GRÜN erscheint!','Nur bei Grün klicken — nicht zu früh!');
+  document.getElementById('body').innerHTML=`<div class="rc-body"><div class="rc-light" id="rl">⏳</div><div id="rm" style="font-size:12px;color:var(--muted);text-align:center">Warte auf das grüne Licht …</div></div>`;
+  const l=document.getElementById('rl'),m=document.getElementById('rm');
+  let phase='wait',done=false;
+  const t=setTimeout(()=>{phase='go';l.style.background='#34a853';l.style.boxShadow='0 0 22px rgba(52,168,83,.5)';l.style.borderColor='#34a853';l.textContent='🟢';m.textContent='JETZT KLICKEN!';m.style.color='#34a853';m.style.fontWeight='700';},1500+Math.random()*3000);
+  l.onclick=()=>{if(done)return;done=true;clearTimeout(t);if(phase==='wait'){l.style.background='#fce8e6';l.style.borderColor='#ea4335';l.textContent='❌';m.textContent='Zu früh!';m.style.color='#ea4335';S._fail=true;}else{l.style.background='#e6f4ea';l.style.borderColor='#34a853';l.textContent='✓';m.textContent='Gut!';m.style.color='#34a853';S._ok=true;setTimeout(verify,500);}};
+  S.verify=()=>S._ok?true:S._fail?'Zu früh geklickt — warte auf Grün!':'Klicke wenn das Licht grün wird!';
+}
+
+/* ── TIMED MATH ── */
+function timedMathQ(){
+  const lim=5+~~(Math.random()*5);const a=~~(Math.random()*15)+3,b=~~(Math.random()*15)+3,ans=a+b;
+  setHdr(`Beantworte in ${lim} Sekunden!`,'Zeitlimit läuft …');
+  document.getElementById('body').innerHTML=`<div class="rc-body"><div class="rc-tbar-wrap"><div class="rc-tbar" id="tb" style="width:100%"></div></div><div class="rc-q" style="font-size:32px;font-weight:700;font-family:'Courier New',monospace">${a} + ${b} = ?</div><input class="rc-input" id="tmi" type="number" placeholder="Schnell!" style="text-align:center;font-size:22px"></div>`;
+  let el2=0,iv=null;const bar=document.getElementById('tb');
+  iv=setInterval(()=>{el2+=100;const pct=Math.max(0,(1-el2/(lim*1000))*100);bar.style.width=pct+'%';bar.style.background=pct<25?'#ea4335':pct<50?'#fbbc05':'#4a90d9';if(el2>=lim*1000){clearInterval(iv);const inp=document.getElementById('tmi');if(inp)inp.disabled=true;S._time=true;verify();}},100);
+  raf(()=>{const el3=document.getElementById('tmi');if(el3){el3.focus();el3.addEventListener('keydown',e=>{if(e.key==='Enter'){clearInterval(iv);verify();}});}});
+  S.verify=()=>{if(S._time)return'Zeit abgelaufen!';const v=el_val('tmi').trim();return v===String(ans)?true:`Falsch! ${a} + ${b} = ${ans}`;};
+}
+
+/* ── HOLD BUTTON ── */
+function holdBtnQ(){
+  const secs=2+~~(Math.random()*3);
+  setHdr(`Button ${secs} Sekunden gedrückt halten`,'Nicht loslassen!');
+  document.getElementById('body').innerHTML=`<div class="rc-body"><div class="rc-hold" id="htr"><div class="rc-hold-fill" id="hf"></div><div class="rc-hold-lbl">👆 Gedrückt halten</div></div></div>`;
+  let ms=0,iv=null;const req=secs*1000,tr=document.getElementById('htr'),fl=document.getElementById('hf');
+  const go=()=>{if(iv)return;iv=setInterval(()=>{ms+=50;fl.style.width=Math.min(ms/req*100,100)+'%';if(ms>=req){clearInterval(iv);iv=null;S._ok=true;verify();}},50);};
+  const stop=()=>{clearInterval(iv);iv=null;ms=0;fl.style.width='0%';};
+  tr.addEventListener('mousedown',go);tr.addEventListener('touchstart',e=>{e.preventDefault();go();},{passive:false});
+  tr.addEventListener('mouseup',stop);tr.addEventListener('mouseleave',stop);tr.addEventListener('touchend',stop);
+  S.verify=()=>S._ok?true:'Button länger gedrückt halten!';
+}
+
+/* ── SLIDER ── */
+function sliderQ(){
+  setHdr('Schiebe das Puzzle an die richtige Stelle','Ziehe den blauen Block in den gestrichelten Bereich.');
+  const pct=28+~~(Math.random()*46);
+  document.getElementById('body').innerHTML=`<div class="rc-body"><div class="rc-q">Vervollständige das Bild</div><div class="rc-slider-wrap"><div class="rc-slider-track" id="st"><div class="rc-groove"></div><div class="rc-tgt" id="stgt"></div><div class="rc-piece" id="spc">▶</div></div><div class="rc-slider-hint">← Schiebe den Block an die markierte Stelle →</div></div></div>`;
+  const track=document.getElementById('st'),piece=document.getElementById('spc'),tgt=document.getElementById('stgt');
+  let cur=22,drag=false,sx=0,sl=22;
+  slAC=new AbortController();const sig=slAC.signal;
+  raf(()=>{
+    const tw=track.offsetWidth||370,max=tw-40-22,tL=~~(max*pct/100)+22;
+    tgt.style.left=tL+'px';
+    const mv=cx=>{if(!drag)return;cur=Math.max(22,Math.min(max,sl+cx-sx));piece.style.left=cur+'px';tgt.classList.toggle('near',Math.abs(cur-tL)<=28);};
+    piece.addEventListener('mousedown',e=>{drag=true;sx=e.clientX;sl=cur;e.preventDefault();},{signal:sig});
+    piece.addEventListener('touchstart',e=>{drag=true;sx=e.touches[0].clientX;sl=cur;e.preventDefault();},{passive:false,signal:sig});
+    document.addEventListener('mousemove',e=>mv(e.clientX),{signal:sig});
+    document.addEventListener('touchmove',e=>mv(e.touches[0].clientX),{passive:true,signal:sig});
+    document.addEventListener('mouseup',()=>{drag=false;},{signal:sig});
+    document.addEventListener('touchend',()=>{drag=false;},{signal:sig});
+    S.verify=()=>Math.abs(cur-tL)<=24?true:'Nicht ganz! Genauer ziehen.';
+  });
+}
+
+document.addEventListener('keydown',e=>{if(e.key==='Escape')close_popup();});
+document.getElementById('widget').addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();open_challenge();}});
+</script>
+</body>
+</html>
