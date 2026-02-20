@@ -19,7 +19,6 @@ body{
 }
 
 #stars{position:fixed;inset:0;z-index:0;pointer-events:none;}
-
 #canvas{flex:1;position:relative;overflow:hidden;z-index:1;}
 
 #logo{
@@ -31,7 +30,6 @@ body{
 }
 #logo strong{font-weight:600;font-style:normal;}
 
-/* FIX: hint centered properly */
 .hint{
   position:absolute;top:50%;left:50%;
   transform:translate(-50%,-50%);
@@ -66,8 +64,6 @@ body{
 @keyframes shrink{0%{opacity:1}100%{opacity:0;transform:scale(.4)}}
 .cel .em{font-size:17px;}
 
-/* Light mode overrides */
-
 #sidebar{
   width:300px;flex-shrink:0;
   border-left:1px solid #2a2a2a;
@@ -76,7 +72,6 @@ body{
   z-index:10;position:relative;
   transition:background .3s,border-color .3s;
 }
-
 
 #chips{
   padding:12px 12px 8px;
@@ -102,7 +97,6 @@ body{
 }
 .chip .em{font-size:15px;}
 .chip.isnew{border-color:#f97316;background:#1a0e00;}
-
 
 #sidebar-bottom{
   padding:10px 12px;border-top:1px solid #2a2a2a;
@@ -184,7 +178,6 @@ body{
 }
 @keyframes spin{to{transform:translateX(-50%) rotate(360deg)}}
 
-/* FIX: recipe popup with dark/light support */
 #recipe-popup{
   position:fixed;top:50%;left:50%;
   transform:translate(-50%,-50%);
@@ -215,7 +208,6 @@ body{
 }
 .cel.merge-flash{animation:mergeFlash .45s ease;}
 
-/* ── PANELS (dark by default, adapt to light) ── */
 .panel{
   position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);
   background:#111;border:1.5px solid #2a2a2a;border-radius:16px;
@@ -267,7 +259,6 @@ body{
   animation:tin .3s ease;
 }
 
-/* nav buttons */
 #sidebar-nav{
   display:flex;gap:4px;padding:8px 12px;border-bottom:1px solid #2a2a2a;
   transition:border-color .3s;
@@ -368,7 +359,6 @@ const SECRET   = '22112011';
     discovered = d ? JSON.parse(d) : [...STARTERS];
     recipes    = r ? JSON.parse(r) : {};
   } catch { discovered=[...STARTERS]; recipes={}; }
-  // Ensure starters always exist and have timestamps
   STARTERS.forEach(s => {
     if (!discovered.find(e => e.name === s.name)) discovered.unshift(s);
   });
@@ -377,9 +367,6 @@ const SECRET   = '22112011';
   try { totalMerges = parseInt(localStorage.getItem('ac_merges')  || '0'); } catch {}
   renderList();
   initStars();
-  // Start in dark mode (already default CSS)
-
-
 })();
 
 function save(){
@@ -413,7 +400,7 @@ function initStars(){
         const dx=stars[i].x-stars[j].x, dy=stars[i].y-stars[j].y;
         const d=Math.sqrt(dx*dx+dy*dy);
         if(d<110){
-          ctx.strokeStyle=`rgba(${dark?'150,150,180':'100,100,120'},${(1-d/110)*(dark?.2:.12)})`;
+          ctx.strokeStyle=`rgba(150,150,180,${(1-d/110)*.2})`;
           ctx.lineWidth=.5;
           ctx.beginPath();ctx.moveTo(stars[i].x,stars[i].y);ctx.lineTo(stars[j].x,stars[j].y);ctx.stroke();
         }
@@ -421,7 +408,7 @@ function initStars(){
     }
     stars.forEach(s => {
       ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,Math.PI*2);
-      ctx.fillStyle=`rgba(${dark?'160,160,180':'80,80,100'},${s.op})`;ctx.fill();
+      ctx.fillStyle=`rgba(160,160,180,${s.op})`;ctx.fill();
     });
     requestAnimationFrame(draw);
   }
@@ -431,7 +418,6 @@ function initStars(){
 
 /* ── SIDEBAR ── */
 function sortedByAZ() { return [...discovered].sort((a,b)=>a.name.localeCompare(b.name,'de')); }
-// FIX: properly sort by time using ts (timestamp)
 function sortedByTime(){ return [...discovered].sort((a,b)=>(b.ts||0)-(a.ts||0)); }
 
 function renderList(f=''){
@@ -444,8 +430,6 @@ function renderList(f=''){
     const d = document.createElement('div');
     d.className = 'chip' + (el.isNew?' isnew':'');
     d.innerHTML = `<span class="em">${el.emoji}</span><span>${el.name}</span>`;
-    // spawn handled by mousedown/mouseup
-    // drag from sidebar to canvas
     d.addEventListener('mousedown', e => {
       const startX=e.clientX, startY=e.clientY;
       let ghost=null, moved=false;
@@ -478,7 +462,6 @@ function renderList(f=''){
       document.addEventListener('mouseup',onUp);
     });
     d.style.animation=`chipIn .25s cubic-bezier(.34,1.3,.64,1) ${Math.min(idx*0.025,0.3)}s both`;
-    // star button
     const star=document.createElement('span');
     star.className='chip-star'+(favorites.includes(el.name)?' active':'');
     star.textContent='⭐';
@@ -539,7 +522,6 @@ document.addEventListener('touchend',end);
 function end(){
   if(!drag)return;
   items.forEach(o=>o.div.classList.remove('near'));
-  // teleport if outside
   const cv=document.getElementById('canvas');
   const r=cv.getBoundingClientRect();
   let changed=false;
@@ -556,7 +538,6 @@ function end(){
 /* ── KEYBOARD ── */
 document.addEventListener('keydown',e=>{
   if(e.key==='l'||e.key==='L'){ window.close(); return; }
-  // secret combo (only when E not held)
   if(e.key>='0'&&e.key<='9'&&!eHeld){
     secretBuffer+=e.key;
     if(secretBuffer.length>SECRET.length) secretBuffer=secretBuffer.slice(-SECRET.length);
@@ -598,7 +579,6 @@ async function doMerge(a,b){
   document.getElementById('spinner').style.display='block';
   setTimeout(()=>{remove(a);remove(b);},110);
 
-  // Check existing recipe
   const existingResult=Object.keys(recipes).find(name=>{
     const r=recipes[name];
     return r===`${a.emoji} ${a.name} + ${b.emoji} ${b.name}` ||
@@ -608,7 +588,6 @@ async function doMerge(a,b){
   if(existingResult){
     const el=discovered.find(e=>e.name===existingResult);
     if(el){ spawn(el,mx,my); toast(el,false); }
-    // FIX: also count merges for cached results
     totalMerges++;
     localStorage.setItem('ac_merges', totalMerges);
     checkAchievements();
@@ -619,7 +598,6 @@ async function doMerge(a,b){
   try{
     const res = await ask(a.name,a.emoji,b.name,b.emoji);
     const isNew = !discovered.find(e=>e.name.toLowerCase()===res.name.toLowerCase());
-    // FIX: add timestamp for time-sorting
     res.ts = Date.now();
     recipes[res.name] = `${a.emoji} ${a.name} + ${b.emoji} ${b.name}`;
     if(isNew){ res.isNew=true; discovered.push(res); }
@@ -628,7 +606,6 @@ async function doMerge(a,b){
     const spawned=spawn(res,mx,my);
     setTimeout(()=>{spawned.div.classList.add('merge-flash');setTimeout(()=>spawned.div.classList.remove('merge-flash'),450);},150);
     toast(res,isNew);
-    // FIX: increment INSIDE try so it only counts successful merges
     totalMerges++;
     localStorage.setItem('ac_merges', totalMerges);
     checkAchievements();
@@ -640,29 +617,24 @@ async function doMerge(a,b){
   busy=false;
 }
 
-/* OpenRouter API */
+/* ── API ── */
 async function ask(na,ea,nb,eb){
-  const r=await fetch("https://openrouter.ai/api/v1/chat/completions",{
-    method:"POST",
-    headers:{
-      "Content-Type":"application/json",
-      "Authorization":"Bearer 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",
-      "HTTP-Referer":"https://ahmads-onkel.github.io",
-      "X-Title":"Ahmad Craft"
-    },
-    body:JSON.stringify({
-      model:"meta-llama/llama-3.3-8b-instruct:free",
-      max_tokens:60,
-      messages:[
-        {role:"system",content:'You are a crafting game AI. Combine two elements. Reply ONLY with raw JSON: {"emoji":"🌋","name":"Lava"} — 1 emoji, 1-2 German words, nothing else.'},
-        {role:"user",content:ea+' '+na+' + '+eb+' '+nb}
+  const r = await fetch("https://e.kirstadio.workers.dev", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      model: "meta-llama/llama-3.3-8b-instruct:free",
+      max_tokens: 60,
+      messages: [
+        {role:"system", content:'You are a crafting game AI. Combine two elements. Reply ONLY with raw JSON: {"emoji":"🌋","name":"Lava"} — 1 emoji, 1-2 German words, nothing else.'},
+        {role:"user", content: ea+' '+na+' + '+eb+' '+nb}
       ]
     })
   });
-  const d=await r.json();
   if(!r.ok) throw new Error("API "+r.status);
-  const raw=d.choices[0].message.content;
-  const match=raw.match(/\{[^}]+\}/);
+  const d = await r.json();
+  const raw = d.choices[0].message.content;
+  const match = raw.match(/\{[^}]+\}/);
   if(!match) throw new Error("No JSON: "+raw);
   return JSON.parse(match[0]);
 }
@@ -688,7 +660,6 @@ function resetAll(){
 function unlockAdmin(){
   const flash=document.createElement('div');
   flash.style.cssText='position:fixed;inset:0;background:rgba(255,215,0,.15);z-index:9998;pointer-events:none;';
-  flash.style.animation='none';
   document.body.appendChild(flash);
   requestAnimationFrame(()=>{
     flash.style.transition='opacity .6s ease';
@@ -703,14 +674,14 @@ function showAdminGUI(){
   const gui=document.createElement('div');
   gui.id='admin-gui';
   gui.style.cssText=`position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);
-    background:${dark?'#111':'#fff'};border:2px solid gold;border-radius:16px;
+    background:#111;border:2px solid gold;border-radius:16px;
     padding:24px 28px;z-index:9999;min-width:320px;box-shadow:0 8px 40px rgba(0,0,0,.5);
-    font-family:Inter,sans-serif;color:${dark?'#ddd':'#111'};`;
-  const ib=`background:${dark?'#1e1e1e':'#f5f5f5'};border:1.5px solid ${dark?'#333':'#ddd'};border-radius:8px;font-size:14px;color:${dark?'#ddd':'#111'};padding:8px 12px;width:100%;margin-bottom:8px;outline:none;font-family:Inter,sans-serif;`;
+    font-family:Inter,sans-serif;color:#ddd;`;
+  const ib=`background:#1e1e1e;border:1.5px solid #333;border-radius:8px;font-size:14px;color:#ddd;padding:8px 12px;width:100%;margin-bottom:8px;outline:none;font-family:Inter,sans-serif;`;
   gui.innerHTML=`
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
       <div style="font-size:15px;font-weight:700;">👑 Admin Panel</div>
-      <button onclick="document.getElementById('admin-gui').remove()" style="background:none;border:none;font-size:18px;cursor:pointer;color:${dark?'#aaa':'#666'};">✕</button>
+      <button onclick="document.getElementById('admin-gui').remove()" style="background:none;border:none;font-size:18px;cursor:pointer;color:#aaa;">✕</button>
     </div>
     <div style="font-size:12px;color:#888;margin-bottom:6px;">Element Name</div>
     <input id="admin-name" placeholder="z.B. Drache" style="${ib}">
@@ -732,11 +703,8 @@ function adminSpawn(){
   spawn(el);
   toast(el,isNew);
   document.getElementById('admin-gui')?.remove();
-  // FIX: mark admin achievement by a proper flag
   if(!achUnlocked.includes('admin')){ achUnlocked.push('admin'); localStorage.setItem('ac_ach',JSON.stringify(achUnlocked)); showAchToast(ACHIEVEMENTS.find(a=>a.id==='admin')); }
 }
-
-/* Always dark mode */
 
 /* ── ACHIEVEMENTS ── */
 const ACHIEVEMENTS=[
