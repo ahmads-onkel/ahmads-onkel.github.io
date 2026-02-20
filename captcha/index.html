@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Sicherheitsüberprüfung</title>
+<title>reCAPTCHA</title>
+<link rel="icon" type="image/png" href="https://raw.githubusercontent.com/ahmads-onkel/ahmads-onkel.github.io/refs/heads/main/1200px-RecaptchaLogo.svg_.png">
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
@@ -398,9 +399,9 @@ const PHOTO_POOLS = {
   'Bussen':['https://images.unsplash.com/photo-1570125909232-eb263c188f7e?w=300&h=300&fit=crop','https://images.unsplash.com/photo-1464219789935-c2d9d9aba644?w=300&h=300&fit=crop','https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?w=300&h=300&fit=crop'],
   'Fahrrädern':['https://images.unsplash.com/photo-1485965120184-e220f721d03e?w=300&h=300&fit=crop','https://images.unsplash.com/photo-1571333250630-f0230c320b6d?w=300&h=300&fit=crop','https://images.unsplash.com/photo-1511994298241-608e28f14fde?w=300&h=300&fit=crop','https://images.unsplash.com/photo-1532298229144-0ec0c57515c7?w=300&h=300&fit=crop'],
   'Autos':['https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?w=300&h=300&fit=crop','https://images.unsplash.com/photo-1603386329225-868f9b1ee6c9?w=300&h=300&fit=crop','https://images.unsplash.com/photo-1541899481282-d53bffe3c35d?w=300&h=300&fit=crop','https://images.unsplash.com/photo-1555215695-3004980ad54e?w=300&h=300&fit=crop','https://images.unsplash.com/photo-1502877338535-766e1452684a?w=300&h=300&fit=crop'],
-  'Brücken':['https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?w=300&h=300&fit=crop','https://images.unsplash.com/photo-1545558014-8692077e9b5c?w=300&h=300&fit=crop','https://images.unsplash.com/photo-1519741497674-611481863552?w=300&h=300&fit=crop'],
-  'Flugzeugen':['https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=300&h=300&fit=crop','https://images.unsplash.com/photo-1540962351504-03099e0a754b?w=300&h=300&fit=crop','https://images.unsplash.com/photo-1569629743817-70d8db6c323b?w=300&h=300&fit=crop','https://images.unsplash.com/photo-1474302771604-21f76dc9a519?w=300&h=300&fit=crop'],
-  'Zügen':['https://images.unsplash.com/photo-1474487548417-781cb71495f3?w=300&h=300&fit=crop','https://images.unsplash.com/photo-1523474253046-8cd2748b5fd2?w=300&h=300&fit=crop','https://images.unsplash.com/photo-1532375810709-75b1da00537c?w=300&h=300&fit=crop'],
+  'Brücken':['https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?w=300&h=300&fit=crop','https://images.unsplash.com/photo-1545558014-8692077e9b5c?w=300&h=300&fit=crop','https://images.unsplash.com/photo-1519741497674-611481863552?w=300&h=300&fit=crop','https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=300&h=300&fit=crop','https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=300&h=300&fit=crop','https://images.unsplash.com/photo-1433086966358-54859d0ed716?w=300&h=300&fit=crop'],
+  'Flugzeugen':['https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=300&h=300&fit=crop','https://images.unsplash.com/photo-1540962351504-03099e0a754b?w=300&h=300&fit=crop','https://images.unsplash.com/photo-1569629743817-70d8db6c323b?w=300&h=300&fit=crop','https://images.unsplash.com/photo-1474302771604-21f76dc9a519?w=300&h=300&fit=crop','https://images.unsplash.com/photo-1556388158-158ea5ccacbd?w=300&h=300&fit=crop','https://images.unsplash.com/photo-1551197372-71b5c0f37a38?w=300&h=300&fit=crop','https://images.unsplash.com/photo-1495055154266-57bbdeada43e?w=300&h=300&fit=crop','https://images.unsplash.com/photo-1521727857535-28d2047619c7?w=300&h=300&fit=crop'],
+  'Zügen':['https://images.unsplash.com/photo-1474487548417-781cb71495f3?w=300&h=300&fit=crop','https://images.unsplash.com/photo-1523474253046-8cd2748b5fd2?w=300&h=300&fit=crop','https://images.unsplash.com/photo-1532375810709-75b1da00537c?w=300&h=300&fit=crop','https://images.unsplash.com/photo-1515266591878-f93e32bc5937?w=300&h=300&fit=crop','https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?w=300&h=300&fit=crop','https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?w=300&h=300&fit=crop'],
   '_street':['https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?w=300&h=300&fit=crop','https://images.unsplash.com/photo-1519003722824-194d4455a60c?w=300&h=300&fit=crop','https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=300&h=300&fit=crop','https://images.unsplash.com/photo-1514890547357-a9ee288728e0?w=300&h=300&fit=crop','https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?w=300&h=300&fit=crop','https://images.unsplash.com/photo-1530631673369-bc20fdb32077?w=300&h=300&fit=crop','https://images.unsplash.com/photo-1504384308090-c894fdcc538d?w=300&h=300&fit=crop','https://images.unsplash.com/photo-1498889444388-e67ea62c464b?w=300&h=300&fit=crop'],
 };
 
@@ -579,7 +580,7 @@ function _buildPhotoGrid(cols,theme){
     div.appendChild(tick);
     const img=document.createElement('img');img.src=cell.url;img.alt='';img.loading='lazy';
     img.onload=()=>{if(shim.parentNode)shim.remove();};
-    img.onerror=()=>{div.style.background=cell.target?'#c8e6c9':'#e3f2fd';div.style.display='flex';div.style.alignItems='center';div.style.justifyContent='center';div.style.fontSize='11px';div.style.color='#555';div.style.padding='4px';if(shim.parentNode)shim.remove();};
+    img.onerror=()=>{div.style.background='#e8e8e8';if(shim.parentNode)shim.remove();img.style.display='none';};
     div.appendChild(img);
     const tog=()=>{div.classList.toggle('sel');selected.has(i)?selected.delete(i):selected.add(i);div.ariaChecked=selected.has(i).toString();};
     div.onclick=tog;div.onkeydown=e=>{if(e.key===' '||e.key==='Enter'){e.preventDefault();tog();}};
