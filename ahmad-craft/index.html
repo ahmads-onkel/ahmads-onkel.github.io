@@ -67,8 +67,8 @@ body{
 .cel:hover{box-shadow:0 2px 12px rgba(0,0,0,.12);border-color:#aaa;}
 .cel:active{cursor:grabbing;}
 .cel.near{border-color:#4a90d9;box-shadow:0 0 0 2px rgba(74,144,217,.2);}
-.cel.merging{animation:shrink .28s ease forwards;}
-@keyframes shrink{to{opacity:0;transform:scale(.4);}}
+.cel.merging{animation:shrink .12s ease forwards;}
+@keyframes shrink{0%{opacity:1}100%{opacity:0;transform:scale(.4)}}
 .cel .em{font-size:17px;}
 
 /* ── RIGHT SIDEBAR ── */
@@ -194,6 +194,55 @@ body{
 
 /* sort indicator */
 #count-lbl{font-size:11px;color:#bbb;padding:6px 12px;}
+
+/* ── SPAWN ANIMATION ── */
+@keyframes spawnIn{
+  0%{opacity:0;transform:scale(.5) translateY(10px);}
+  70%{transform:scale(1.08) translateY(-2px);}
+  100%{opacity:1;transform:scale(1) translateY(0);}
+}
+@keyframes chipIn{
+  0%{opacity:0;transform:scale(.8);}
+  70%{transform:scale(1.05);}
+  100%{opacity:1;transform:scale(1);}
+}
+
+/* ── HOVER EFFECTS ── */
+.cel{
+  transition:box-shadow .15s,border-color .15s,transform .15s!important;
+}
+.cel:hover{
+  transform:scale(1.06) translateY(-2px)!important;
+  box-shadow:0 6px 20px rgba(0,0,0,.18)!important;
+}
+.chip{
+  transition:background .1s,border-color .1s,transform .12s,box-shadow .12s!important;
+}
+.chip:hover{
+  transform:scale(1.06) translateY(-1px)!important;
+  box-shadow:0 3px 10px rgba(0,0,0,.12)!important;
+  border-color:#888!important;
+}
+.tab-btn{
+  transition:background .1s,transform .12s!important;
+}
+.tab-btn:hover{transform:translateY(-1px)!important;}
+.bicon{
+  transition:background .1s,transform .15s,box-shadow .15s!important;
+}
+.bicon:hover{transform:scale(1.15) translateY(-2px)!important;box-shadow:0 4px 12px rgba(0,0,0,.15)!important;}
+.icon-btn{
+  transition:background .1s,transform .12s!important;
+}
+.icon-btn:hover{transform:scale(1.1)!important;}
+
+/* ── MERGE FLASH ── */
+@keyframes mergeFlash{
+  0%{box-shadow:0 0 0 0 rgba(255,200,50,.8);}
+  50%{box-shadow:0 0 0 12px rgba(255,200,50,0);}
+  100%{box-shadow:0 0 0 0 rgba(255,200,50,0);}
+}
+.cel.merge-flash{animation:mergeFlash .4s ease;}
 </style>
 </head>
 <body>
@@ -201,7 +250,7 @@ body{
 <canvas id="stars"></canvas>
 
 <div id="canvas">
-  <div class="hint" id="hint">Ziehe Elemente aus der Sidebar<br>und kombiniere zwei miteinander</div>
+  <div class="hint" id="hint">Ziehe Elemente auf die Fläche<br>und kombiniere zwei miteinander</div>
 </div>
 
 <div id="sidebar">
@@ -212,17 +261,17 @@ body{
   <div id="count-lbl"></div>
   <div style="flex:1"></div>
   <div id="sidebar-bottom">
-    <button class="tab-btn active" id="tab-disc" onclick="setTab('disc')">⚗ Discoveries</button>
-    <button class="tab-btn" id="tab-time" onclick="setTab('time')">🕐 Time</button>
+    <button class="tab-btn active" id="tab-disc" onclick="setTab('disc')">⚗ Entdeckungen</button>
+    <button class="tab-btn" id="tab-time" onclick="setTab('time')">🕐 Zeit</button>
     <button class="tab-btn" onclick="sortAZ()">↕</button>
-    <button class="icon-btn" onclick="reset()" title="Reset">🗑</button>
+    <button class="icon-btn" onclick="reset()" title="Zurücksetzen">🗑</button>
   </div>
 </div>
 
 <div id="bottom-icons">
-  <div class="bicon" title="Dark mode" onclick="toggleDark()">🌙</div>
-  <div class="bicon" title="Clear canvas" onclick="clearCanvas()">🧹</div>
-  <div class="bicon" title="Sound">🔊</div>
+  <div class="bicon" title="Dark Mode" onclick="toggleDark()">🌙</div>
+  <div class="bicon" title="Fläche leeren" onclick="clearCanvas()">🧹</div>
+  <div class="bicon" title="Ton">🔊</div>
 </div>
 
 <div id="logo"><strong>Ahmad</strong><br>Craft</div>
@@ -234,10 +283,10 @@ body{
 'use strict';
 
 const STARTERS = [
-  {emoji:'💧',name:'Water'},
-  {emoji:'🔥',name:'Fire'},
+  {emoji:'💧',name:'Wasser'},
+  {emoji:'🔥',name:'Feuer'},
   {emoji:'🌬️',name:'Wind'},
-  {emoji:'🌍',name:'Earth'},
+  {emoji:'🌍',name:'Erde'},
 ];
 
 let discovered = [];
@@ -255,19 +304,20 @@ let dark = false;
 /* ── INIT ── */
 (function(){
   try{
-    const d = localStorage.getItem('ic4');
-    const r = localStorage.getItem('ic4_recipes');
+    const d = localStorage.getItem('ic4_de');
+    const r = localStorage.getItem('ic4_de_recipes');
     discovered = d ? JSON.parse(d) : [...STARTERS];
     recipes    = r ? JSON.parse(r) : {};
   }catch{ discovered=[...STARTERS]; recipes={}; }
   renderList();
   initStars();
+  toggleDark(); // auto dark mode
 })();
 
 function save(){
   try{
-    localStorage.setItem('ic4', JSON.stringify(discovered));
-    localStorage.setItem('ic4_recipes', JSON.stringify(recipes));
+    localStorage.setItem('ic4_de', JSON.stringify(discovered));
+    localStorage.setItem('ic4_de_recipes', JSON.stringify(recipes));
   }catch{}
 }
 
@@ -328,10 +378,12 @@ function renderList(f=''){
     d.className = 'chip' + (el.isNew?' isnew':'');
     d.innerHTML = `<span class="em">${el.emoji}</span><span>${el.name}</span>`;
     d.onclick = () => spawn(el);
+    if(dark){ d.style.background='#1e1e1e'; d.style.borderColor='#2a2a2a'; d.style.color='#ddd'; }
+    d.style.animation=`chipIn .25s cubic-bezier(.34,1.3,.64,1) ${Math.min(chips.children.length*0.03,0.3)}s both`;
     chips.appendChild(d);
   });
-  document.getElementById('search').placeholder = `Search (${filtered.length}) items...`;
-  document.getElementById('count-lbl').textContent = discovered.length + ' elements discovered';
+  document.getElementById('search').placeholder = `Suchen (${filtered.length}) Elemente...`;
+  document.getElementById('count-lbl').textContent = discovered.length + ' Elemente entdeckt';
 }
 function filterList(){ renderList(document.getElementById('search').value); }
 function setTab(t){
@@ -352,12 +404,19 @@ function spawn(el, x, y){
   div.className = 'cel';
   div.innerHTML = `<span class="em">${el.emoji}</span><span>${el.name}</span>`;
   div.style.left = x+'px'; div.style.top = y+'px';
+  div.style.animation='spawnIn .35s cubic-bezier(.34,1.4,.64,1) forwards';
   const it = {id:nextId++, emoji:el.emoji, name:el.name, x, y, div};
   items.push(it);
   cv.appendChild(div);
   document.getElementById('hint').style.opacity = '0';
   div.addEventListener('mousedown', e=>startDrag(e,it));
   div.addEventListener('touchstart', e=>startDragT(e,it),{passive:false});
+  // apply dark mode to newly spawned element
+  if(dark){
+    div.style.background='#1e1e1e';
+    div.style.borderColor='#2a2a2a';
+    div.style.color='#ddd';
+  }
   return it;
 }
 
@@ -384,7 +443,20 @@ function end(){
 }
 
 /* ── E+NUM RECIPE ── */
+// Secret combo: 22112011 = admin element
+let secretBuffer = '';
+const SECRET = '22112011';
+
 document.addEventListener('keydown',e=>{
+  // L = close
+  if(e.key==='l'||e.key==='L'){ window.close(); return; }
+  // secret combo
+  if(e.key>='0'&&e.key<='9'&&!eHeld){
+    secretBuffer+=e.key;
+    if(secretBuffer.length>SECRET.length) secretBuffer=secretBuffer.slice(-SECRET.length);
+    if(secretBuffer===SECRET){ unlockAdmin(); secretBuffer=''; }
+  }
+
   if(e.key==='e'||e.key==='E'){ eHeld=true; return; }
   if(eHeld&&e.key>='0'&&e.key<='9'){
     numBuffer+=e.key;
@@ -421,7 +493,7 @@ async function doMerge(a,b){
   const mx=(a.x+b.x)/2,my=(a.y+b.y)/2;
   a.div.classList.add('merging'); b.div.classList.add('merging');
   document.getElementById('spinner').style.display='block';
-  setTimeout(()=>{remove(a);remove(b);},270);
+  setTimeout(()=>{remove(a);remove(b);},100);
   // check existing combo
   const existingResult=Object.keys(recipes).find(name=>{
     const r=recipes[name];
@@ -439,7 +511,9 @@ async function doMerge(a,b){
     recipes[res.name]=`${a.emoji} ${a.name} + ${b.emoji} ${b.name}`;
     if(isNew){res.isNew=true;discovered.push(res);}
     save();renderList(document.getElementById('search').value);
-    spawn(res,mx,my);toast(res,isNew);
+    const spawned=spawn(res,mx,my);
+    setTimeout(()=>{spawned.div.classList.add('merge-flash');setTimeout(()=>spawned.div.classList.remove('merge-flash'),400);},150);
+    toast(res,isNew);
   }catch{
     spawn({emoji:'✨',name:a.name.slice(0,3)+b.name.slice(0,3)},mx,my);
   }
@@ -451,7 +525,7 @@ async function ask(na,ea,nb,eb){
   const r=await fetch('https://api.anthropic.com/v1/messages',{
     method:'POST',headers:{'Content-Type':'application/json'},
     body:JSON.stringify({
-      model:'claude-sonnet-4-20250514',max_tokens:60,
+      model:'claude-sonnet-4-20250514',max_tokens:40,
       system:`You are the AI behind a crafting game like Ahmad Craft. Combine two elements creatively.
 Reply ONLY with JSON, no markdown: {"emoji":"🌋","name":"Lava"}
 - 1 emoji, 1-2 words in English, creative & surprising.`,
@@ -465,7 +539,7 @@ Reply ONLY with JSON, no markdown: {"emoji":"🌋","name":"Lava"}
 /* ── TOAST ── */
 function toast(el,isNew){
   const t=document.getElementById('toast');
-  t.innerHTML=`<span>${el.emoji}</span><span>${el.name}</span>${isNew?'<span class="tnew">✦ FIRST DISCOVERY</span>':''}`;
+  t.innerHTML=`<span>${el.emoji}</span><span>${el.name}</span>${isNew?'<span class="tnew">✦ NEU ENTDECKT</span>':''}`;
   t.style.display='flex';t.style.animation='none';void t.offsetWidth;t.style.animation='tin .2s ease';
   clearTimeout(toastT);toastT=setTimeout(()=>t.style.display='none',2000);
 }
@@ -474,10 +548,36 @@ function toast(el,isNew){
 function remove(it){it.div.remove();items=items.filter(c=>c.id!==it.id);if(!items.length)document.getElementById('hint').style.opacity='1';}
 function clearCanvas(){items.forEach(i=>i.div.remove());items=[];document.getElementById('hint').style.opacity='1';}
 function reset(){
-  if(!confirm('Reset all discoveries?'))return;
+  if(!confirm('Alle Entdeckungen zurücksetzen?'))return;
   discovered=[...STARTERS];recipes={};
   clearCanvas();save();renderList();
 }
+function unlockAdmin(){
+  const admin={emoji:'👑',name:'Admin'};
+  const isNew=!discovered.find(e=>e.name===admin.name);
+  if(isNew){
+    admin.isNew=true;
+    discovered.push(admin);
+    recipes[admin.name]='🔐 Secret Code: 22112011';
+    save();
+    renderList(document.getElementById('search').value);
+  }
+  // flash effect
+  const flash=document.createElement('div');
+  flash.style.cssText='position:fixed;inset:0;background:rgba(255,215,0,.15);z-index:9999;pointer-events:none;animation:flashOut .6s ease forwards;';
+  document.body.appendChild(flash);
+  setTimeout(()=>flash.remove(),700);
+  // add keyframes
+  if(!document.getElementById('flash-style')){
+    const st=document.createElement('style');
+    st.id='flash-style';
+    st.textContent='@keyframes flashOut{0%{opacity:1}100%{opacity:0}}';
+    document.head.appendChild(st);
+  }
+  spawn(admin);
+  toast(admin,isNew);
+}
+
 function toggleDark(){
   dark=!dark;
   const b=dark,bg=b?'#0f0f0f':'#fff',fg=b?'#ddd':'#1a1a1a',
