@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dragon Ball Legends — Loading</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- ══════════════════════════════════
+       LOADING SCREEN
+  ══════════════════════════════════ -->
+  <div id="loading-screen">
+
+    <!-- Animated Background -->
+    <div class="bg-layer">
+      <div class="bg-gradient"></div>
+      <div class="stars"></div>
+
+      <!-- Aura expansion rings -->
+      <div class="aura-ring"></div>
+      <div class="aura-ring"></div>
+      <div class="aura-ring"></div>
+
+      <!-- Lightning bolts -->
+      <div class="lightning">
+        <div class="bolt"></div>
+        <div class="bolt"></div>
+        <div class="bolt"></div>
+        <div class="bolt"></div>
+      </div>
+    </div>
+
+    <!-- Dragon Ball Orbs -->
+    <div class="orb-row">
+      <div class="orb"></div>
+      <div class="orb"></div>
+      <div class="orb"></div>
+      <div class="orb"></div>
+      <div class="orb"></div>
+      <div class="orb"></div>
+      <div class="orb"></div>
+    </div>
+
+    <!-- Main Logo -->
+    <div class="logo-container">
+      <div class="logo-title">Dragon Ball</div>
+      <div class="logo-subtitle">Legends</div>
+    </div>
+
+    <!-- Touch / Enter Button -->
+    <button class="touch-screen-btn" id="enter-btn" onclick="enterSite()">
+      Touch Screen
+    </button>
+
+    <!-- Loading Progress Bar -->
+    <div class="progress-container">
+      <div class="progress-label" id="progress-label">LOADING... 0%</div>
+      <div class="progress-track">
+        <div class="progress-fill" id="progress-fill"></div>
+      </div>
+    </div>
+
+    <!-- Copyright -->
+    <div class="copyright">©BIRD STUDIO/SHUEISHA, TOEI ANIMATION</div>
+  </div>
+
+  <!-- ══════════════════════════════════
+       YOUR ACTUAL WEBSITE GOES HERE
+  ══════════════════════════════════ -->
+  <div id="main-content">
+    <h1>Welcome, Warrior</h1>
+    <p>Your site content goes here.</p>
+  </div>
+
+  <script>
+    // ── Progress counter ──
+    const fill  = document.getElementById('progress-fill');
+    const label = document.getElementById('progress-label');
+    const btn   = document.getElementById('enter-btn');
+
+    let pct = 0;
+    const interval = setInterval(() => {
+      // Mimic the CSS animation milestones
+      if      (pct < 35)  pct += 1.2;
+      else if (pct < 72)  pct += 0.9;
+      else if (pct < 90)  pct += 0.4;
+      else if (pct < 100) pct += 0.15;
+
+      if (pct >= 100) {
+        pct = 100;
+        clearInterval(interval);
+        label.textContent = 'READY!';
+        btn.style.animation = 'btnPulse 0.5s ease-in-out infinite';
+      } else {
+        label.textContent = `LOADING... ${Math.floor(pct)}%`;
+      }
+    }, 60);
+
+    // ── Enter site ──
+    function enterSite() {
+      if (pct < 100) return; // block until loaded
+
+      const screen = document.getElementById('loading-screen');
+      const main   = document.getElementById('main-content');
+
+      screen.classList.add('hidden');
+      setTimeout(() => {
+        screen.style.display = 'none';
+        main.classList.add('visible');
+      }, 800);
+    }
+  </script>
+</body>
+</html>
