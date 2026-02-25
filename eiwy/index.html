@@ -3,74 +3,92 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Everybody Is Watching You</title>
+    <title>Psychological Browser Game</title>
     <style>
-        body { margin: 0; overflow: hidden; }
-        canvas { display: block; background: #f0f0f0; }
-        #watching-meter { position: fixed; top: 10px; left: 10px; background: rgba(255, 255, 255, 0.8); padding: 10px; border-radius: 5px; }
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-color: #1a1a1a;
+            color: #ffffff;
+            font-family: Arial, sans-serif;
+        }
+        .hidden {
+            display: none;
+        }
+        #eye {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 100px;
+            height: 100px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            border: 5px solid #ffffff;
+            transition: all 0.1s;
+        }
+        #watchingMeter {
+            position: fixed;
+            bottom: 10px;
+            left: 10px;
+            width: 200px;
+            height: 10px;
+            background-color: #444;
+            border-radius: 5px;
+        }
+        #watchingMeterFill {
+            height: 100%;
+            width: 0;
+            background-color: #ff0000;
+            border-radius: 5px;
+            transition: width 0.1s;
+        }
     </style>
 </head>
 <body>
-    <canvas id="gameCanvas"></canvas>
-    <div id="watching-meter">Watching: 0%</div>
+    <div id="eye"></div>
+    <div id="watchingMeter"><div id="watchingMeterFill"></div></div>
     <script>
-        const canvas = document.getElementById('gameCanvas');
-        const ctx = canvas.getContext('2d');
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
-
-        let watchingPercentage = 0;
-        let idleTime = 0;
+        const eye = document.getElementById('eye');
+        const watchingMeterFill = document.getElementById('watchingMeterFill');
         let isIdle = false;
-        let lastMoveTime = Date.now();
+        let idleTimeout;
+        const idleTimeLimit = 5000; // 5 seconds
 
-        function draw() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            // Drawing the philosophical prompts
-            ctx.fillStyle = 'black';
-            ctx.font = '48px Arial';
-            ctx.fillText(getPhilosophicalPrompt(), 50, canvas.height / 2);
-            // Update watching percentage
-            updateWatchingMeter();
-            requestAnimationFrame(draw);
-        }
+        // Function to handle mouse movement
+        document.addEventListener('mousemove', (event) => {
+            eye.style.transform = `translate(-50%, -50%) translate(${event.clientX - window.innerWidth / 2}px, ${event.clientY - window.innerHeight / 2}px)`;
+            setWatchingMeter(1);
+            resetIdle();
+        });
 
-        function getPhilosophicalPrompt() {
-            const prompts = [
-                'What is real?',
-                'Are they really watching?',
-                'What does it mean to be seen?',
-                'Is your perception reality?',
-                'Live as if you are being watched.'
-            ];
-            return prompts[Math.floor(Math.random() * prompts.length)];
-        }
-
-        function updateWatchingMeter() {
-            document.getElementById('watching-meter').innerText = `Watching: ${watchingPercentage}%`;
-        }
-
-        function resetIdleTime() {
-            idleTime = 0;
+        // Function to reset idle timer
+        function resetIdle() {
+            clearTimeout(idleTimeout);
             isIdle = false;
-            watchingPercentage += 1;
-            if (watchingPercentage > 100) watchingPercentage = 100;
-        }
-
-        function idleDetection() {
-            idleTime++;
-            if (idleTime > 5) {
+            watchingMeterFill.style.width = '100%';
+            idleTimeout = setTimeout(() => {
                 isIdle = true;
-                watchingPercentage = Math.max(0, watchingPercentage - 1);
-            }
+                watchingMeterFill.style.width = '0%';
+                promptPhilosophicalThought();
+            }, idleTimeLimit);
         }
 
-        // Mouse tracking
-        window.addEventListener('mousemove', resetIdleTime);
-        window.addEventListener('keypress', resetIdleTime);
-        setInterval(idleDetection, 1000);
+        // Function to set watching meter fill
+        function setWatchingMeter(value) {
+            watchingMeterFill.style.width = value * 100 + '%';
+        }
 
-        draw();
+        // Function to prompt philosophical thought
+        function promptPhilosophicalThought() {
+            const prompts = [
+                'What is the meaning of existence?',
+                'Are we merely observers of life?',
+                'Is reality a construct of our perception?'
+            ];
+            const thought = prompts[Math.floor(Math.random() * prompts.length)];
+            alert(thought);
+        }
     </script>
 </body>
 </html>
