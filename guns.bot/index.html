@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>viewer</title>
+  <link href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: #080808;
+      color: #e0e0e0;
+      font-family: 'Geist Mono', monospace;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .wrap {
+      width: 340px;
+      animation: up 0.4s ease forwards;
+      opacity: 0;
+    }
+
+    @keyframes up {
+      from { opacity: 0; transform: translateY(12px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .title {
+      font-size: 13px;
+      font-weight: 300;
+      color: #333;
+      margin-bottom: 32px;
+      letter-spacing: 0.05em;
+    }
+
+    .input-row {
+      display: flex;
+      align-items: center;
+      background: #111;
+      border: 1px solid #1c1c1c;
+      border-radius: 6px;
+      overflow: hidden;
+      margin-bottom: 10px;
+      transition: border-color 0.2s;
+    }
+
+    .input-row:focus-within {
+      border-color: #2e2e2e;
+    }
+
+    .input-row.err {
+      border-color: #3a1a1a;
+    }
+
+    .pre {
+      padding: 0 12px;
+      font-size: 12px;
+      color: #2a2a2a;
+      white-space: nowrap;
+      user-select: none;
+    }
+
+    input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      outline: none;
+      padding: 14px 12px 14px 0;
+      font-family: 'Geist Mono', monospace;
+      font-size: 13px;
+      color: #e0e0e0;
+      caret-color: #555;
+    }
+
+    input::placeholder { color: #252525; }
+
+    button {
+      width: 100%;
+      background: #141414;
+      border: 1px solid #1c1c1c;
+      border-radius: 6px;
+      padding: 13px;
+      font-family: 'Geist Mono', monospace;
+      font-size: 11px;
+      font-weight: 400;
+      letter-spacing: 0.08em;
+      color: #555;
+      cursor: pointer;
+      transition: color 0.2s, border-color 0.2s;
+    }
+
+    button:hover { color: #aaa; border-color: #2a2a2a; }
+    button:active { opacity: 0.7; }
+    button:disabled { opacity: 0.3; cursor: not-allowed; }
+
+    .stats {
+      display: none;
+      margin-top: 28px;
+      border-top: 1px solid #141414;
+      padding-top: 24px;
+    }
+
+    .stats.on { display: block; }
+
+    .num {
+      font-size: 48px;
+      font-weight: 300;
+      color: #e0e0e0;
+      letter-spacing: -0.03em;
+      line-height: 1;
+      margin-bottom: 4px;
+    }
+
+    .lbl {
+      font-size: 11px;
+      color: #282828;
+      letter-spacing: 0.05em;
+      margin-bottom: 20px;
+    }
+
+    .stop {
+      background: transparent;
+      border: 1px solid #1a1a1a;
+      color: #2a2a2a;
+      font-size: 11px;
+      padding: 10px;
+    }
+
+    .stop:hover { color: #555; border-color: #222; }
+
+    .errtxt {
+      font-size: 11px;
+      color: #552222;
+      margin-top: 8px;
+      display: none;
+      letter-spacing: 0.03em;
+    }
+    .errtxt.on { display: block; }
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <div class="title">guns.lol / viewer</div>
+
+  <div class="input-row" id="row">
+    <span class="pre">guns.lol/</span>
+    <input id="u" type="text" placeholder="username" spellcheck="false" autocomplete="off" />
+  </div>
+
+  <div class="errtxt" id="err">enter a username.</div>
+
+  <button id="btn" onclick="start()">send views</button>
+
+  <div class="stats" id="stats">
+    <div class="num" id="n">0</div>
+    <div class="lbl">views sent</div>
+    <button class="stop" onclick="stop()">stop</button>
+  </div>
+</div>
+
+<script>
+  let running = false, views = 0;
+
+  const u = document.getElementById('u');
+  const btn = document.getElementById('btn');
+  const stats = document.getElementById('stats');
+  const n = document.getElementById('n');
+  const err = document.getElementById('err');
+  const row = document.getElementById('row');
+
+  u.addEventListener('keydown', e => { if (e.key === 'Enter') start(); });
+
+  async function sendView(user) {
+    try {
+      const r = await fetch(`https://guns.lol/api/view/${user}`, {
+        method: 'POST',
+        headers: {
+          'accept': '*/*',
+          'cache-control': 'no-cache',
+          'origin': 'https://guns.lol',
+          'referer': `https://guns.lol/${user}`,
+          'sec-fetch-dest': 'empty',
+          'sec-fetch-mode': 'cors',
+          'sec-fetch-site': 'same-origin',
+          'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36',
+          'username': user
+        }
+      });
+      return r.status === 200;
+    } catch { return false; }
+  }
+
+  async function loop(user) {
+    while (running) {
+      const ok = await sendView(user);
+      if (ok) n.textContent = ++views;
+      await new Promise(r => setTimeout(r, 250));
+    }
+  }
+
+  function start() {
+    const user = u.value.trim();
+    err.classList.remove('on');
+    row.classList.remove('err');
+    if (!user) {
+      err.classList.add('on');
+      row.classList.add('err');
+      return;
+    }
+    if (running) return;
+    running = true;
+    views = 0;
+    n.textContent = '0';
+    btn.disabled = true;
+    btn.textContent = 'running...';
+    u.disabled = true;
+    stats.classList.add('on');
+    for (let i = 0; i < 10; i++) loop(user);
+  }
+
+  function stop() {
+    running = false;
+    btn.disabled = false;
+    btn.textContent = 'send views';
+    u.disabled = false;
+  }
+</script>
+</body>
+</html>
