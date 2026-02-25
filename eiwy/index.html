@@ -5,49 +5,72 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Everybody Is Watching You</title>
     <style>
-        body {
-            background-color: #121212;
-            color: #ffffff;
-            font-family: Arial, sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-            text-align: center;
-        }
-        h1 {
-            font-size: 3em;
-        }
-        p {
-            font-size: 1.5em;
-        }
-        button {
-            background-color: #BB86FC;
-            border: none;
-            border-radius: 5px;
-            color: #ffffff;
-            font-size: 1em;
-            padding: 10px 20px;
-            cursor: pointer;
-            margin-top: 20px;
-        }
-        button:hover {
-            background-color: #3700B3;
-        }
+        body { margin: 0; overflow: hidden; }
+        canvas { display: block; background: #f0f0f0; }
+        #watching-meter { position: fixed; top: 10px; left: 10px; background: rgba(255, 255, 255, 0.8); padding: 10px; border-radius: 5px; }
     </style>
 </head>
 <body>
-    <div>
-        <h1>Everybody Is Watching You</h1>
-        <p>Prepare for a psychological gaming experience that will challenge your mind.</p>
-        <button onclick="startGame()">Start Game</button>
-    </div>
+    <canvas id="gameCanvas"></canvas>
+    <div id="watching-meter">Watching: 0%</div>
     <script>
-        function startGame() {
-            // Logic to start the game will go here
-            alert('Game is starting...');
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        let watchingPercentage = 0;
+        let idleTime = 0;
+        let isIdle = false;
+        let lastMoveTime = Date.now();
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            // Drawing the philosophical prompts
+            ctx.fillStyle = 'black';
+            ctx.font = '48px Arial';
+            ctx.fillText(getPhilosophicalPrompt(), 50, canvas.height / 2);
+            // Update watching percentage
+            updateWatchingMeter();
+            requestAnimationFrame(draw);
         }
+
+        function getPhilosophicalPrompt() {
+            const prompts = [
+                'What is real?',
+                'Are they really watching?',
+                'What does it mean to be seen?',
+                'Is your perception reality?',
+                'Live as if you are being watched.'
+            ];
+            return prompts[Math.floor(Math.random() * prompts.length)];
+        }
+
+        function updateWatchingMeter() {
+            document.getElementById('watching-meter').innerText = `Watching: ${watchingPercentage}%`;
+        }
+
+        function resetIdleTime() {
+            idleTime = 0;
+            isIdle = false;
+            watchingPercentage += 1;
+            if (watchingPercentage > 100) watchingPercentage = 100;
+        }
+
+        function idleDetection() {
+            idleTime++;
+            if (idleTime > 5) {
+                isIdle = true;
+                watchingPercentage = Math.max(0, watchingPercentage - 1);
+            }
+        }
+
+        // Mouse tracking
+        window.addEventListener('mousemove', resetIdleTime);
+        window.addEventListener('keypress', resetIdleTime);
+        setInterval(idleDetection, 1000);
+
+        draw();
     </script>
 </body>
 </html>
