@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Retro Minimalistic Brain Teaser Game</title>
+    <style>
+        body {
+            background-color: #000;
+            color: #fff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+        }
+        canvas {
+            border: 2px solid #fff;
+        }
+        #score {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            font-size: 24px;
+            color: #ffcc00;
+        }
+    </style>
+</head>
+<body>
+    <div id="score">Score: 0</div>
+    <canvas id="gameCanvas" width="800" height="600"></canvas>
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        let score = 0;
+
+        function drawPixelArt() {
+            ctx.fillStyle = '#ff0000'; // Red color
+            ctx.fillRect(100, 100, 50, 50);
+            ctx.fillStyle = '#00ff00'; // Green color
+            ctx.fillRect(200, 100, 50, 50);
+            ctx.fillStyle = '#0000ff'; // Blue color
+            ctx.fillRect(300, 100, 50, 50);
+        }
+
+        function updateScore() {
+            score += 10;
+            document.getElementById('score').innerText = 'Score: ' + score;
+        }
+
+        function gameLoop() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            drawPixelArt();
+            updateScore();
+            requestAnimationFrame(gameLoop);
+        }
+
+        gameLoop();
+    </script>
+</body>
+</html>
