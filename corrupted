@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Fragment.exe</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div id="ui">
+    <h1 id="title">corrupted</h1>
+    <p id="message">Press ENTER to begin</p>
+</div>
+
+<canvas id="gameCanvas"></canvas>
+
+<script src="corruption.js"></script>
+<script src="effects.js"></script>
+<script src="game.js"></script>
+
+</body>
+</html>
