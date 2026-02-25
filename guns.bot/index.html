@@ -1,54 +1,4 @@
-export default {
-  async fetch(request) {
-    const url = new URL(request.url);
-    const username = url.searchParams.get("user");
-
-    if (!username) {
-      return new Response(HTML, {
-        headers: { "Content-Type": "text/html" }
-      });
-    }
-
-    try {
-      const res = await fetch(`https://guns.lol/api/view/${username}`, {
-        method: "POST",
-        headers: {
-          "accept": "*/*",
-          "accept-language": "en-US,en;q=0.9",
-          "cache-control": "no-cache",
-          "content-length": "0",
-          "origin": "https://guns.lol",
-          "pragma": "no-cache",
-          "priority": "u=1, i",
-          "referer": `https://guns.lol/${username}`,
-          "sec-ch-ua": '"Not/A)Brand";v="8", "Chromium";v="126", "Google Chrome";v="126"',
-          "sec-ch-ua-mobile": "?0",
-          "sec-ch-ua-platform": '"Windows"',
-          "sec-fetch-dest": "empty",
-          "sec-fetch-mode": "cors",
-          "sec-fetch-site": "same-origin",
-          "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
-          "username": username
-        }
-      });
-      return new Response(JSON.stringify({ status: res.status }), {
-        headers: {
-          "Content-Type": "application/json",
-          "Access-Control-Allow-Origin": "*"
-        }
-      });
-    } catch (e) {
-      return new Response(JSON.stringify({ status: 500, error: e.message }), {
-        headers: {
-          "Content-Type": "application/json",
-          "Access-Control-Allow-Origin": "*"
-        }
-      });
-    }
-  }
-}
-
-const HTML = `<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -164,7 +114,7 @@ const HTML = `<!DOCTYPE html>
       letter-spacing: -0.04em;
       line-height: 1;
       margin-bottom: 6px;
-      transition: color 0.1s;
+      transition: color 0.08s;
     }
 
     .num.tick { color: #fff; }
@@ -210,38 +160,37 @@ const HTML = `<!DOCTYPE html>
   <div class="stats" id="stats">
     <div class="num" id="n">0</div>
     <div class="lbl">views sent</div>
-    <div class="meta" id="meta">— req/s</div>
+    <div class="meta" id="meta">— views/s</div>
     <button class="stop" onclick="stop()">stop</button>
   </div>
 </div>
 
 <script>
+  // !! Replace with your actual Cloudflare worker URL !!
+  const WORKER = "https://e.kirstadio.workers.dev";
+
   let running = false;
   let views = 0;
-  let failed = 0;
   let recentTimes = [];
 
-  const u    = document.getElementById('u');
-  const btn  = document.getElementById('btn');
-  const stats= document.getElementById('stats');
-  const n    = document.getElementById('n');
-  const err  = document.getElementById('err');
-  const row  = document.getElementById('row');
-  const meta = document.getElementById('meta');
+  const u     = document.getElementById('u');
+  const btn   = document.getElementById('btn');
+  const stats = document.getElementById('stats');
+  const n     = document.getElementById('n');
+  const err   = document.getElementById('err');
+  const row   = document.getElementById('row');
+  const meta  = document.getElementById('meta');
 
   u.addEventListener('keydown', e => { if (e.key === 'Enter') start(); });
 
-  // tick animation on count update
   function bumpNum() {
     n.classList.add('tick');
     setTimeout(() => n.classList.remove('tick'), 80);
   }
 
-  // track req/s
   function trackReq(ok) {
     const now = Date.now();
     recentTimes.push({ t: now, ok });
-    // keep last 5s only
     recentTimes = recentTimes.filter(r => now - r.t < 5000);
     const rps = (recentTimes.filter(r => r.ok).length / 5).toFixed(1);
     meta.textContent = rps + ' views/s';
@@ -249,7 +198,7 @@ const HTML = `<!DOCTYPE html>
 
   async function sendView(user) {
     try {
-      const r = await fetch('/?user=' + encodeURIComponent(user));
+      const r = await fetch(`${WORKER}/?user=${encodeURIComponent(user)}`);
       const data = await r.json();
       return data.status === 200;
     } catch {
@@ -264,8 +213,6 @@ const HTML = `<!DOCTYPE html>
         views++;
         n.textContent = views;
         bumpNum();
-      } else {
-        failed++;
       }
       trackReq(ok);
       await new Promise(r => setTimeout(r, 200));
@@ -284,10 +231,8 @@ const HTML = `<!DOCTYPE html>
     }
 
     if (running) return;
-
     running = true;
     views = 0;
-    failed = 0;
     recentTimes = [];
     n.textContent = '0';
     btn.disabled = true;
@@ -295,7 +240,6 @@ const HTML = `<!DOCTYPE html>
     u.disabled = true;
     stats.classList.add('on');
 
-    // 15 concurrent loops
     for (let i = 0; i < 15; i++) loop(user);
   }
 
@@ -304,8 +248,8 @@ const HTML = `<!DOCTYPE html>
     btn.disabled = false;
     btn.textContent = 'send views';
     u.disabled = false;
-    meta.textContent = '— req/s';
+    meta.textContent = '— views/s';
   }
 </script>
 </body>
-</html>`;
+</html>
