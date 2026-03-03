@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Broadcast</title>
+  <link href="https://fonts.googleapis.com/css2?family=Patrick+Hand&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Patrick Hand', cursive;
+      background: #ffffff;
+      color: #111;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* ── BANNER STACK ── */
+    #banner-stack {
+      position: fixed;
+      top: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      z-index: 1000;
+      pointer-events: none;
+      width: 90%;
+      max-width: 600px;
+    }
+
+    .banner {
+      background: #111;
+      color: #fff;
+      padding: 13px 28px;
+      font-family: 'Patrick Hand', cursive;
+      font-size: 19px;
+      text-align: center;
+      width: 100%;
+      box-shadow: 0 4px 28px rgba(0,0,0,0.13);
+      opacity: 0;
+      transform: translateY(-16px);
+      transition: transform 0.38s cubic-bezier(.22,.68,0,1.15), opacity 0.38s ease;
+      will-change: transform, opacity;
+    }
+
+    .banner.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .banner.fading {
+      opacity: 0;
+      transform: translateY(-8px);
+      transition: opacity 1.6s ease, transform 1.6s ease;
+    }
+
+    .banner-name {
+      font-weight: bold;
+      color: #ffe135;
+    }
+
+    /* ── ADMIN PANEL ── */
+    #admin-panel {
+      display: none;
+      position: fixed;
+      bottom: 32px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #fff;
+      border: 1.5px solid #e0e0e0;
+      padding: 20px 24px;
+      width: 90%;
+      max-width: 460px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.07);
+      z-index: 500;
+    }
+
+    #admin-panel.show { display: block; }
+
+    #admin-panel .label {
+      font-size: 13px;
+      color: #aaa;
+      margin-bottom: 10px;
+      letter-spacing: 0.4px;
+    }
+
+    #msg-input {
+      width: 100%;
+      font-family: 'Patrick Hand', cursive;
+      font-size: 17px;
+      border: 1.5px solid #e0e0e0;
+      padding: 10px 13px;
+      outline: none;
+      color: #111;
+      background: #fafafa;
+      margin-bottom: 12px;
+      resize: none;
+      transition: border-color 0.2s;
+      line-height: 1.5;
+    }
+
+    #msg-input:focus {
+      border-color: #111;
+      background: #fff;
+    }
+
+    #send-btn {
+      width: 100%;
+      font-family: 'Patrick Hand', cursive;
+      font-size: 17px;
+      background: #111;
+      color: #fff;
+      border: none;
+      padding: 11px;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    #send-btn:hover { background: #333; }
+
+    /* ── NAME OVERLAY ── */
+    #name-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(255,255,255,0.97);
+      z-index: 900;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    #name-overlay.show { display: flex; }
+
+    #name-overlay p {
+      font-size: 22px;
+      color: #444;
+    }
+
+    #name-input {
+      font-family: 'Patrick Hand', cursive;
+      font-size: 24px;
+      border: none;
+      border-bottom: 2px solid #111;
+      padding: 6px 2px;
+      outline: none;
+      text-align: center;
+      width: 220px;
+      background: transparent;
+      color: #111;
+    }
+
+    #name-confirm {
+      font-family: 'Patrick Hand', cursive;
+      font-size: 17px;
+      background: #111;
+      color: #fff;
+      border: none;
+      padding: 10px 36px;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    #name-confirm:hover { background: #333; }
+  </style>
+</head>
+<body>
+
+  <!-- Banner stack lives at top center -->
+  <div id="banner-stack"></div>
+
+  <!-- Name setup overlay (shown on first unlock) -->
+  <div id="name-overlay">
+    <p>What's your name?</p>
+    <input id="name-input" type="text" maxlength="30" placeholder="your name" autocomplete="off"/>
+    <button id="name-confirm">Enter</button>
+  </div>
+
+  <!-- Admin compose panel (hidden, unlocked by secret combo) -->
+  <div id="admin-panel">
+    <div class="label">send a message to everyone</div>
+    <textarea id="msg-input" rows="2" maxlength="200" placeholder="write something…"></textarea>
+    <button id="send-btn">Send</button>
+  </div>
+
+<script type="module">
+  import { initializeApp }  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getDatabase, ref, push, onChildAdded }
+                             from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+  import { getAuth, signInAnonymously }
+                             from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+  // ▼▼▼ PASTE YOUR FIREBASE CONFIG HERE ▼▼▼
+  const firebaseConfig = {
+    apiKey:            "AIzaSyC2umvpkas9QCC1PHrWXjk6g67i7Wyr11A",
+    authDomain:        "website-9f859.firebaseapp.com",
+    databaseURL:       "https://website-9f859-default-rtdb.europe-west1.firebasedatabase.app",
+    projectId:         "website-9f859",
+    storageBucket:     "website-9f859.firebasestorage.app",
+    messagingSenderId: "756244892931",
+    appId:             "1:756244892931:web:18d3975a67547ab3936d36"
+  };
+  // ▲▲▲ END CONFIG ▲▲▲
+
+  const SECRET  = "22112011";
+  const HOLD_MS = 5500;   // ms banner stays fully visible before fading
+
+  let adminName = localStorage.getItem('admin_name') || '';
+  let db, msgsRef;
+  let keyBuffer = '';
+
+  // ── Firebase boot ─────────────────────────────────
+  const configured = firebaseConfig.apiKey !== "YOUR_API_KEY";
+
+  if (configured) {
+    const app  = initializeApp(firebaseConfig);
+    db         = getDatabase(app);
+    msgsRef    = ref(db, 'messages');
+    signInAnonymously(getAuth(app)).catch(console.error);
+
+    let skip = true;
+    setTimeout(() => { skip = false; }, 800);
+
+    onChildAdded(msgsRef, snap => {
+      if (skip) return;
+      const d = snap.val();
+      if (d?.name && d?.text) showBanner(d.name, d.text);
+    });
+  }
+
+  // ── Secret key combo detector ─────────────────────
+  // Type the digits anywhere on the page (not in inputs)
+  document.addEventListener('keydown', e => {
+    const tag = e.target.tagName;
+    if (tag === 'INPUT' || tag === 'TEXTAREA') return;
+    if (/^\d$/.test(e.key)) {
+      keyBuffer += e.key;
+      if (keyBuffer.length > SECRET.length) {
+        keyBuffer = keyBuffer.slice(-SECRET.length);
+      }
+      if (keyBuffer === SECRET) {
+        keyBuffer = '';
+        unlockAdmin();
+      }
+    }
+  });
+
+  function unlockAdmin() {
+    if (!adminName) {
+      document.getElementById('name-overlay').classList.add('show');
+      document.getElementById('name-input').focus();
+    } else {
+      togglePanel();
+    }
+  }
+
+  function togglePanel() {
+    const panel = document.getElementById('admin-panel');
+    panel.classList.toggle('show');
+    if (panel.classList.contains('show')) {
+      document.getElementById('msg-input').focus();
+    }
+  }
+
+  // ── Name confirm ──────────────────────────────────
+  document.getElementById('name-confirm').addEventListener('click', saveName);
+  document.getElementById('name-input').addEventListener('keydown', e => {
+    if (e.key === 'Enter') saveName();
+  });
+
+  function saveName() {
+    const val = document.getElementById('name-input').value.trim();
+    if (!val) return;
+    adminName = val;
+    localStorage.setItem('admin_name', adminName);
+    document.getElementById('name-overlay').classList.remove('show');
+    togglePanel();
+  }
+
+  // ── Send ──────────────────────────────────────────
+  document.getElementById('send-btn').addEventListener('click', doSend);
+  document.getElementById('msg-input').addEventListener('keydown', e => {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); doSend(); }
+  });
+
+  function doSend() {
+    const text = document.getElementById('msg-input').value.trim();
+    if (!text || !adminName) return;
+
+    if (configured) {
+      push(msgsRef, { name: adminName, text, ts: Date.now() });
+    } else {
+      // No Firebase yet — preview locally
+      showBanner(adminName, text);
+    }
+
+    document.getElementById('msg-input').value = '';
+    document.getElementById('admin-panel').classList.remove('show');
+  }
+
+  // ── Banner system ─────────────────────────────────
+  const stackEl = document.getElementById('banner-stack');
+
+  function showBanner(name, text) {
+    const el = document.createElement('div');
+    el.className = 'banner';
+    el.innerHTML = `<span class="banner-name">${esc(name)}</span>: ${esc(text)}`;
+
+    // New messages appear at the top, push others down
+    stackEl.insertBefore(el, stackEl.firstChild);
+
+    // Double rAF to trigger CSS transition after insertion
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      el.classList.add('visible');
+    }));
+
+    // Fade out after hold time
+    setTimeout(() => {
+      el.classList.remove('visible');
+      el.classList.add('fading');
+      el.addEventListener('transitionend', () => el.remove(), { once: true });
+    }, HOLD_MS);
+  }
+
+  function esc(s) {
+    return s
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
+  }
+</script>
+</body>
+</html>
