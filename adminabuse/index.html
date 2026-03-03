@@ -154,7 +154,7 @@
         width: auto;
         box-shadow: 0 2px 12px rgba(0,0,0,0.07);
       }
-      #mobile-code-input { font-size: 14px; width: 110px; padding: 5px 8px; letter-spacing: 3px; }
+      #mobile-code-input { font-size: 14px; width: 160px; padding: 5px 8px; letter-spacing: 2px; }
       #mobile-code-btn   { font-size: 13px; padding: 6px 12px; }
       #mobile-code-label { font-size: 10px; }
     }
@@ -162,10 +162,10 @@
     #mobile-code-row   { display: flex; gap: 8px; align-items: center; justify-content: center; }
     #mobile-code-input {
       font-family: 'Patrick Hand', cursive;
-      font-size: 18px; width: 130px;
+      font-size: 18px; width: 180px;
       border: 1.5px solid #ccc; padding: 8px 10px;
       outline: none; color: #111; background: #fff;
-      letter-spacing: 4px; text-align: center;
+      letter-spacing: 2px; text-align: center;
       -webkit-appearance: none;
     }
     #mobile-code-input:focus { border-color: #111; }
@@ -575,7 +575,7 @@
 <div id="mobile-code-box">
   <div id="mobile-code-label">enter code</div>
   <div id="mobile-code-row">
-    <input id="mobile-code-input" type="tel" maxlength="8" placeholder="••••••••" autocomplete="off"/>
+    <input id="mobile-code-input" type="tel" maxlength="32" placeholder="enter code" autocomplete="off"/>
     <button id="mobile-code-btn">→</button>
   </div>
 </div>
@@ -671,6 +671,18 @@
   const presRef    = ref(db, 'presence');
   const shakeRef   = ref(db, 'shake');
   const jumpRef    = ref(db, 'jumpscare');
+
+  // ── Clear all event data on every page load ─────
+  // Wipes messages, poll, strokes, shake, jumpscare, bgcolor so each
+  // refresh starts fresh. Background resets to white.
+  Promise.all([
+    remove(msgsRef),
+    remove(pollRef),
+    remove(strokesRef),
+    remove(shakeRef),
+    remove(jumpRef),
+    set(bgRef, '#ffffff'),
+  ]).catch(console.error);
 
   signInAnonymously(getAuth(app)).then(({ user }) => {
     const myPres = ref(db, `presence/${user.uid}`);
