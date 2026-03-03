@@ -18,6 +18,21 @@
 
     #app { display: flex; height: 100vh; width: 100vw; }
 
+    /* ── SHAKE ── */
+    @keyframes shake {
+      0%,100% { transform: translate(0,0) rotate(0deg); }
+      10%      { transform: translate(-8px,-6px) rotate(-1.5deg); }
+      20%      { transform: translate(8px,6px) rotate(1.5deg); }
+      30%      { transform: translate(-10px,4px) rotate(-1deg); }
+      40%      { transform: translate(10px,-4px) rotate(1deg); }
+      50%      { transform: translate(-6px,8px) rotate(-2deg); }
+      60%      { transform: translate(6px,-8px) rotate(2deg); }
+      70%      { transform: translate(-9px,3px) rotate(-1deg); }
+      80%      { transform: translate(9px,-3px) rotate(1deg); }
+      90%      { transform: translate(-4px,5px) rotate(-.5deg); }
+    }
+    body.shaking { animation: shake 0.6s ease; }
+
     /* ── MAIN ── */
     #main {
       flex: 1;
@@ -48,9 +63,8 @@
       background: #111; color: #fff;
       padding: 11px 22px;
       font-family: 'Patrick Hand', cursive;
-      font-size: 16px; font-weight: normal;
+      font-size: 16px;
       text-align: center; width: 100%;
-      border-radius: 6px;
       box-shadow: 0 3px 14px rgba(0,0,0,0.13);
       opacity: 0; transform: translateY(-12px) scale(.97);
       transition: transform .34s cubic-bezier(.22,.68,0,1.2), opacity .34s ease;
@@ -58,6 +72,35 @@
     .banner.visible { opacity: 1; transform: translateY(0) scale(1); }
     .banner.fading  { opacity: 0; transform: translateY(-8px); transition: opacity 1.4s ease, transform 1.4s ease; }
     .banner-name    { font-weight: bold; }
+
+    /* ── JUMPSCARE OVERLAY ── */
+    #jumpscare-overlay {
+      display: none;
+      position: fixed; inset: 0; z-index: 2000;
+      background: #000;
+      align-items: center; justify-content: center;
+      pointer-events: none;
+    }
+    #jumpscare-overlay.show { display: flex; }
+    #jumpscare-img {
+      max-width: 90vw; max-height: 90vh;
+      object-fit: contain;
+      animation: jsPop .15s ease-out forwards;
+    }
+    @keyframes jsPop {
+      0%   { transform: scale(0.4); opacity: 0; }
+      60%  { transform: scale(1.08); opacity: 1; }
+      100% { transform: scale(1);    opacity: 1; }
+    }
+    /* flashing border */
+    #jumpscare-overlay.show {
+      animation: jsFlash 0.08s steps(1) infinite;
+    }
+    @keyframes jsFlash {
+      0%   { outline: 8px solid red; }
+      50%  { outline: 8px solid #ff0; }
+      100% { outline: 8px solid red; }
+    }
 
     /* ── POLL ── */
     #poll-widget {
@@ -90,28 +133,35 @@
     /* ── MOBILE CODE BOX ── */
     #mobile-code-box {
       display: none;
-      position: absolute; bottom: 14px; right: 14px;
-      z-index: 50; text-align: center;
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      z-index: 999;
+      background: #fff;
+      border-top: 1.5px solid #e8e8e8;
+      padding: 10px 16px 16px;
+      text-align: center;
     }
-    @media (hover: none) and (pointer: coarse) {
+    @media (max-width: 600px) {
       #mobile-code-box { display: block; }
     }
-    #mobile-code-label { font-size: 11px; color: #aaa; margin-bottom: 4px; letter-spacing: .5px; }
-    #mobile-code-row   { display: flex; gap: 5px; align-items: center; }
+    #mobile-code-label { font-size: 11px; color: #aaa; margin-bottom: 6px; letter-spacing: .5px; }
+    #mobile-code-row   { display: flex; gap: 8px; align-items: center; justify-content: center; }
     #mobile-code-input {
       font-family: 'Patrick Hand', cursive;
-      font-size: 14px; width: 100px;
-      border: 1px solid #ccc; padding: 5px 8px;
+      font-size: 18px; width: 130px;
+      border: 1.5px solid #ccc; padding: 8px 10px;
       outline: none; color: #111; background: #fff;
-      letter-spacing: 3px; text-align: center;
+      letter-spacing: 4px; text-align: center;
+      -webkit-appearance: none;
     }
     #mobile-code-input:focus { border-color: #111; }
     #mobile-code-btn {
       font-family: 'Patrick Hand', cursive;
-      font-size: 13px; background: #111; color: #fff;
-      border: none; padding: 6px 10px; cursor: pointer;
+      font-size: 16px; background: #111; color: #fff;
+      border: none; padding: 8px 18px; cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
     }
-    #mobile-code-btn:active { opacity: .8; }
+    #mobile-code-btn:active { opacity: .75; }
 
     /* ── ADMIN SIDEBAR ── */
     #admin-panel {
@@ -129,15 +179,19 @@
     #panel-header h1 { font-size: 16px; color: #fff; font-weight: normal; letter-spacing: .2px; }
     #panel-header p  { font-size: 11px; color: rgba(255,255,255,.5); margin-top: 3px; letter-spacing: .5px; }
 
-    .admin-tabs { display: flex; background: #fafafa; border-bottom: 1.5px solid #e8e8e8; flex-shrink: 0; }
+    .admin-tabs {
+      display: flex; background: #fafafa; border-bottom: 1.5px solid #e8e8e8; flex-shrink: 0;
+      overflow-x: auto; scrollbar-width: none;
+    }
+    .admin-tabs::-webkit-scrollbar { display: none; }
     .admin-tab {
-      flex: 1; padding: 9px 4px;
+      flex: 1; min-width: 44px; padding: 9px 4px;
       font-family: 'Patrick Hand', cursive; font-size: 12px;
       background: none; border: none; cursor: pointer; color: #bbb;
       border-bottom: 2px solid transparent; margin-bottom: -1.5px;
-      transition: color .15s;
+      transition: color .15s; white-space: nowrap;
     }
-    .admin-tab.active           { color: #111; border-bottom-color: #111; }
+    .admin-tab.active             { color: #111; border-bottom-color: #111; }
     .admin-tab:hover:not(.active) { color: #555; }
 
     #panel-content { flex: 1; overflow-y: auto; overflow-x: hidden; }
@@ -155,7 +209,7 @@
       outline: none; color: #111; background: #fafafa; margin-bottom: 8px;
       resize: none; transition: border-color .18s;
     }
-    .admin-input:focus       { border-color: #111; background: #fff; }
+    .admin-input:focus        { border-color: #111; background: #fff; }
     .admin-input::placeholder { color: #bbb; }
 
     .admin-btn {
@@ -168,6 +222,8 @@
     .admin-btn:active { opacity: .7; }
     .admin-btn.ghost  { background: #fff; color: #888; border: 1px solid #e0e0e0; }
     .admin-btn.ghost:hover { border-color: #111; color: #111; }
+    .admin-btn.red    { background: #e63946; }
+    .admin-btn.red:hover { background: #c1121f; opacity: 1; }
 
     .divider { height: 1px; background: #eee; margin: 11px 0; }
 
@@ -236,6 +292,29 @@
     #draw-toggle-btn:hover   { background: #f5f5f5; }
     #draw-toggle-btn.drawing { background: #111; color: #fff; }
 
+    /* Abuse tab */
+    .abuse-btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 8px; }
+    .abuse-big-btn {
+      font-family: 'Patrick Hand', cursive; font-size: 14px;
+      background: #fff; border: 1.5px solid #e0e0e0;
+      padding: 12px 6px; cursor: pointer; color: #111;
+      text-align: center; line-height: 1.3;
+      transition: all .15s;
+    }
+    .abuse-big-btn:hover  { border-color: #111; background: #f5f5f5; }
+    .abuse-big-btn:active { background: #111; color: #fff; }
+    .abuse-big-btn .abuse-icon { font-size: 22px; display: block; margin-bottom: 3px; }
+
+    /* jumpscare preset thumbnails */
+    .js-presets { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 8px; }
+    .js-preset {
+      width: 56px; height: 56px; cursor: pointer; object-fit: cover;
+      border: 2px solid transparent; transition: border-color .15s, transform .15s;
+      background: #f0f0f0;
+    }
+    .js-preset:hover    { border-color: #111; transform: scale(1.05); }
+    .js-preset.selected { border-color: #e63946; }
+
     /* ── NAME OVERLAY ── */
     #name-overlay {
       display: none; position: fixed; inset: 0;
@@ -261,6 +340,11 @@
 </head>
 <body>
 
+<!-- JUMPSCARE OVERLAY (fixed, full screen) -->
+<div id="jumpscare-overlay">
+  <img id="jumpscare-img" src="" alt=""/>
+</div>
+
 <div id="app">
 
   <!-- MAIN AREA -->
@@ -275,15 +359,6 @@
     </div>
 
     <div id="viewer-pill">👁 <b id="viewer-count">1</b> viewing</div>
-
-    <!-- Mobile code entry (shown on touch devices) -->
-    <div id="mobile-code-box">
-      <div id="mobile-code-label">enter code</div>
-      <div id="mobile-code-row">
-        <input id="mobile-code-input" type="number" maxlength="8" placeholder="••••••••" autocomplete="off"/>
-        <button id="mobile-code-btn">→</button>
-      </div>
-    </div>
   </div>
 
   <!-- ADMIN SIDEBAR -->
@@ -295,6 +370,7 @@
       </div>
       <div class="admin-tabs">
         <button class="admin-tab active" data-tab="msg">💬 msg</button>
+        <button class="admin-tab" data-tab="abuse">💥 abuse</button>
         <button class="admin-tab" data-tab="draw">🖌 draw</button>
         <button class="admin-tab" data-tab="poll">📊 poll</button>
         <button class="admin-tab" data-tab="bg">🎨 bg</button>
@@ -306,6 +382,43 @@
           <div class="panel-label">message everyone</div>
           <textarea class="admin-input" id="msg-input" rows="3" maxlength="200" placeholder="say something…"></textarea>
           <button class="admin-btn" id="send-msg-btn">send to all</button>
+        </div>
+
+        <!-- ABUSE -->
+        <div class="tab-panel" id="tab-abuse">
+
+          <!-- Shake -->
+          <div class="panel-label">screen shake</div>
+          <div class="abuse-btn-grid" style="margin-bottom:12px">
+            <button class="abuse-big-btn" id="shake-sm-btn">
+              <span class="abuse-icon">📳</span>light
+            </button>
+            <button class="abuse-big-btn" id="shake-lg-btn">
+              <span class="abuse-icon">💥</span>NUKE
+            </button>
+          </div>
+
+          <div class="divider"></div>
+
+          <!-- Jumpscare -->
+          <div class="panel-label">jumpscare</div>
+
+          <div class="panel-label" style="margin-top:4px">presets</div>
+          <div class="js-presets" id="js-presets">
+            <!-- populated by JS -->
+          </div>
+
+          <div class="panel-label">or custom image url</div>
+          <input class="admin-input" id="js-custom-url" type="url" placeholder="https://…" style="margin-bottom:6px"/>
+
+          <div class="panel-label">duration</div>
+          <div style="display:flex;gap:5px;margin-bottom:8px">
+            <button class="tool-btn active" data-dur="800">short</button>
+            <button class="tool-btn" data-dur="1800">mid</button>
+            <button class="tool-btn" data-dur="3500">long</button>
+          </div>
+
+          <button class="admin-btn red" id="fire-jumpscare-btn">🔴 fire jumpscare</button>
         </div>
 
         <!-- DRAW -->
@@ -393,6 +506,15 @@
   <button id="name-confirm">enter</button>
 </div>
 
+<!-- MOBILE CODE BOX -->
+<div id="mobile-code-box">
+  <div id="mobile-code-label">enter code</div>
+  <div id="mobile-code-row">
+    <input id="mobile-code-input" type="tel" maxlength="8" placeholder="••••••••" autocomplete="off"/>
+    <button id="mobile-code-btn">→</button>
+  </div>
+</div>
+
 <script type="module">
   import { initializeApp }
     from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
@@ -414,7 +536,6 @@
 
   const SECRET   = "22112011";
   const HOLD_MS  = 5500;
-  // Capture join time before any async — messages/draws older than this are ignored
   const joinedAt = Date.now();
 
   let adminName  = localStorage.getItem('admin_name') || '';
@@ -431,6 +552,50 @@
   let strokeId   = null;
   let lastPt     = null;
 
+  // Jumpscare state
+  let jsSelectedUrl = '';
+  let jsDuration    = 800;
+
+  // Jumpscare preset images (freely usable meme-style images)
+  const JS_PRESETS = [
+    { label: 'scary', url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/3a/Cat03.jpg/481px-Cat03.jpg' },
+    { label: 'wow',   url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/4d/Cat_November_2010-1a.jpg/1200px-Cat_November_2010-1a.jpg' },
+    { label: 'bruh',  url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/bb/Kittyply_edit1.jpg/1200px-Kittyply_edit1.jpg' },
+  ];
+
+  // Populate preset thumbnails
+  const presetsEl = document.getElementById('js-presets');
+  JS_PRESETS.forEach((p, i) => {
+    const img = document.createElement('img');
+    img.className = 'js-preset';
+    img.src = p.url;
+    img.title = p.label;
+    img.addEventListener('click', () => {
+      document.querySelectorAll('.js-preset').forEach(el => el.classList.remove('selected'));
+      img.classList.add('selected');
+      jsSelectedUrl = p.url;
+      document.getElementById('js-custom-url').value = '';
+    });
+    presetsEl.appendChild(img);
+    if (i === 0) { img.classList.add('selected'); jsSelectedUrl = p.url; }
+  });
+
+  document.getElementById('js-custom-url').addEventListener('input', e => {
+    if (e.target.value.trim()) {
+      jsSelectedUrl = e.target.value.trim();
+      document.querySelectorAll('.js-preset').forEach(el => el.classList.remove('selected'));
+    }
+  });
+
+  // Duration buttons
+  document.querySelectorAll('[data-dur]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('[data-dur]').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      jsDuration = parseInt(btn.dataset.dur);
+    });
+  });
+
   // ── Firebase ──────────────────────────────────────
   const app        = initializeApp(firebaseConfig);
   const db         = getDatabase(app);
@@ -439,6 +604,8 @@
   const bgRef      = ref(db, 'bgcolor');
   const strokesRef = ref(db, 'strokes');
   const presRef    = ref(db, 'presence');
+  const shakeRef   = ref(db, 'shake');
+  const jumpRef    = ref(db, 'jumpscare');
 
   signInAnonymously(getAuth(app)).then(({ user }) => {
     const myPres = ref(db, `presence/${user.uid}`);
@@ -452,20 +619,93 @@
       snap.exists() ? Object.keys(snap.val()).length : 1;
   });
 
+  // ── Listen: shake ────────────────────────────────
+  onValue(shakeRef, snap => {
+    if (!snap.exists()) return;
+    const data = snap.val();
+    if (!data || !data.ts || data.ts <= joinedAt) return;
+    triggerShake(data.intensity || 'sm');
+  });
+
+  function triggerShake(intensity) {
+    const dur = intensity === 'lg' ? 1200 : 600;
+    const el  = document.body;
+
+    // Override animation duration via style
+    el.style.animationDuration = dur + 'ms';
+    el.classList.remove('shaking');
+    void el.offsetWidth; // reflow to restart
+    el.classList.add('shaking');
+    setTimeout(() => {
+      el.classList.remove('shaking');
+      el.style.animationDuration = '';
+    }, dur + 50);
+
+    // For NUKE: also flash background red briefly
+    if (intensity === 'lg') {
+      const mainEl = document.getElementById('main');
+      const origBg = mainEl.style.background;
+      mainEl.style.transition = 'none';
+      mainEl.style.background = '#e63946';
+      setTimeout(() => {
+        mainEl.style.transition = 'background 1.2s ease';
+        mainEl.style.background = origBg;
+      }, 120);
+    }
+  }
+
+  // ── Listen: jumpscare ────────────────────────────
+  onValue(jumpRef, snap => {
+    if (!snap.exists()) return;
+    const data = snap.val();
+    if (!data || !data.ts || data.ts <= joinedAt) return;
+    fireJumpscare(data.url, data.duration || 800);
+  });
+
+  function fireJumpscare(url, duration) {
+    const overlay = document.getElementById('jumpscare-overlay');
+    const img     = document.getElementById('jumpscare-img');
+    img.src = url;
+    overlay.classList.add('show');
+
+    // Shake simultaneously
+    triggerShake('sm');
+
+    setTimeout(() => {
+      overlay.classList.remove('show');
+      img.src = '';
+    }, duration);
+  }
+
+  // ── Admin: fire shake ─────────────────────────────
+  document.getElementById('shake-sm-btn').addEventListener('click', () => {
+    set(shakeRef, { intensity: 'sm', ts: Date.now() });
+    triggerShake('sm'); // also shake admin's own screen
+  });
+  document.getElementById('shake-lg-btn').addEventListener('click', () => {
+    set(shakeRef, { intensity: 'lg', ts: Date.now() });
+    triggerShake('lg');
+  });
+
+  // ── Admin: fire jumpscare ─────────────────────────
+  document.getElementById('fire-jumpscare-btn').addEventListener('click', () => {
+    const url = document.getElementById('js-custom-url').value.trim() || jsSelectedUrl;
+    if (!url) { alert('Pick an image or paste a URL!'); return; }
+    set(jumpRef, { url, duration: jsDuration, ts: Date.now() });
+    fireJumpscare(url, jsDuration); // also show on admin screen
+  });
+
   // ── Canvas ────────────────────────────────────────
   const canvas = document.getElementById('draw-canvas');
   const ctx    = canvas.getContext('2d');
+  let strokeCache = null;
 
   function resizeCanvas() {
     const main = document.getElementById('main');
-    // Don't save/restore pixels on resize — strokes are replayed from Firebase anyway
     canvas.width  = main.clientWidth;
     canvas.height = main.clientHeight;
-    // Trigger a replay from current Firebase data
     replayFromCache();
   }
-
-  let strokeCache = null; // last known strokes data
 
   function replayFromCache() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -479,10 +719,6 @@
   resizeCanvas();
   window.addEventListener('resize', resizeCanvas);
 
-  // Only show strokes that existed AFTER joinedAt
-  // We track the canvas joinedAt separately from messages joinedAt
-  // Since draw strokes are a canvas "current state" (not a feed), we DO replay them for viewers.
-  // BUT — we only replay strokes whose ts > joinedAt. Strokes without ts (older) are skipped.
   onValue(strokesRef, snap => {
     if (!snap.exists()) {
       strokeCache = null;
@@ -491,16 +727,13 @@
       return;
     }
     const all = snap.val();
-    // Filter to only strokes created after this user joined
     const filtered = {};
     Object.entries(all).forEach(([k, v]) => {
       if (!v.ts || v.ts > joinedAt) filtered[k] = v;
     });
     strokeCache = Object.keys(filtered).length ? filtered : null;
     replayFromCache();
-    if (!drawMode) {
-      canvas.classList.toggle('view-only', !!strokeCache);
-    }
+    if (!drawMode) canvas.classList.toggle('view-only', !!strokeCache);
   });
 
   function paintSeg(s) {
@@ -534,19 +767,22 @@
     if (snap.val()) document.getElementById('main').style.background = snap.val();
   });
 
-  // ── Poll — only show if created after join ────────
+  // ── Poll — only if created after join ─────────────
+  // firstPollSnap: suppress the very first onValue fire (existing data on connect).
+  // After that, any change is genuinely new.
+  let firstPollSnap = true;
   onValue(pollRef, snap => {
     if (!snap.exists() || !snap.val()?.question) {
       document.getElementById('poll-widget').classList.remove('show');
+      firstPollSnap = false;
       return;
     }
-    const data = snap.val();
-    // If poll was created before this user joined, don't show it
-    if (data.ts && data.ts <= joinedAt) {
-      document.getElementById('poll-widget').classList.remove('show');
+    // Always swallow the first snapshot — it's whatever was already in the DB
+    if (firstPollSnap) {
+      firstPollSnap = false;
       return;
     }
-    renderPoll(data, snap.key);
+    renderPoll(snap.val(), snap.key);
   });
 
   // ── Keyboard secret code ──────────────────────────
@@ -566,8 +802,9 @@
       document.getElementById('mobile-code-input').value = '';
       unlockAdmin();
     } else {
-      document.getElementById('mobile-code-input').style.borderColor = '#e94560';
-      setTimeout(() => document.getElementById('mobile-code-input').style.borderColor = '', 900);
+      const inp = document.getElementById('mobile-code-input');
+      inp.style.borderColor = '#e63946';
+      setTimeout(() => inp.style.borderColor = '', 900);
     }
   }
   document.getElementById('mobile-code-btn').addEventListener('click', checkMobileCode);
@@ -589,7 +826,6 @@
     isAdmin = true;
     document.getElementById('admin-panel').classList.add('open');
     document.getElementById('admin-name-display').textContent = adminName;
-    // Hide mobile code box once admin
     document.getElementById('mobile-code-box').style.display = 'none';
   }
 
@@ -673,9 +909,9 @@
   document.getElementById('send-bg-btn').addEventListener('click', () => set(bgRef, selBg));
 
   // ── Draw tools ────────────────────────────────────
-  document.querySelectorAll('.tool-btn').forEach(btn => {
+  document.querySelectorAll('.tool-btn[data-tool]').forEach(btn => {
     btn.addEventListener('click', () => {
-      document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tool-btn[data-tool]').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
       drawTool = btn.dataset.tool;
     });
@@ -694,7 +930,6 @@
     document.getElementById('brush-size-val').textContent = brushSize;
   });
 
-  // ── Draw toggle ───────────────────────────────────
   const drawToggleBtn = document.getElementById('draw-toggle-btn');
   drawToggleBtn.addEventListener('click', () => {
     drawMode = !drawMode;
@@ -720,7 +955,7 @@
     strokeCache = null;
   });
 
-  // ── Canvas events ─────────────────────────────────
+  // ── Canvas pointer events ─────────────────────────
   function getPos(e) {
     const r = canvas.getBoundingClientRect();
     const s = e.touches ? e.touches[0] : e;
@@ -732,7 +967,6 @@
     isPointing = true;
     lastPt     = getPos(e);
     strokeId   = push(strokesRef).key;
-    // Tag stroke with current time so new joiners can filter it
     set(ref(db, `strokes/${strokeId}/ts`), Date.now());
     canvas.setPointerCapture(e.pointerId);
   });
@@ -750,7 +984,6 @@
   const stopDraw = () => { isPointing = false; lastPt = null; };
   canvas.addEventListener('pointerup',     stopDraw);
   canvas.addEventListener('pointercancel', stopDraw);
-
   canvas.addEventListener('touchstart', e => { if (drawMode) e.preventDefault(); }, { passive: false });
   canvas.addEventListener('touchmove',  e => { if (drawMode) e.preventDefault(); }, { passive: false });
 
