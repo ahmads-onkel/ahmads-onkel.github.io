@@ -16,6 +16,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
+      transition: background 1.2s ease;
     }
 
     /* ── BANNER STACK ── */
@@ -46,83 +47,238 @@
       opacity: 0;
       transform: translateY(-16px);
       transition: transform 0.38s cubic-bezier(.22,.68,0,1.15), opacity 0.38s ease;
-      will-change: transform, opacity;
     }
-
-    .banner.visible {
-      opacity: 1;
-      transform: translateY(0);
-    }
-
+    .banner.visible { opacity: 1; transform: translateY(0); }
     .banner.fading {
-      opacity: 0;
-      transform: translateY(-8px);
+      opacity: 0; transform: translateY(-8px);
       transition: opacity 1.6s ease, transform 1.6s ease;
     }
+    .banner-name { font-weight: bold; color: #ffe135; }
 
-    .banner-name {
+    /* ── POLL WIDGET ── */
+    #poll-widget {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) scale(0.92);
+      background: #fff;
+      border: 2px solid #111;
+      padding: 24px 28px;
+      width: 90%;
+      max-width: 420px;
+      box-shadow: 0 8px 40px rgba(0,0,0,0.12);
+      z-index: 800;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+    #poll-widget.show {
+      opacity: 1;
+      pointer-events: all;
+      transform: translate(-50%, -50%) scale(1);
+    }
+    #poll-question {
+      font-size: 20px;
       font-weight: bold;
-      color: #ffe135;
+      margin-bottom: 16px;
+      color: #111;
+      line-height: 1.4;
+    }
+    .poll-option {
+      margin-bottom: 10px;
+      cursor: pointer;
+    }
+    .poll-bar-wrap {
+      background: #f0f0f0;
+      height: 36px;
+      position: relative;
+      overflow: hidden;
+    }
+    .poll-bar-fill {
+      background: #111;
+      height: 100%;
+      width: 0%;
+      transition: width 0.5s ease;
+    }
+    .poll-bar-label {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 12px;
+      font-size: 16px;
+      color: #fff;
+      mix-blend-mode: difference;
+      pointer-events: none;
+    }
+    .poll-voted .poll-bar-fill { background: #ffe135; }
+    #poll-close {
+      margin-top: 16px;
+      font-family: 'Patrick Hand', cursive;
+      font-size: 14px;
+      background: none;
+      border: 1px solid #ccc;
+      padding: 6px 16px;
+      cursor: pointer;
+      color: #888;
+      width: 100%;
     }
 
     /* ── ADMIN PANEL ── */
     #admin-panel {
       display: none;
       position: fixed;
-      bottom: 32px;
+      bottom: 28px;
       left: 50%;
       transform: translateX(-50%);
       background: #fff;
-      border: 1.5px solid #e0e0e0;
-      padding: 20px 24px;
+      border: 1.5px solid #ddd;
       width: 90%;
-      max-width: 460px;
-      box-shadow: 0 8px 32px rgba(0,0,0,0.07);
+      max-width: 500px;
+      box-shadow: 0 8px 40px rgba(0,0,0,0.1);
       z-index: 500;
+      overflow: hidden;
     }
-
     #admin-panel.show { display: block; }
 
-    #admin-panel .label {
-      font-size: 13px;
+    /* Tabs */
+    .admin-tabs {
+      display: flex;
+      border-bottom: 1.5px solid #eee;
+    }
+    .admin-tab {
+      flex: 1;
+      padding: 12px 0;
+      font-family: 'Patrick Hand', cursive;
+      font-size: 15px;
+      background: none;
+      border: none;
+      cursor: pointer;
       color: #aaa;
-      margin-bottom: 10px;
-      letter-spacing: 0.4px;
+      transition: color 0.15s, background 0.15s;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -1.5px;
+    }
+    .admin-tab.active { color: #111; border-bottom-color: #111; }
+    .admin-tab:hover { background: #fafafa; }
+
+    /* Tab panels */
+    .tab-panel { display: none; padding: 18px 20px; }
+    .tab-panel.active { display: block; }
+
+    .panel-label {
+      font-size: 12px;
+      color: #bbb;
+      margin-bottom: 8px;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
     }
 
-    #msg-input {
+    .admin-input {
       width: 100%;
       font-family: 'Patrick Hand', cursive;
-      font-size: 17px;
+      font-size: 16px;
       border: 1.5px solid #e0e0e0;
-      padding: 10px 13px;
+      padding: 9px 12px;
       outline: none;
       color: #111;
       background: #fafafa;
-      margin-bottom: 12px;
+      margin-bottom: 10px;
       resize: none;
       transition: border-color 0.2s;
-      line-height: 1.5;
     }
+    .admin-input:focus { border-color: #111; background: #fff; }
 
-    #msg-input:focus {
-      border-color: #111;
-      background: #fff;
-    }
-
-    #send-btn {
+    .admin-btn {
       width: 100%;
       font-family: 'Patrick Hand', cursive;
-      font-size: 17px;
+      font-size: 16px;
       background: #111;
       color: #fff;
       border: none;
-      padding: 11px;
+      padding: 10px;
       cursor: pointer;
       transition: background 0.15s;
+      margin-top: 2px;
     }
+    .admin-btn:hover { background: #333; }
 
-    #send-btn:hover { background: #333; }
+    /* Poll builder */
+    .poll-option-input-wrap {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 8px;
+      align-items: center;
+    }
+    .poll-option-input-wrap input {
+      flex: 1;
+      font-family: 'Patrick Hand', cursive;
+      font-size: 15px;
+      border: 1.5px solid #e0e0e0;
+      padding: 7px 10px;
+      outline: none;
+      background: #fafafa;
+      transition: border-color 0.2s;
+    }
+    .poll-option-input-wrap input:focus { border-color: #111; background: #fff; }
+    .remove-option {
+      background: none;
+      border: none;
+      font-size: 18px;
+      color: #ccc;
+      cursor: pointer;
+      line-height: 1;
+      padding: 0 4px;
+    }
+    .remove-option:hover { color: #888; }
+    #add-option-btn {
+      font-family: 'Patrick Hand', cursive;
+      font-size: 14px;
+      background: none;
+      border: 1px solid #ddd;
+      padding: 6px 14px;
+      cursor: pointer;
+      color: #888;
+      margin-bottom: 10px;
+    }
+    #add-option-btn:hover { background: #fafafa; }
+
+    /* Color picker */
+    .color-presets {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 14px;
+    }
+    .color-swatch {
+      width: 36px;
+      height: 36px;
+      cursor: pointer;
+      border: 2px solid transparent;
+      transition: transform 0.15s, border-color 0.15s;
+    }
+    .color-swatch:hover { transform: scale(1.15); }
+    .color-swatch.selected { border-color: #111; }
+
+    .color-custom-row {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    #custom-color {
+      width: 44px;
+      height: 36px;
+      border: 1.5px solid #e0e0e0;
+      padding: 2px;
+      cursor: pointer;
+      background: #fafafa;
+    }
+    #custom-color-label {
+      font-size: 15px;
+      color: #888;
+    }
 
     /* ── NAME OVERLAY ── */
     #name-overlay {
@@ -136,14 +292,8 @@
       flex-direction: column;
       gap: 16px;
     }
-
     #name-overlay.show { display: flex; }
-
-    #name-overlay p {
-      font-size: 22px;
-      color: #444;
-    }
-
+    #name-overlay p { font-size: 22px; color: #444; }
     #name-input {
       font-family: 'Patrick Hand', cursive;
       font-size: 24px;
@@ -156,7 +306,6 @@
       background: transparent;
       color: #111;
     }
-
     #name-confirm {
       font-family: 'Patrick Hand', cursive;
       font-size: 17px;
@@ -165,39 +314,90 @@
       border: none;
       padding: 10px 36px;
       cursor: pointer;
-      transition: background 0.15s;
     }
-
     #name-confirm:hover { background: #333; }
   </style>
 </head>
 <body>
 
-  <!-- Banner stack lives at top center -->
   <div id="banner-stack"></div>
 
-  <!-- Name setup overlay (shown on first unlock) -->
+  <!-- Poll widget (visible to everyone) -->
+  <div id="poll-widget">
+    <div id="poll-question"></div>
+    <div id="poll-options"></div>
+    <button id="poll-close">dismiss</button>
+  </div>
+
+  <!-- Name overlay -->
   <div id="name-overlay">
     <p>What's your name?</p>
     <input id="name-input" type="text" maxlength="30" placeholder="your name" autocomplete="off"/>
     <button id="name-confirm">Enter</button>
   </div>
 
-  <!-- Admin compose panel (hidden, unlocked by secret combo) -->
+  <!-- Admin panel -->
   <div id="admin-panel">
-    <div class="label">send a message to everyone</div>
-    <textarea id="msg-input" rows="2" maxlength="200" placeholder="write something…"></textarea>
-    <button id="send-btn">Send</button>
+    <div class="admin-tabs">
+      <button class="admin-tab active" data-tab="msg">💬 Message</button>
+      <button class="admin-tab" data-tab="poll">📊 Poll</button>
+      <button class="admin-tab" data-tab="bg">🎨 Background</button>
+    </div>
+
+    <!-- Message tab -->
+    <div class="tab-panel active" id="tab-msg">
+      <div class="panel-label">Send a message to everyone</div>
+      <textarea class="admin-input" id="msg-input" rows="2" maxlength="200" placeholder="write something…"></textarea>
+      <button class="admin-btn" id="send-msg-btn">Send</button>
+    </div>
+
+    <!-- Poll tab -->
+    <div class="tab-panel" id="tab-poll">
+      <div class="panel-label">Poll question</div>
+      <input class="admin-input" id="poll-q-input" type="text" maxlength="120" placeholder="Ask something…"/>
+      <div class="panel-label">Options</div>
+      <div id="poll-options-builder">
+        <div class="poll-option-input-wrap">
+          <input type="text" placeholder="Option 1" maxlength="60"/>
+          <button class="remove-option">×</button>
+        </div>
+        <div class="poll-option-input-wrap">
+          <input type="text" placeholder="Option 2" maxlength="60"/>
+          <button class="remove-option">×</button>
+        </div>
+      </div>
+      <button id="add-option-btn">+ add option</button>
+      <button class="admin-btn" id="send-poll-btn">Launch Poll</button>
+    </div>
+
+    <!-- Background tab -->
+    <div class="tab-panel" id="tab-bg">
+      <div class="panel-label">Pick a background color</div>
+      <div class="color-presets">
+        <div class="color-swatch selected" style="background:#ffffff" data-color="#ffffff"></div>
+        <div class="color-swatch" style="background:#f9f3e8" data-color="#f9f3e8"></div>
+        <div class="color-swatch" style="background:#e8f4f9" data-color="#e8f4f9"></div>
+        <div class="color-swatch" style="background:#edf9e8" data-color="#edf9e8"></div>
+        <div class="color-swatch" style="background:#f9e8e8" data-color="#f9e8e8"></div>
+        <div class="color-swatch" style="background:#1a1a1a" data-color="#1a1a1a"></div>
+        <div class="color-swatch" style="background:#0d1b2a" data-color="#0d1b2a"></div>
+        <div class="color-swatch" style="background:#ffe135" data-color="#ffe135"></div>
+      </div>
+      <div class="color-custom-row">
+        <input type="color" id="custom-color" value="#ffffff"/>
+        <span id="custom-color-label">or pick any color</span>
+      </div>
+      <button class="admin-btn" id="send-bg-btn">Apply to everyone</button>
+    </div>
   </div>
 
 <script type="module">
-  import { initializeApp }  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-  import { getDatabase, ref, push, onChildAdded }
-                             from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+  import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getDatabase, ref, push, set, onValue, onChildAdded, serverTimestamp }
+                              from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
   import { getAuth, signInAnonymously }
-                             from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+                              from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
-  // ▼▼▼ PASTE YOUR FIREBASE CONFIG HERE ▼▼▼
   const firebaseConfig = {
     apiKey:            "AIzaSyC2umvpkas9QCC1PHrWXjk6g67i7Wyr11A",
     authDomain:        "website-9f859.firebaseapp.com",
@@ -207,44 +407,55 @@
     messagingSenderId: "756244892931",
     appId:             "1:756244892931:web:18d3975a67547ab3936d36"
   };
-  // ▲▲▲ END CONFIG ▲▲▲
 
   const SECRET  = "22112011";
-  const HOLD_MS = 5500;   // ms banner stays fully visible before fading
+  const HOLD_MS = 5500;
 
   let adminName = localStorage.getItem('admin_name') || '';
-  let db, msgsRef;
+  let myVotes   = {};
   let keyBuffer = '';
+  let db, msgsRef, pollRef, bgRef;
 
-  // ── Firebase boot ─────────────────────────────────
-  const configured = firebaseConfig.apiKey !== "YOUR_API_KEY";
+  // ── Boot Firebase ────────────────────────────────
+  const app  = initializeApp(firebaseConfig);
+  db         = getDatabase(app);
+  msgsRef    = ref(db, 'messages');
+  pollRef    = ref(db, 'poll');
+  bgRef      = ref(db, 'bgcolor');
+  signInAnonymously(getAuth(app)).catch(console.error);
 
-  if (configured) {
-    const app  = initializeApp(firebaseConfig);
-    db         = getDatabase(app);
-    msgsRef    = ref(db, 'messages');
-    signInAnonymously(getAuth(app)).catch(console.error);
+  // ── Listen: messages ─────────────────────────────
+  let skipOld = true;
+  setTimeout(() => { skipOld = false; }, 900);
+  onChildAdded(msgsRef, snap => {
+    if (skipOld) return;
+    const d = snap.val();
+    if (d?.name && d?.text) showBanner(d.name, d.text);
+  });
 
-    let skip = true;
-    setTimeout(() => { skip = false; }, 800);
+  // ── Listen: background color ──────────────────────
+  onValue(bgRef, snap => {
+    const color = snap.val();
+    if (color) document.body.style.background = color;
+  });
 
-    onChildAdded(msgsRef, snap => {
-      if (skip) return;
-      const d = snap.val();
-      if (d?.name && d?.text) showBanner(d.name, d.text);
-    });
-  }
+  // ── Listen: poll ─────────────────────────────────
+  onValue(pollRef, snap => {
+    const data = snap.val();
+    if (!data || !data.question) {
+      document.getElementById('poll-widget').classList.remove('show');
+      return;
+    }
+    renderPoll(data);
+  });
 
-  // ── Secret key combo detector ─────────────────────
-  // Type the digits anywhere on the page (not in inputs)
+  // ── Secret combo ────────────────────────────────
   document.addEventListener('keydown', e => {
     const tag = e.target.tagName;
     if (tag === 'INPUT' || tag === 'TEXTAREA') return;
     if (/^\d$/.test(e.key)) {
       keyBuffer += e.key;
-      if (keyBuffer.length > SECRET.length) {
-        keyBuffer = keyBuffer.slice(-SECRET.length);
-      }
+      if (keyBuffer.length > SECRET.length) keyBuffer = keyBuffer.slice(-SECRET.length);
       if (keyBuffer === SECRET) {
         keyBuffer = '';
         unlockAdmin();
@@ -262,18 +473,15 @@
   }
 
   function togglePanel() {
-    const panel = document.getElementById('admin-panel');
-    panel.classList.toggle('show');
-    if (panel.classList.contains('show')) {
+    document.getElementById('admin-panel').classList.toggle('show');
+    if (document.getElementById('admin-panel').classList.contains('show')) {
       document.getElementById('msg-input').focus();
     }
   }
 
-  // ── Name confirm ──────────────────────────────────
+  // ── Name ─────────────────────────────────────────
   document.getElementById('name-confirm').addEventListener('click', saveName);
-  document.getElementById('name-input').addEventListener('keydown', e => {
-    if (e.key === 'Enter') saveName();
-  });
+  document.getElementById('name-input').addEventListener('keydown', e => { if (e.key === 'Enter') saveName(); });
 
   function saveName() {
     const val = document.getElementById('name-input').value.trim();
@@ -284,44 +492,137 @@
     togglePanel();
   }
 
-  // ── Send ──────────────────────────────────────────
-  document.getElementById('send-btn').addEventListener('click', doSend);
-  document.getElementById('msg-input').addEventListener('keydown', e => {
-    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); doSend(); }
+  // ── Tabs ─────────────────────────────────────────
+  document.querySelectorAll('.admin-tab').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+    });
   });
 
-  function doSend() {
+  // ── Send message ─────────────────────────────────
+  document.getElementById('send-msg-btn').addEventListener('click', sendMsg);
+  document.getElementById('msg-input').addEventListener('keydown', e => {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMsg(); }
+  });
+
+  function sendMsg() {
     const text = document.getElementById('msg-input').value.trim();
     if (!text || !adminName) return;
-
-    if (configured) {
-      push(msgsRef, { name: adminName, text, ts: Date.now() });
-    } else {
-      // No Firebase yet — preview locally
-      showBanner(adminName, text);
-    }
-
+    push(msgsRef, { name: adminName, text, ts: Date.now() });
     document.getElementById('msg-input').value = '';
     document.getElementById('admin-panel').classList.remove('show');
   }
 
-  // ── Banner system ─────────────────────────────────
+  // ── Send poll ─────────────────────────────────────
+  document.getElementById('send-poll-btn').addEventListener('click', sendPoll);
+
+  function sendPoll() {
+    const q = document.getElementById('poll-q-input').value.trim();
+    if (!q) return;
+    const inputs = document.querySelectorAll('#poll-options-builder input');
+    const options = Array.from(inputs).map(i => i.value.trim()).filter(Boolean);
+    if (options.length < 2) return alert('Add at least 2 options!');
+
+    const optObj = {};
+    options.forEach((o, i) => { optObj[i] = { label: o, votes: 0 }; });
+
+    set(pollRef, { question: q, options: optObj, ts: Date.now() });
+    document.getElementById('admin-panel').classList.remove('show');
+  }
+
+  // Poll option builder
+  document.getElementById('add-option-btn').addEventListener('click', () => {
+    const wrap = document.createElement('div');
+    wrap.className = 'poll-option-input-wrap';
+    const n = document.querySelectorAll('#poll-options-builder input').length + 1;
+    wrap.innerHTML = `<input type="text" placeholder="Option ${n}" maxlength="60"/><button class="remove-option">×</button>`;
+    wrap.querySelector('.remove-option').addEventListener('click', () => wrap.remove());
+    document.getElementById('poll-options-builder').appendChild(wrap);
+  });
+
+  document.querySelectorAll('.remove-option').forEach(btn => {
+    btn.addEventListener('click', () => btn.closest('.poll-option-input-wrap').remove());
+  });
+
+  // ── Background ────────────────────────────────────
+  let selectedColor = '#ffffff';
+
+  document.querySelectorAll('.color-swatch').forEach(sw => {
+    sw.addEventListener('click', () => {
+      document.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('selected'));
+      sw.classList.add('selected');
+      selectedColor = sw.dataset.color;
+      document.getElementById('custom-color').value = selectedColor;
+    });
+  });
+
+  document.getElementById('custom-color').addEventListener('input', e => {
+    selectedColor = e.target.value;
+    document.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('selected'));
+  });
+
+  document.getElementById('send-bg-btn').addEventListener('click', () => {
+    set(bgRef, selectedColor);
+    document.getElementById('admin-panel').classList.remove('show');
+  });
+
+  // ── Poll widget renderer ──────────────────────────
+  function renderPoll(data) {
+    document.getElementById('poll-question').textContent = data.question;
+    const container = document.getElementById('poll-options');
+    container.innerHTML = '';
+
+    const opts = data.options || {};
+    const keys = Object.keys(opts);
+    const total = keys.reduce((s, k) => s + (opts[k].votes || 0), 0);
+    const voted = myVotes[data.ts];
+
+    keys.forEach(k => {
+      const opt = opts[k];
+      const pct = total > 0 ? Math.round((opt.votes || 0) / total * 100) : 0;
+
+      const div = document.createElement('div');
+      div.className = 'poll-option' + (voted ? ' poll-voted' : '');
+
+      div.innerHTML = `
+        <div class="poll-bar-wrap">
+          <div class="poll-bar-fill" style="width:${voted ? pct : 0}%"></div>
+          <div class="poll-bar-label">
+            <span>${esc(opt.label)}</span>
+            ${voted ? `<span>${pct}%</span>` : ''}
+          </div>
+        </div>`;
+
+      if (!voted) {
+        div.addEventListener('click', () => {
+          myVotes[data.ts] = k;
+          const newVotes = (opt.votes || 0) + 1;
+          set(ref(db, `poll/options/${k}/votes`), newVotes);
+        });
+      }
+
+      container.appendChild(div);
+    });
+
+    document.getElementById('poll-widget').classList.add('show');
+  }
+
+  document.getElementById('poll-close').addEventListener('click', () => {
+    document.getElementById('poll-widget').classList.remove('show');
+  });
+
+  // ── Banner ────────────────────────────────────────
   const stackEl = document.getElementById('banner-stack');
 
   function showBanner(name, text) {
     const el = document.createElement('div');
     el.className = 'banner';
     el.innerHTML = `<span class="banner-name">${esc(name)}</span>: ${esc(text)}`;
-
-    // New messages appear at the top, push others down
     stackEl.insertBefore(el, stackEl.firstChild);
-
-    // Double rAF to trigger CSS transition after insertion
-    requestAnimationFrame(() => requestAnimationFrame(() => {
-      el.classList.add('visible');
-    }));
-
-    // Fade out after hold time
+    requestAnimationFrame(() => requestAnimationFrame(() => el.classList.add('visible')));
     setTimeout(() => {
       el.classList.remove('visible');
       el.classList.add('fading');
@@ -330,10 +631,7 @@
   }
 
   function esc(s) {
-    return s
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;');
+    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
   }
 </script>
 </body>
