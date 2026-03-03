@@ -8,395 +8,378 @@
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-    body {
-      font-family: 'Patrick Hand', cursive;
-      background: #ffffff;
-      color: #111;
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: background 1.2s ease;
+    :root {
+      --bg: #ffffff;
+      --panel: #ffffff;
+      --panel2: #f5f5f5;
+      --accent: #111111;
+      --accent2: #111111;
+      --green: #111111;
+      --text: #111111;
+      --muted: #888888;
+      --border: #e0e0e0;
+      --radius: 10px;
     }
 
-    /* ── BANNER STACK ── */
-    #banner-stack {
-      position: fixed;
-      top: 24px;
-      left: 50%;
-      transform: translateX(-50%);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 10px;
-      z-index: 1000;
-      pointer-events: none;
-      width: 90%;
-      max-width: 600px;
-    }
+    html, body { height: 100%; font-family: 'Patrick Hand', cursive; background: var(--bg); color: var(--text); overflow: hidden; }
 
-    .banner {
-      background: #111;
-      color: #fff;
-      padding: 13px 28px;
-      font-family: 'Patrick Hand', cursive;
-      font-size: 19px;
-      text-align: center;
-      width: 100%;
-      box-shadow: 0 4px 28px rgba(0,0,0,0.13);
-      opacity: 0;
-      transform: translateY(-16px);
-      transition: transform 0.38s cubic-bezier(.22,.68,0,1.15), opacity 0.38s ease;
-    }
-    .banner.visible { opacity: 1; transform: translateY(0); }
-    .banner.fading {
-      opacity: 0; transform: translateY(-8px);
-      transition: opacity 1.6s ease, transform 1.6s ease;
-    }
-    .banner-name { font-weight: bold; color: #ffe135; }
+    #app { display: flex; height: 100vh; width: 100vw; }
 
-    /* ── POLL WIDGET ── */
-    #poll-widget {
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%) scale(0.92);
-      background: #fff;
-      border: 2px solid #111;
-      padding: 24px 28px;
-      width: 90%;
-      max-width: 420px;
-      box-shadow: 0 8px 40px rgba(0,0,0,0.12);
-      z-index: 800;
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.3s ease, transform 0.3s ease;
-    }
-    #poll-widget.show {
-      opacity: 1;
-      pointer-events: all;
-      transform: translate(-50%, -50%) scale(1);
-    }
-    #poll-question {
-      font-size: 20px;
-      font-weight: bold;
-      margin-bottom: 16px;
-      color: #111;
-      line-height: 1.4;
-    }
-    .poll-option {
-      margin-bottom: 10px;
-      cursor: pointer;
-    }
-    .poll-bar-wrap {
-      background: #f0f0f0;
-      height: 36px;
+    /* ── MAIN AREA ── */
+    #main {
+      flex: 1;
       position: relative;
       overflow: hidden;
+      transition: background 1.2s ease;
+      background: var(--bg);
     }
-    .poll-bar-fill {
-      background: #111;
-      height: 100%;
-      width: 0%;
-      transition: width 0.5s ease;
-    }
-    .poll-bar-label {
+
+    #draw-canvas {
       position: absolute;
       inset: 0;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0 12px;
-      font-size: 16px;
-      color: #fff;
-      mix-blend-mode: difference;
-      pointer-events: none;
-    }
-    .poll-voted .poll-bar-fill { background: #ffe135; }
-    #poll-close {
-      margin-top: 16px;
-      font-family: 'Patrick Hand', cursive;
-      font-size: 14px;
-      background: none;
-      border: 1px solid #ccc;
-      padding: 6px 16px;
-      cursor: pointer;
-      color: #888;
-      width: 100%;
-    }
-
-    /* ── ADMIN PANEL ── */
-    #admin-panel {
+      z-index: 10;
       display: none;
-      position: fixed;
-      bottom: 28px;
-      left: 50%;
+      touch-action: none;
+    }
+    #draw-canvas.active   { display: block; cursor: crosshair; }
+    #draw-canvas.view-only { display: block; pointer-events: none; }
+
+    /* ── BANNERS ── */
+    #banner-stack {
+      position: absolute;
+      top: 18px; left: 50%;
       transform: translateX(-50%);
-      background: #fff;
-      border: 1.5px solid #ddd;
-      width: 90%;
-      max-width: 500px;
-      box-shadow: 0 8px 40px rgba(0,0,0,0.1);
-      z-index: 500;
-      overflow: hidden;
+      display: flex; flex-direction: column; align-items: center; gap: 8px;
+      z-index: 100; pointer-events: none;
+      width: 90%; max-width: 560px;
     }
-    #admin-panel.show { display: block; }
+    .banner {
+      background: #111;
+      color:#fff; padding:12px 24px;
+      font-size:17px; font-weight:800; text-align:center;
+      width:100%; border-radius:8px;
+      box-shadow:0 4px 16px rgba(0,0,0,0.12);
+      opacity:0; transform:translateY(-14px) scale(.96);
+      transition:transform .35s cubic-bezier(.22,.68,0,1.2),opacity .35s ease;
+    }
+    .banner.visible { opacity:1; transform:translateY(0) scale(1); }
+    .banner.fading  { opacity:0; transform:translateY(-8px) scale(.97); transition:opacity 1.4s ease,transform 1.4s ease; }
+    .banner-name    { color:#fff; font-weight:bold; }
 
-    /* Tabs */
-    .admin-tabs {
-      display: flex;
-      border-bottom: 1.5px solid #eee;
+    /* ── POLL ── */
+    #poll-widget {
+      position:absolute; top:50%; left:50%;
+      transform:translate(-50%,-50%) scale(.9);
+      background:var(--panel); border:2px solid var(--accent); border-radius:var(--radius);
+      padding:22px 26px; width:88%; max-width:400px;
+      box-shadow:0 4px 24px rgba(0,0,0,0.10);
+      z-index:80; opacity:0; pointer-events:none;
+      transition:opacity .3s ease,transform .3s ease;
     }
-    .admin-tab {
-      flex: 1;
-      padding: 12px 0;
-      font-family: 'Patrick Hand', cursive;
-      font-size: 15px;
-      background: none;
-      border: none;
-      cursor: pointer;
-      color: #aaa;
-      transition: color 0.15s, background 0.15s;
-      border-bottom: 2px solid transparent;
-      margin-bottom: -1.5px;
-    }
-    .admin-tab.active { color: #111; border-bottom-color: #111; }
-    .admin-tab:hover { background: #fafafa; }
+    #poll-widget.show { opacity:1; pointer-events:all; transform:translate(-50%,-50%) scale(1); }
+    #poll-question { font-size:18px; font-weight:900; margin-bottom:14px; color:#111; line-height:1.35; }
+    .poll-option   { margin-bottom:9px; cursor:pointer; }
+    .poll-bar-wrap { background:#f5f5f5; height:38px; border-radius:6px; position:relative; overflow:hidden; border:1.5px solid var(--border); }
+    .poll-bar-fill { background:#111; height:100%; width:0%; transition:width .5s ease; border-radius:6px 0 0 6px; }
+    .poll-bar-label { position:absolute; inset:0; display:flex; align-items:center; justify-content:space-between; padding:0 12px; font-size:14px; font-weight:800; color:#fff; pointer-events:none; mix-blend-mode:difference; }
+    .poll-voted .poll-bar-fill { background:#111; }
+    #poll-close { margin-top:14px; font-family:'Patrick Hand',cursive; font-size:13px; font-weight:700; background:none; border:1.5px solid var(--border); border-radius:6px; padding:6px 16px; cursor:pointer; color:var(--muted); width:100%; transition:border-color .2s,color .2s; }
+    #poll-close:hover { border-color:var(--accent); color:var(--accent); }
 
-    /* Tab panels */
-    .tab-panel { display: none; padding: 18px 20px; }
-    .tab-panel.active { display: block; }
-
-    .panel-label {
-      font-size: 12px;
-      color: #bbb;
-      margin-bottom: 8px;
-      letter-spacing: 0.5px;
-      text-transform: uppercase;
+    /* ── VIEWER COUNT ── */
+    #viewer-pill {
+      position:absolute; bottom:16px; left:16px;
+      background:rgba(255,255,255,0.85); border:1.5px solid var(--border); border-radius:20px;
+      padding:5px 13px; font-size:12px; font-weight:800; color:#888;
+      z-index:50; pointer-events:none; backdrop-filter:blur(6px);
     }
+    #viewer-pill span { color:var(--green); }
+
+    /* ── ADMIN SIDEBAR ── */
+    #admin-panel {
+      width:0; min-width:0; overflow:hidden;
+      background:var(--panel); border-left:2px solid var(--border);
+      display:flex; flex-direction:column;
+      transition:width .35s cubic-bezier(.22,.68,0,1.1),min-width .35s;
+      z-index:200; flex-shrink:0;
+    }
+    #admin-panel.open { width:290px; min-width:290px; }
+
+    #panel-inner { width:290px; height:100%; display:flex; flex-direction:column; overflow:hidden; }
+
+    #panel-header {
+      background:#111;
+      padding:14px 16px 12px; flex-shrink:0;
+    }
+    #panel-header h1 { font-size:18px; font-weight:900; color:#fff; letter-spacing:-.3px; }
+    #panel-header p  { font-size:11px; font-weight:700; color:rgba(255,255,255,.6); margin-top:2px; text-transform:uppercase; letter-spacing:1px; }
+
+    .admin-tabs { display:flex; background:var(--panel2); border-bottom:2px solid var(--border); flex-shrink:0; }
+    .admin-tab  {
+      flex:1; padding:10px 4px;
+      font-family:'Patrick Hand',cursive; font-size:11px; font-weight:800;
+      background:none; border:none; cursor:pointer; color:#888;
+      transition:color .15s,background .15s;
+      border-bottom:3px solid transparent; margin-bottom:-2px;
+      text-transform:uppercase; letter-spacing:.3px;
+    }
+    .admin-tab.active           { color:var(--accent); border-bottom-color:var(--accent); }
+    .admin-tab:hover:not(.active) { color:var(--text); background:#fafafa; }
+
+    #panel-content { flex:1; overflow-y:auto; overflow-x:hidden; }
+    #panel-content::-webkit-scrollbar       { width:4px; }
+    #panel-content::-webkit-scrollbar-track { background:transparent; }
+    #panel-content::-webkit-scrollbar-thumb { background:var(--border); border-radius:2px; }
+
+    .tab-panel        { display:none; padding:14px; }
+    .tab-panel.active { display:block; }
+
+    .panel-label { font-size:10px; color:var(--muted); margin-bottom:6px; letter-spacing:1px; text-transform:uppercase; font-weight:800; }
 
     .admin-input {
-      width: 100%;
-      font-family: 'Patrick Hand', cursive;
-      font-size: 16px;
-      border: 1.5px solid #e0e0e0;
-      padding: 9px 12px;
-      outline: none;
-      color: #111;
-      background: #fafafa;
-      margin-bottom: 10px;
-      resize: none;
-      transition: border-color 0.2s;
+      width:100%; font-family:'Patrick Hand',cursive; font-size:13px; font-weight:700;
+      border:1.5px solid var(--border); border-radius:7px; padding:8px 10px;
+      outline:none; color:var(--text); background:#fafafa; margin-bottom:9px;
+      resize:none; transition:border-color .2s;
     }
-    .admin-input:focus { border-color: #111; background: #fff; }
+    .admin-input:focus       { border-color:var(--accent); background:#f5f5f5; }
+    .admin-input::placeholder { color:var(--muted); }
 
     .admin-btn {
-      width: 100%;
-      font-family: 'Patrick Hand', cursive;
-      font-size: 16px;
-      background: #111;
-      color: #fff;
-      border: none;
-      padding: 10px;
-      cursor: pointer;
-      transition: background 0.15s;
-      margin-top: 2px;
+      width:100%; font-family:'Patrick Hand',cursive; font-size:13px; font-weight:900;
+      background:#111; color:#fff;
+      border:none; border-radius:7px; padding:9px; cursor:pointer;
+      transition:opacity .15s,transform .1s; margin-top:2px;
+      text-transform:uppercase; letter-spacing:.5px;
     }
-    .admin-btn:hover { background: #333; }
+    .admin-btn:hover  { opacity:.88; }
+    .admin-btn:active { transform:scale(.98); }
+    .admin-btn.yellow { background:#111; color:#fff; }
+    .admin-btn.ghost  { background:#fff; color:#888; border:1.5px solid var(--border); }
+    .admin-btn.ghost:hover { color:var(--text); border-color:var(--muted); }
+
+    .divider { height:1px; background:var(--border); margin:12px 0; }
 
     /* Poll builder */
-    .poll-option-input-wrap {
-      display: flex;
-      gap: 8px;
-      margin-bottom: 8px;
-      align-items: center;
-    }
+    .poll-option-input-wrap { display:flex; gap:6px; margin-bottom:7px; align-items:center; }
     .poll-option-input-wrap input {
-      flex: 1;
-      font-family: 'Patrick Hand', cursive;
-      font-size: 15px;
-      border: 1.5px solid #e0e0e0;
-      padding: 7px 10px;
-      outline: none;
-      background: #fafafa;
-      transition: border-color 0.2s;
+      flex:1; font-family:'Patrick Hand',cursive; font-size:13px; font-weight:700;
+      border:1.5px solid var(--border); border-radius:6px; padding:7px 9px;
+      outline:none; background:#fafafa; color:var(--text); transition:border-color .2s;
     }
-    .poll-option-input-wrap input:focus { border-color: #111; background: #fff; }
+    .poll-option-input-wrap input:focus       { border-color:var(--accent); }
+    .poll-option-input-wrap input::placeholder { color:var(--muted); }
     .remove-option {
-      background: none;
-      border: none;
-      font-size: 18px;
-      color: #ccc;
-      cursor: pointer;
-      line-height: 1;
-      padding: 0 4px;
+      background:#f5f5f5; border:1.5px solid #e0e0e0; border-radius:5px;
+      font-size:14px; color:#111; cursor:pointer; padding:4px 7px; font-weight:900;
+      transition:background .15s;
     }
-    .remove-option:hover { color: #888; }
+    .remove-option:hover { background:#e0e0e0; }
     #add-option-btn {
-      font-family: 'Patrick Hand', cursive;
-      font-size: 14px;
-      background: none;
-      border: 1px solid #ddd;
-      padding: 6px 14px;
-      cursor: pointer;
-      color: #888;
-      margin-bottom: 10px;
+      font-family:'Patrick Hand',cursive; font-size:12px; font-weight:800;
+      background:#fafafa; border:1.5px dashed var(--border); border-radius:6px;
+      padding:6px 14px; cursor:pointer; color:var(--muted); margin-bottom:9px; width:100%;
+      transition:border-color .2s,color .2s;
     }
-    #add-option-btn:hover { background: #fafafa; }
+    #add-option-btn:hover { border-color:var(--accent); color:var(--accent); }
 
-    /* Color picker */
-    .color-presets {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      margin-bottom: 14px;
-    }
-    .color-swatch {
-      width: 36px;
-      height: 36px;
-      cursor: pointer;
-      border: 2px solid transparent;
-      transition: transform 0.15s, border-color 0.15s;
-    }
-    .color-swatch:hover { transform: scale(1.15); }
-    .color-swatch.selected { border-color: #111; }
+    /* Colors */
+    .color-presets { display:grid; grid-template-columns:repeat(5,1fr); gap:6px; margin-bottom:11px; }
+    .color-swatch  { aspect-ratio:1; border-radius:6px; cursor:pointer; border:2px solid transparent; transition:transform .15s,border-color .15s; }
+    .color-swatch:hover    { transform:scale(1.12); }
+    .color-swatch.selected { border-color:#fff; }
+    .color-custom-row { display:flex; gap:9px; align-items:center; margin-bottom:9px; }
+    #custom-color { width:40px; height:30px; border:1.5px solid var(--border); border-radius:6px; padding:2px; cursor:pointer; background:var(--panel2); }
+    #custom-color-label { font-size:12px; font-weight:700; color:var(--muted); }
 
-    .color-custom-row {
-      display: flex;
-      gap: 10px;
-      align-items: center;
-      margin-bottom: 10px;
+    /* ── DRAW TAB ── */
+    .draw-tool-row { display:flex; gap:6px; margin-bottom:9px; }
+    .tool-btn {
+      flex:1;
+      font-family:'Patrick Hand',cursive; font-size:11px; font-weight:900;
+      background:rgba(255,255,255,.05); border:1.5px solid var(--border); border-radius:7px;
+      padding:8px 4px; cursor:pointer; color:#888;
+      transition:all .15s; text-align:center; text-transform:uppercase;
     }
-    #custom-color {
-      width: 44px;
-      height: 36px;
-      border: 1.5px solid #e0e0e0;
-      padding: 2px;
-      cursor: pointer;
-      background: #fafafa;
+    .tool-btn:hover        { border-color:#111; color:#111; }
+    .tool-btn.active       { background:#111; border-color:#111; color:#fff; }
+
+    .draw-colors { display:flex; gap:6px; margin-bottom:9px; flex-wrap:wrap; }
+    .draw-color-swatch {
+      width:26px; height:26px; border-radius:50%; cursor:pointer;
+      border:2.5px solid transparent; transition:transform .15s,border-color .15s; flex-shrink:0;
     }
-    #custom-color-label {
-      font-size: 15px;
-      color: #888;
+    .draw-color-swatch:hover    { transform:scale(1.2); }
+    .draw-color-swatch.selected { border-color:#fff; }
+
+    .size-row { display:flex; gap:7px; margin-bottom:9px; align-items:center; }
+    .size-row label { font-size:10px; font-weight:800; color:var(--muted); text-transform:uppercase; white-space:nowrap; }
+    #brush-size     { flex:1; accent-color:var(--accent2); cursor:pointer; }
+    #brush-size-val { font-size:12px; font-weight:900; color:var(--accent2); min-width:20px; text-align:right; }
+
+    #draw-toggle-btn {
+      width:100%; font-family:'Patrick Hand',cursive; font-size:13px; font-weight:900;
+      background:#f5f5f5; border:2px solid #111; border-radius:7px;
+      padding:9px; cursor:pointer; color:var(--green);
+      transition:all .15s; text-transform:uppercase; letter-spacing:.5px; margin-bottom:9px;
     }
+    #draw-toggle-btn:hover    { background:#ebebeb; }
+    #draw-toggle-btn.drawing  { background:#111; border-color:#111; color:#fff; }
 
     /* ── NAME OVERLAY ── */
     #name-overlay {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(255,255,255,0.97);
-      z-index: 900;
-      align-items: center;
-      justify-content: center;
-      flex-direction: column;
-      gap: 16px;
+      display:none; position:fixed; inset:0;
+      background:rgba(255,255,255,0.97); z-index:1000;
+      align-items:center; justify-content:center; flex-direction:column; gap:16px;
     }
-    #name-overlay.show { display: flex; }
-    #name-overlay p { font-size: 22px; color: #444; }
+    #name-overlay.show { display:flex; }
+    #name-overlay h2 { font-size:26px; font-weight:900; color:#111; letter-spacing:-.5px; }
+    #name-overlay p  { font-size:13px; color:var(--muted); font-weight:700; }
     #name-input {
-      font-family: 'Patrick Hand', cursive;
-      font-size: 24px;
-      border: none;
-      border-bottom: 2px solid #111;
-      padding: 6px 2px;
-      outline: none;
-      text-align: center;
-      width: 220px;
-      background: transparent;
-      color: #111;
+      font-family:'Patrick Hand',cursive; font-size:20px; font-weight:800;
+      border:2px solid #111; border-radius:8px; padding:9px 16px;
+      outline:none; text-align:center; width:230px;
+      background:rgba(255,255,255,.05); color:#fff;
     }
     #name-confirm {
-      font-family: 'Patrick Hand', cursive;
-      font-size: 17px;
-      background: #111;
-      color: #fff;
-      border: none;
-      padding: 10px 36px;
-      cursor: pointer;
+      font-family:'Patrick Hand',cursive; font-size:14px; font-weight:900;
+      background:#111; color:#fff;
+      border:none; border-radius:8px; padding:11px 38px; cursor:pointer;
+      text-transform:uppercase; letter-spacing:1px;
     }
-    #name-confirm:hover { background: #333; }
+    #name-confirm:hover { opacity:.88; }
   </style>
 </head>
 <body>
 
-  <div id="banner-stack"></div>
-
-  <!-- Poll widget (visible to everyone) -->
-  <div id="poll-widget">
-    <div id="poll-question"></div>
-    <div id="poll-options"></div>
-    <button id="poll-close">dismiss</button>
+<div id="app">
+  <!-- MAIN -->
+  <div id="main">
+    <canvas id="draw-canvas"></canvas>
+    <div id="banner-stack"></div>
+    <div id="poll-widget">
+      <div id="poll-question"></div>
+      <div id="poll-options"></div>
+      <button id="poll-close">dismiss</button>
+    </div>
+    <div id="viewer-pill">👁 <span id="viewer-count">1</span> viewing</div>
   </div>
 
-  <!-- Name overlay -->
-  <div id="name-overlay">
-    <p>What's your name?</p>
-    <input id="name-input" type="text" maxlength="30" placeholder="your name" autocomplete="off"/>
-    <button id="name-confirm">Enter</button>
-  </div>
-
-  <!-- Admin panel -->
+  <!-- ADMIN SIDEBAR -->
   <div id="admin-panel">
-    <div class="admin-tabs">
-      <button class="admin-tab active" data-tab="msg">💬 Message</button>
-      <button class="admin-tab" data-tab="poll">📊 Poll</button>
-      <button class="admin-tab" data-tab="bg">🎨 Background</button>
-    </div>
+    <div id="panel-inner">
+      <div id="panel-header">
+        <h1>🛠️ Admin Panel</h1>
+        <p id="admin-name-display">not logged in</p>
+      </div>
+      <div class="admin-tabs">
+        <button class="admin-tab active" data-tab="msg">💬 Msg</button>
+        <button class="admin-tab" data-tab="draw">🖌️ Draw</button>
+        <button class="admin-tab" data-tab="poll">📊 Poll</button>
+        <button class="admin-tab" data-tab="bg">🎨 BG</button>
+      </div>
+      <div id="panel-content">
 
-    <!-- Message tab -->
-    <div class="tab-panel active" id="tab-msg">
-      <div class="panel-label">Send a message to everyone</div>
-      <textarea class="admin-input" id="msg-input" rows="2" maxlength="200" placeholder="write something…"></textarea>
-      <button class="admin-btn" id="send-msg-btn">Send</button>
-    </div>
-
-    <!-- Poll tab -->
-    <div class="tab-panel" id="tab-poll">
-      <div class="panel-label">Poll question</div>
-      <input class="admin-input" id="poll-q-input" type="text" maxlength="120" placeholder="Ask something…"/>
-      <div class="panel-label">Options</div>
-      <div id="poll-options-builder">
-        <div class="poll-option-input-wrap">
-          <input type="text" placeholder="Option 1" maxlength="60"/>
-          <button class="remove-option">×</button>
+        <!-- MSG -->
+        <div class="tab-panel active" id="tab-msg">
+          <div class="panel-label">broadcast message</div>
+          <textarea class="admin-input" id="msg-input" rows="3" maxlength="200" placeholder="say something to everyone…"></textarea>
+          <button class="admin-btn" id="send-msg-btn">📢 Send to All</button>
         </div>
-        <div class="poll-option-input-wrap">
-          <input type="text" placeholder="Option 2" maxlength="60"/>
-          <button class="remove-option">×</button>
-        </div>
-      </div>
-      <button id="add-option-btn">+ add option</button>
-      <button class="admin-btn" id="send-poll-btn">Launch Poll</button>
-    </div>
 
-    <!-- Background tab -->
-    <div class="tab-panel" id="tab-bg">
-      <div class="panel-label">Pick a background color</div>
-      <div class="color-presets">
-        <div class="color-swatch selected" style="background:#ffffff" data-color="#ffffff"></div>
-        <div class="color-swatch" style="background:#f9f3e8" data-color="#f9f3e8"></div>
-        <div class="color-swatch" style="background:#e8f4f9" data-color="#e8f4f9"></div>
-        <div class="color-swatch" style="background:#edf9e8" data-color="#edf9e8"></div>
-        <div class="color-swatch" style="background:#f9e8e8" data-color="#f9e8e8"></div>
-        <div class="color-swatch" style="background:#1a1a1a" data-color="#1a1a1a"></div>
-        <div class="color-swatch" style="background:#0d1b2a" data-color="#0d1b2a"></div>
-        <div class="color-swatch" style="background:#ffe135" data-color="#ffe135"></div>
+        <!-- DRAW -->
+        <div class="tab-panel" id="tab-draw">
+          <button id="draw-toggle-btn">✏️ Start Drawing</button>
+          <div class="panel-label">Tool</div>
+          <div class="draw-tool-row">
+            <button class="tool-btn active" data-tool="pen">✏️ Pen</button>
+            <button class="tool-btn" data-tool="eraser">🧹 Erase</button>
+          </div>
+          <div class="panel-label">Color</div>
+          <div class="draw-colors">
+            <div class="draw-color-swatch selected" style="background:#ffffff" data-color="#ffffff"></div>
+            <div class="draw-color-swatch" style="background:#e94560" data-color="#e94560"></div>
+            <div class="draw-color-swatch" style="background:#ffe135" data-color="#ffe135"></div>
+            <div class="draw-color-swatch" style="background:#0bce83" data-color="#0bce83"></div>
+            <div class="draw-color-swatch" style="background:#3fa9f5" data-color="#3fa9f5"></div>
+            <div class="draw-color-swatch" style="background:#f5a623" data-color="#f5a623"></div>
+            <div class="draw-color-swatch" style="background:#b44fff" data-color="#b44fff"></div>
+            <div class="draw-color-swatch" style="background:#ff6b35" data-color="#ff6b35"></div>
+            <div class="draw-color-swatch" style="background:#111111" data-color="#111111"></div>
+          </div>
+          <div class="size-row">
+            <label>Size</label>
+            <input type="range" id="brush-size" min="2" max="40" value="6"/>
+            <span id="brush-size-val">6</span>
+          </div>
+          <div class="divider"></div>
+          <button class="admin-btn yellow" id="clear-canvas-btn">🗑️ Clear Canvas</button>
+        </div>
+
+        <!-- POLL -->
+        <div class="tab-panel" id="tab-poll">
+          <div class="panel-label">question</div>
+          <input class="admin-input" id="poll-q-input" type="text" maxlength="120" placeholder="Ask something…"/>
+          <div class="panel-label">options</div>
+          <div id="poll-options-builder">
+            <div class="poll-option-input-wrap">
+              <input type="text" placeholder="Option 1" maxlength="60"/>
+              <button class="remove-option" type="button">×</button>
+            </div>
+            <div class="poll-option-input-wrap">
+              <input type="text" placeholder="Option 2" maxlength="60"/>
+              <button class="remove-option" type="button">×</button>
+            </div>
+          </div>
+          <button id="add-option-btn">+ add option</button>
+          <button class="admin-btn" id="send-poll-btn">🚀 Launch Poll</button>
+          <div class="divider"></div>
+          <button class="admin-btn ghost" id="close-poll-btn">✕ Close Poll</button>
+        </div>
+
+        <!-- BG -->
+        <div class="tab-panel" id="tab-bg">
+          <div class="panel-label">background color</div>
+          <div class="color-presets">
+            <div class="color-swatch selected" style="background:#ffffff" data-color="#ffffff"></div>
+            <div class="color-swatch" style="background:#ffffff"          data-color="#ffffff"></div>
+            <div class="color-swatch" style="background:#0d1b2a"          data-color="#0d1b2a"></div>
+            <div class="color-swatch" style="background:#f9f3e8"          data-color="#f9f3e8"></div>
+            <div class="color-swatch" style="background:#1a2e1a"          data-color="#1a2e1a"></div>
+            <div class="color-swatch" style="background:#2e1a1a"          data-color="#2e1a1a"></div>
+            <div class="color-swatch" style="background:#ffe135"          data-color="#ffe135"></div>
+            <div class="color-swatch" style="background:#e94560"          data-color="#e94560"></div>
+            <div class="color-swatch" style="background:#0f3460"          data-color="#0f3460"></div>
+            <div class="color-swatch" style="background:#111111"          data-color="#111111"></div>
+          </div>
+          <div class="color-custom-row">
+            <input type="color" id="custom-color" value="#ffffff"/>
+            <span id="custom-color-label">custom color</span>
+          </div>
+          <button class="admin-btn" id="send-bg-btn">🌈 Apply to Everyone</button>
+        </div>
+
       </div>
-      <div class="color-custom-row">
-        <input type="color" id="custom-color" value="#ffffff"/>
-        <span id="custom-color-label">or pick any color</span>
-      </div>
-      <button class="admin-btn" id="send-bg-btn">Apply to everyone</button>
     </div>
   </div>
+</div>
+
+<!-- NAME OVERLAY -->
+<div id="name-overlay">
+  <h2>🛠️ Admin Access</h2>
+  <p>Enter your display name</p>
+  <input id="name-input" type="text" maxlength="30" placeholder="your name" autocomplete="off"/>
+  <button id="name-confirm">Enter Panel</button>
+</div>
 
 <script type="module">
-  import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-  import { getDatabase, ref, push, set, onValue, onChildAdded, serverTimestamp }
-                              from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+  import { initializeApp }
+    from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getDatabase, ref, push, set, remove, onValue,
+           query, orderByChild, startAfter, onChildAdded }
+    from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
   import { getAuth, signInAnonymously }
-                              from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
   const firebaseConfig = {
     apiKey:            "AIzaSyC2umvpkas9QCC1PHrWXjk6g67i7Wyr11A",
@@ -410,56 +393,126 @@
 
   const SECRET  = "22112011";
   const HOLD_MS = 5500;
+  const joinedAt = Date.now();
 
   let adminName = localStorage.getItem('admin_name') || '';
   let myVotes   = {};
   let keyBuffer = '';
-  let db, msgsRef, pollRef, bgRef;
+  let isAdmin   = false;
 
-  // ── Boot Firebase ────────────────────────────────
-  const app  = initializeApp(firebaseConfig);
-  db         = getDatabase(app);
-  msgsRef    = ref(db, 'messages');
-  pollRef    = ref(db, 'poll');
-  bgRef      = ref(db, 'bgcolor');
-  signInAnonymously(getAuth(app)).catch(console.error);
+  // Draw state
+  let drawMode  = false;
+  let isPointing = false;
+  let drawColor = '#ffffff';
+  let brushSize = 6;
+  let drawTool  = 'pen';
+  let strokeId  = null;
+  let lastPt    = null;
 
-  // ── Listen: messages ─────────────────────────────
-  let skipOld = true;
-  setTimeout(() => { skipOld = false; }, 900);
-  onChildAdded(msgsRef, snap => {
-    if (skipOld) return;
+  // ── Firebase init ──────────────────────────────
+  const app        = initializeApp(firebaseConfig);
+  const db         = getDatabase(app);
+  const msgsRef    = ref(db, 'messages');
+  const pollRef    = ref(db, 'poll');
+  const bgRef      = ref(db, 'bgcolor');
+  const strokesRef = ref(db, 'strokes');
+  const presRef    = ref(db, 'presence');
+
+  signInAnonymously(getAuth(app)).then(({ user }) => {
+    const myPres = ref(db, `presence/${user.uid}`);
+    set(myPres, { t: Date.now() });
+    // onDisconnect cleanup — import lazily to avoid top-level issues
+    import("https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js")
+      .then(m => m.onDisconnect(myPres).remove())
+      .catch(() => {});
+  }).catch(console.error);
+
+  onValue(presRef, snap => {
+    document.getElementById('viewer-count').textContent =
+      snap.exists() ? Object.keys(snap.val()).length : 1;
+  });
+
+  // ── Canvas ──────────────────────────────────────
+  const canvas = document.getElementById('draw-canvas');
+  const ctx    = canvas.getContext('2d');
+
+  function resizeCanvas() {
+    const main = document.getElementById('main');
+    const w = main.clientWidth, h = main.clientHeight;
+    // Save pixels, resize, restore
+    const tmp = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    canvas.width = w; canvas.height = h;
+    ctx.putImageData(tmp, 0, 0);
+  }
+  resizeCanvas();
+  window.addEventListener('resize', resizeCanvas);
+
+  // Replay all strokes from Firebase
+  function replayStrokes(data) {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    if (!data) return;
+    Object.values(data).forEach(stroke => {
+      if (!stroke.segments) return;
+      Object.values(stroke.segments).forEach(paintSeg);
+    });
+  }
+
+  onValue(strokesRef, snap => {
+    replayStrokes(snap.exists() ? snap.val() : null);
+    // Ensure viewers see the canvas even when not in draw mode
+    if (!drawMode) {
+      canvas.classList.toggle('view-only', snap.exists());
+      if (!snap.exists()) canvas.classList.remove('view-only');
+    }
+  });
+
+  function paintSeg(s) {
+    ctx.save();
+    if (s.tool === 'eraser') {
+      ctx.globalCompositeOperation = 'destination-out';
+      ctx.strokeStyle = 'rgba(0,0,0,1)';
+    } else {
+      ctx.globalCompositeOperation = 'source-over';
+      ctx.strokeStyle = s.color || '#fff';
+    }
+    ctx.lineWidth = s.size || 6;
+    ctx.lineCap   = 'round';
+    ctx.lineJoin  = 'round';
+    ctx.beginPath();
+    ctx.moveTo(s.x1, s.y1);
+    ctx.lineTo(s.x2, s.y2);
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  // ── Messages (only new ones) ─────────────────────
+  const newMsgsQ = query(msgsRef, orderByChild('ts'), startAfter(joinedAt));
+  onChildAdded(newMsgsQ, snap => {
     const d = snap.val();
     if (d?.name && d?.text) showBanner(d.name, d.text);
   });
 
-  // ── Listen: background color ──────────────────────
+  // ── Background ────────────────────────────────────
   onValue(bgRef, snap => {
-    const color = snap.val();
-    if (color) document.body.style.background = color;
+    if (snap.val()) document.getElementById('main').style.background = snap.val();
   });
 
-  // ── Listen: poll ─────────────────────────────────
+  // ── Poll ─────────────────────────────────────────
   onValue(pollRef, snap => {
-    const data = snap.val();
-    if (!data || !data.question) {
+    if (!snap.exists() || !snap.val()?.question) {
       document.getElementById('poll-widget').classList.remove('show');
       return;
     }
-    renderPoll(data);
+    renderPoll(snap.val(), snap.key);
   });
 
-  // ── Secret combo ────────────────────────────────
+  // ── Secret code unlock ───────────────────────────
   document.addEventListener('keydown', e => {
-    const tag = e.target.tagName;
-    if (tag === 'INPUT' || tag === 'TEXTAREA') return;
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
     if (/^\d$/.test(e.key)) {
       keyBuffer += e.key;
       if (keyBuffer.length > SECRET.length) keyBuffer = keyBuffer.slice(-SECRET.length);
-      if (keyBuffer === SECRET) {
-        keyBuffer = '';
-        unlockAdmin();
-      }
+      if (keyBuffer === SECRET) { keyBuffer = ''; unlockAdmin(); }
     }
   });
 
@@ -468,28 +521,26 @@
       document.getElementById('name-overlay').classList.add('show');
       document.getElementById('name-input').focus();
     } else {
-      togglePanel();
+      openPanel();
     }
   }
 
-  function togglePanel() {
-    document.getElementById('admin-panel').classList.toggle('show');
-    if (document.getElementById('admin-panel').classList.contains('show')) {
-      document.getElementById('msg-input').focus();
-    }
+  function openPanel() {
+    isAdmin = true;
+    document.getElementById('admin-panel').classList.add('open');
+    document.getElementById('admin-name-display').textContent = `logged in as ${adminName}`;
   }
 
   // ── Name ─────────────────────────────────────────
   document.getElementById('name-confirm').addEventListener('click', saveName);
   document.getElementById('name-input').addEventListener('keydown', e => { if (e.key === 'Enter') saveName(); });
-
   function saveName() {
     const val = document.getElementById('name-input').value.trim();
     if (!val) return;
     adminName = val;
     localStorage.setItem('admin_name', adminName);
     document.getElementById('name-overlay').classList.remove('show');
-    togglePanel();
+    openPanel();
   }
 
   // ── Tabs ─────────────────────────────────────────
@@ -507,86 +558,154 @@
   document.getElementById('msg-input').addEventListener('keydown', e => {
     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMsg(); }
   });
-
   function sendMsg() {
     const text = document.getElementById('msg-input').value.trim();
     if (!text || !adminName) return;
     push(msgsRef, { name: adminName, text, ts: Date.now() });
     document.getElementById('msg-input').value = '';
-    document.getElementById('admin-panel').classList.remove('show');
   }
 
-  // ── Send poll ─────────────────────────────────────
-  document.getElementById('send-poll-btn').addEventListener('click', sendPoll);
-
-  function sendPoll() {
+  // ── Poll ─────────────────────────────────────────
+  document.getElementById('send-poll-btn').addEventListener('click', () => {
     const q = document.getElementById('poll-q-input').value.trim();
     if (!q) return;
     const inputs = document.querySelectorAll('#poll-options-builder input');
-    const options = Array.from(inputs).map(i => i.value.trim()).filter(Boolean);
-    if (options.length < 2) return alert('Add at least 2 options!');
-
+    const opts = Array.from(inputs).map(i => i.value.trim()).filter(Boolean);
+    if (opts.length < 2) { alert('Add at least 2 options!'); return; }
     const optObj = {};
-    options.forEach((o, i) => { optObj[i] = { label: o, votes: 0 }; });
-
+    opts.forEach((o, i) => { optObj[i] = { label: o, votes: 0 }; });
     set(pollRef, { question: q, options: optObj, ts: Date.now() });
-    document.getElementById('admin-panel').classList.remove('show');
-  }
+  });
 
-  // Poll option builder
+  document.getElementById('close-poll-btn').addEventListener('click', () => remove(pollRef));
+
+  document.getElementById('poll-options-builder').addEventListener('click', e => {
+    if (e.target.classList.contains('remove-option')) {
+      const all = document.querySelectorAll('#poll-options-builder .poll-option-input-wrap');
+      if (all.length > 2) e.target.closest('.poll-option-input-wrap').remove();
+    }
+  });
+
   document.getElementById('add-option-btn').addEventListener('click', () => {
     const wrap = document.createElement('div');
     wrap.className = 'poll-option-input-wrap';
     const n = document.querySelectorAll('#poll-options-builder input').length + 1;
-    wrap.innerHTML = `<input type="text" placeholder="Option ${n}" maxlength="60"/><button class="remove-option">×</button>`;
-    wrap.querySelector('.remove-option').addEventListener('click', () => wrap.remove());
+    wrap.innerHTML = `<input type="text" placeholder="Option ${n}" maxlength="60"/><button class="remove-option" type="button">×</button>`;
     document.getElementById('poll-options-builder').appendChild(wrap);
   });
 
-  document.querySelectorAll('.remove-option').forEach(btn => {
-    btn.addEventListener('click', () => btn.closest('.poll-option-input-wrap').remove());
-  });
-
   // ── Background ────────────────────────────────────
-  let selectedColor = '#ffffff';
-
+  let selBg = '#ffffff';
   document.querySelectorAll('.color-swatch').forEach(sw => {
     sw.addEventListener('click', () => {
       document.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('selected'));
       sw.classList.add('selected');
-      selectedColor = sw.dataset.color;
-      document.getElementById('custom-color').value = selectedColor;
+      selBg = sw.dataset.color;
+      document.getElementById('custom-color').value = selBg;
+    });
+  });
+  document.getElementById('custom-color').addEventListener('input', e => {
+    selBg = e.target.value;
+    document.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('selected'));
+  });
+  document.getElementById('send-bg-btn').addEventListener('click', () => set(bgRef, selBg));
+
+  // ── Draw: tool / color / size ─────────────────────
+  document.querySelectorAll('.tool-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      drawTool = btn.dataset.tool;
     });
   });
 
-  document.getElementById('custom-color').addEventListener('input', e => {
-    selectedColor = e.target.value;
-    document.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('selected'));
+  document.querySelectorAll('.draw-color-swatch').forEach(sw => {
+    sw.addEventListener('click', () => {
+      document.querySelectorAll('.draw-color-swatch').forEach(s => s.classList.remove('selected'));
+      sw.classList.add('selected');
+      drawColor = sw.dataset.color;
+    });
   });
 
-  document.getElementById('send-bg-btn').addEventListener('click', () => {
-    set(bgRef, selectedColor);
-    document.getElementById('admin-panel').classList.remove('show');
+  document.getElementById('brush-size').addEventListener('input', e => {
+    brushSize = parseInt(e.target.value);
+    document.getElementById('brush-size-val').textContent = brushSize;
   });
 
-  // ── Poll widget renderer ──────────────────────────
-  function renderPoll(data) {
+  // ── Draw toggle ───────────────────────────────────
+  const drawToggleBtn = document.getElementById('draw-toggle-btn');
+  drawToggleBtn.addEventListener('click', () => {
+    drawMode = !drawMode;
+    if (drawMode) {
+      canvas.classList.add('active');
+      canvas.classList.remove('view-only');
+      drawToggleBtn.textContent = '⏹️ Stop Drawing';
+      drawToggleBtn.classList.add('drawing');
+    } else {
+      canvas.classList.remove('active');
+      canvas.classList.add('view-only');
+      drawToggleBtn.textContent = '✏️ Start Drawing';
+      drawToggleBtn.classList.remove('drawing');
+      strokeId = null; lastPt = null; isPointing = false;
+    }
+  });
+
+  document.getElementById('clear-canvas-btn').addEventListener('click', () => {
+    if (!confirm('Clear canvas for everyone?')) return;
+    remove(strokesRef);
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    canvas.classList.remove('view-only');
+  });
+
+  // ── Canvas pointer events ─────────────────────────
+  function getPos(e) {
+    const r = canvas.getBoundingClientRect();
+    const s = e.touches ? e.touches[0] : e;
+    return { x: s.clientX - r.left, y: s.clientY - r.top };
+  }
+
+  canvas.addEventListener('pointerdown', e => {
+    if (!drawMode || !isAdmin) return;
+    isPointing = true;
+    lastPt     = getPos(e);
+    strokeId   = push(strokesRef).key;
+    canvas.setPointerCapture(e.pointerId);
+  });
+
+  canvas.addEventListener('pointermove', e => {
+    if (!isPointing || !drawMode || !isAdmin) return;
+    const pt  = getPos(e);
+    const seg = { x1: lastPt.x, y1: lastPt.y, x2: pt.x, y2: pt.y,
+                  color: drawColor, size: brushSize, tool: drawTool };
+    // Draw locally right away (smooth)
+    paintSeg(seg);
+    // Push to Firebase so everyone sees it
+    push(ref(db, `strokes/${strokeId}/segments`), seg);
+    lastPt = pt;
+  });
+
+  const stopDraw = () => { isPointing = false; lastPt = null; };
+  canvas.addEventListener('pointerup',    stopDraw);
+  canvas.addEventListener('pointercancel', stopDraw);
+
+  // Prevent scroll on touch devices while drawing
+  canvas.addEventListener('touchstart', e => { if (drawMode) e.preventDefault(); }, { passive: false });
+  canvas.addEventListener('touchmove',  e => { if (drawMode) e.preventDefault(); }, { passive: false });
+
+  // ── Poll renderer ─────────────────────────────────
+  function renderPoll(data, pollKey) {
     document.getElementById('poll-question').textContent = data.question;
     const container = document.getElementById('poll-options');
     container.innerHTML = '';
-
-    const opts = data.options || {};
-    const keys = Object.keys(opts);
+    const opts  = data.options || {};
+    const keys  = Object.keys(opts);
     const total = keys.reduce((s, k) => s + (opts[k].votes || 0), 0);
-    const voted = myVotes[data.ts];
-
+    const voted = myVotes[pollKey];
     keys.forEach(k => {
       const opt = opts[k];
       const pct = total > 0 ? Math.round((opt.votes || 0) / total * 100) : 0;
-
       const div = document.createElement('div');
       div.className = 'poll-option' + (voted ? ' poll-voted' : '');
-
       div.innerHTML = `
         <div class="poll-bar-wrap">
           <div class="poll-bar-fill" style="width:${voted ? pct : 0}%"></div>
@@ -595,18 +714,14 @@
             ${voted ? `<span>${pct}%</span>` : ''}
           </div>
         </div>`;
-
       if (!voted) {
         div.addEventListener('click', () => {
-          myVotes[data.ts] = k;
-          const newVotes = (opt.votes || 0) + 1;
-          set(ref(db, `poll/options/${k}/votes`), newVotes);
+          myVotes[pollKey] = k;
+          set(ref(db, `poll/options/${k}/votes`), (opt.votes || 0) + 1);
         });
       }
-
       container.appendChild(div);
     });
-
     document.getElementById('poll-widget').classList.add('show');
   }
 
@@ -616,7 +731,6 @@
 
   // ── Banner ────────────────────────────────────────
   const stackEl = document.getElementById('banner-stack');
-
   function showBanner(name, text) {
     const el = document.createElement('div');
     el.className = 'banner';
@@ -631,7 +745,7 @@
   }
 
   function esc(s) {
-    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
   }
 </script>
 </body>
