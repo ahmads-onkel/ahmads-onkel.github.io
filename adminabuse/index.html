@@ -141,8 +141,22 @@
       padding: 10px 16px 16px;
       text-align: center;
     }
-    @media (max-width: 600px) {
-      #mobile-code-box { display: block; }
+    /* show code box on all screen sizes until admin unlocks */
+    #mobile-code-box { display: block; }
+    /* desktop: smaller and tucked bottom-right, not a full bar */
+    @media (min-width: 601px) {
+      #mobile-code-box {
+        left: auto; right: 16px;
+        bottom: 16px;
+        border: 1px solid #e8e8e8;
+        border-top: 1px solid #e8e8e8;
+        padding: 8px 12px 10px;
+        width: auto;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+      }
+      #mobile-code-input { font-size: 14px; width: 110px; padding: 5px 8px; letter-spacing: 3px; }
+      #mobile-code-btn   { font-size: 13px; padding: 6px 12px; }
+      #mobile-code-label { font-size: 10px; }
     }
     #mobile-code-label { font-size: 11px; color: #aaa; margin-bottom: 6px; letter-spacing: .5px; }
     #mobile-code-row   { display: flex; gap: 8px; align-items: center; justify-content: center; }
@@ -163,7 +177,7 @@
     }
     #mobile-code-btn:active { opacity: .75; }
 
-    /* ── ADMIN SIDEBAR ── */
+    /* ── ADMIN SIDEBAR — desktop ── */
     #admin-panel {
       width: 0; min-width: 0; overflow: hidden;
       background: #fff; border-left: 1.5px solid #e8e8e8;
@@ -171,13 +185,13 @@
       transition: width .32s cubic-bezier(.22,.68,0,1.1), min-width .32s;
       z-index: 200; flex-shrink: 0;
     }
-    #admin-panel.open { width: 272px; min-width: 272px; }
+    #admin-panel.open { width: 260px; min-width: 260px; }
 
-    #panel-inner { width: 272px; height: 100%; display: flex; flex-direction: column; overflow: hidden; }
+    #panel-inner { width: 260px; height: 100%; display: flex; flex-direction: column; overflow: hidden; }
 
-    #panel-header { background: #111; padding: 13px 15px 11px; flex-shrink: 0; }
-    #panel-header h1 { font-size: 16px; color: #fff; font-weight: normal; letter-spacing: .2px; }
-    #panel-header p  { font-size: 11px; color: rgba(255,255,255,.5); margin-top: 3px; letter-spacing: .5px; }
+    #panel-header { background: #111; padding: 11px 14px 10px; flex-shrink: 0; }
+    #panel-header h1 { font-size: 15px; color: #fff; font-weight: normal; letter-spacing: .2px; }
+    #panel-header p  { font-size: 10px; color: rgba(255,255,255,.5); margin-top: 2px; letter-spacing: .5px; }
 
     .admin-tabs {
       display: flex; background: #fafafa; border-bottom: 1.5px solid #e8e8e8; flex-shrink: 0;
@@ -185,8 +199,8 @@
     }
     .admin-tabs::-webkit-scrollbar { display: none; }
     .admin-tab {
-      flex: 1; min-width: 44px; padding: 9px 4px;
-      font-family: 'Patrick Hand', cursive; font-size: 12px;
+      flex: 1; min-width: 40px; padding: 8px 3px;
+      font-family: 'Patrick Hand', cursive; font-size: 11px;
       background: none; border: none; cursor: pointer; color: #bbb;
       border-bottom: 2px solid transparent; margin-bottom: -1.5px;
       transition: color .15s; white-space: nowrap;
@@ -197,6 +211,57 @@
     #panel-content { flex: 1; overflow-y: auto; overflow-x: hidden; }
     #panel-content::-webkit-scrollbar       { width: 3px; }
     #panel-content::-webkit-scrollbar-thumb { background: #e0e0e0; }
+
+    /* ── ADMIN PANEL — mobile: full-screen slide-up sheet ── */
+    @media (max-width: 600px) {
+      #app { display: block; position: relative; }
+
+      #main { width: 100vw; height: 100vh; }
+
+      #admin-panel {
+        position: fixed;
+        bottom: 0; left: 0; right: 0;
+        width: 100% !important; min-width: 0 !important;
+        height: 0;
+        border-left: none;
+        border-top: 1.5px solid #e8e8e8;
+        transition: height .32s cubic-bezier(.22,.68,0,1.1);
+        overflow: hidden;
+        z-index: 500;
+      }
+      #admin-panel.open {
+        height: 70vh;
+        height: 70dvh;
+      }
+
+      #panel-inner {
+        width: 100% !important;
+        height: 70vh;
+        height: 70dvh;
+      }
+
+      /* hide mobile code box when panel is open */
+      #admin-panel.open ~ #mobile-code-box,
+      body.admin-open #mobile-code-box { display: none !important; }
+
+      /* drag handle bar at top of sheet */
+      #panel-header {
+        display: flex; flex-direction: column; align-items: center;
+        padding-top: 8px;
+      }
+      #panel-header::before {
+        content: '';
+        display: block;
+        width: 36px; height: 4px;
+        background: rgba(255,255,255,.35);
+        border-radius: 2px;
+        margin-bottom: 8px;
+      }
+
+      .admin-tab { font-size: 12px; padding: 10px 4px; }
+
+      .tab-panel { padding: 12px 14px; }
+    }
 
     .tab-panel        { display: none; padding: 13px; }
     .tab-panel.active { display: block; }
@@ -534,7 +599,7 @@
     appId:             "1:756244892931:web:18d3975a67547ab3936d36"
   };
 
-  const SECRET   = "22112011";
+  const SECRET   = "191817161514131211";
   const HOLD_MS  = 5500;
   const joinedAt = Date.now();
 
@@ -827,6 +892,7 @@
     document.getElementById('admin-panel').classList.add('open');
     document.getElementById('admin-name-display').textContent = adminName;
     document.getElementById('mobile-code-box').style.display = 'none';
+    document.body.classList.add('admin-open');
   }
 
   // ── Name ──────────────────────────────────────────
