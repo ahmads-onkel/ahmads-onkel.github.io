@@ -21,17 +21,134 @@
     /* ── SHAKE ── */
     @keyframes shake {
       0%,100% { transform: translate(0,0) rotate(0deg); }
-      10%      { transform: translate(-8px,-6px) rotate(-1.5deg); }
-      20%      { transform: translate(8px,6px) rotate(1.5deg); }
-      30%      { transform: translate(-10px,4px) rotate(-1deg); }
-      40%      { transform: translate(10px,-4px) rotate(1deg); }
-      50%      { transform: translate(-6px,8px) rotate(-2deg); }
-      60%      { transform: translate(6px,-8px) rotate(2deg); }
-      70%      { transform: translate(-9px,3px) rotate(-1deg); }
-      80%      { transform: translate(9px,-3px) rotate(1deg); }
-      90%      { transform: translate(-4px,5px) rotate(-.5deg); }
+      10% { transform: translate(-8px,-6px) rotate(-1.5deg); }
+      20% { transform: translate(8px,6px) rotate(1.5deg); }
+      30% { transform: translate(-10px,4px) rotate(-1deg); }
+      40% { transform: translate(10px,-4px) rotate(1deg); }
+      50% { transform: translate(-6px,8px) rotate(-2deg); }
+      60% { transform: translate(6px,-8px) rotate(2deg); }
+      70% { transform: translate(-9px,3px) rotate(-1deg); }
+      80% { transform: translate(9px,-3px) rotate(1deg); }
+      90% { transform: translate(-4px,5px) rotate(-.5deg); }
     }
     body.shaking { animation: shake 0.6s ease; }
+
+    /* ── PARTY MODE ── */
+    @keyframes partyBg {
+      0%   { background: #ff4d6d; }
+      14%  { background: #ff9e00; }
+      28%  { background: #ffe135; }
+      42%  { background: #06d6a0; }
+      57%  { background: #4cc9f0; }
+      71%  { background: #7b2d8b; }
+      85%  { background: #f72585; }
+      100% { background: #ff4d6d; }
+    }
+    body.party-mode #main { animation: partyBg 1.2s linear infinite; }
+
+    /* falling tacos */
+    #taco-container {
+      position: fixed; inset: 0; z-index: 1500;
+      pointer-events: none; overflow: hidden;
+      display: none;
+    }
+    body.party-mode #taco-container { display: block; }
+
+    .taco {
+      position: absolute;
+      top: -60px;
+      font-size: 32px;
+      animation: tacoFall linear forwards;
+      user-select: none;
+    }
+    @keyframes tacoFall {
+      0%   { transform: translateY(0) rotate(0deg); opacity: 1; }
+      90%  { opacity: 1; }
+      100% { transform: translateY(110vh) rotate(720deg); opacity: 0; }
+    }
+
+    /* ── TIME FREEZE ── */
+    #timefreeze-overlay {
+      display: none;
+      position: fixed; inset: 0; z-index: 3000;
+      pointer-events: none;
+    }
+    #timefreeze-overlay.show { display: block; }
+
+    /* Blue-white flash */
+    #timefreeze-flash {
+      position: absolute; inset: 0;
+      background: #c8e8ff;
+      opacity: 0;
+      transition: opacity 0.05s;
+    }
+    #timefreeze-overlay.show #timefreeze-flash { animation: tfFlash .5s ease-out forwards; }
+    @keyframes tfFlash {
+      0%   { opacity: 1; }
+      100% { opacity: 0; }
+    }
+
+    /* Freeze crack lines */
+    #timefreeze-cracks {
+      position: absolute; inset: 0;
+      opacity: 0;
+      transition: opacity .3s;
+    }
+    #timefreeze-overlay.show #timefreeze-cracks {
+      animation: tfCracks .4s .1s ease-out forwards;
+    }
+    @keyframes tfCracks {
+      0%   { opacity: 0; transform: scale(.8); }
+      60%  { opacity: 1; transform: scale(1.03); }
+      100% { opacity: .7; transform: scale(1); }
+    }
+
+    /* Frozen vignette */
+    #timefreeze-vignette {
+      position: absolute; inset: 0;
+      background: radial-gradient(ellipse at center, transparent 40%, rgba(100,180,255,.45) 100%);
+      opacity: 0;
+    }
+    #timefreeze-overlay.show #timefreeze-vignette {
+      animation: tfVig .5s .2s ease-out forwards;
+    }
+    @keyframes tfVig {
+      0%   { opacity: 0; }
+      100% { opacity: 1; }
+    }
+
+    /* "Time has stopped" text */
+    #timefreeze-text {
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%) scale(0);
+      font-family: 'Patrick Hand', cursive;
+      font-size: clamp(28px, 6vw, 64px);
+      color: #fff;
+      text-shadow: 0 0 30px #4cc9f0, 0 0 60px #4cc9f0, 2px 2px 0 #000;
+      white-space: nowrap;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      opacity: 0;
+    }
+    #timefreeze-overlay.show #timefreeze-text {
+      animation: tfText .6s .3s cubic-bezier(.22,.68,0,1.3) forwards;
+    }
+    @keyframes tfText {
+      0%   { opacity: 0; transform: translate(-50%,-50%) scale(0.3); }
+      70%  { opacity: 1; transform: translate(-50%,-50%) scale(1.08); }
+      100% { opacity: 1; transform: translate(-50%,-50%) scale(1); }
+    }
+
+    /* frozen body effect */
+    body.frozen #main {
+      filter: saturate(0) brightness(0.85) sepia(.3) hue-rotate(180deg);
+      transition: filter .4s ease;
+    }
+    body.frozen .banner,
+    body.frozen #poll-widget {
+      filter: saturate(0);
+    }
 
     /* ── MAIN ── */
     #main {
@@ -90,12 +207,9 @@
     @keyframes jsPop {
       0%   { transform: scale(0.4); opacity: 0; }
       60%  { transform: scale(1.08); opacity: 1; }
-      100% { transform: scale(1);    opacity: 1; }
+      100% { transform: scale(1); opacity: 1; }
     }
-    /* flashing border */
-    #jumpscare-overlay.show {
-      animation: jsFlash 0.08s steps(1) infinite;
-    }
+    #jumpscare-overlay.show { animation: jsFlash 0.08s steps(1) infinite; }
     @keyframes jsFlash {
       0%   { outline: 8px solid red; }
       50%  { outline: 8px solid #ff0; }
@@ -132,7 +246,6 @@
 
     /* ── MOBILE CODE BOX ── */
     #mobile-code-box {
-      display: none;
       position: fixed;
       bottom: 0; left: 0; right: 0;
       z-index: 999;
@@ -141,15 +254,11 @@
       padding: 10px 16px 16px;
       text-align: center;
     }
-    /* show code box on all screen sizes until admin unlocks */
-    #mobile-code-box { display: block; }
-    /* desktop: smaller and tucked bottom-right, not a full bar */
     @media (min-width: 601px) {
       #mobile-code-box {
         left: auto; right: 16px;
         bottom: 16px;
         border: 1px solid #e8e8e8;
-        border-top: 1px solid #e8e8e8;
         padding: 8px 12px 10px;
         width: auto;
         box-shadow: 0 2px 12px rgba(0,0,0,0.07);
@@ -177,6 +286,25 @@
     }
     #mobile-code-btn:active { opacity: .75; }
 
+    /* ── ADMIN PANEL TOGGLE BUTTON (mobile only) ── */
+    #admin-toggle-btn {
+      display: none;
+      position: fixed;
+      bottom: 16px; right: 16px;
+      z-index: 600;
+      width: 48px; height: 48px;
+      background: #111; color: #fff;
+      border: none; border-radius: 50%;
+      font-size: 22px; cursor: pointer;
+      align-items: center; justify-content: center;
+      box-shadow: 0 3px 12px rgba(0,0,0,0.25);
+      -webkit-tap-highlight-color: transparent;
+    }
+    @media (max-width: 600px) {
+      #admin-toggle-btn { display: flex; }
+      body.admin-open #admin-toggle-btn { bottom: calc(70dvh + 12px); }
+    }
+
     /* ── ADMIN SIDEBAR — desktop ── */
     #admin-panel {
       width: 0; min-width: 0; overflow: hidden;
@@ -186,12 +314,11 @@
       z-index: 200; flex-shrink: 0;
     }
     #admin-panel.open { width: 260px; min-width: 260px; }
-
     #panel-inner { width: 260px; height: 100%; display: flex; flex-direction: column; overflow: hidden; }
 
     #panel-header { background: #111; padding: 11px 14px 10px; flex-shrink: 0; }
-    #panel-header h1 { font-size: 15px; color: #fff; font-weight: normal; letter-spacing: .2px; }
-    #panel-header p  { font-size: 10px; color: rgba(255,255,255,.5); margin-top: 2px; letter-spacing: .5px; }
+    #panel-header h1 { font-size: 15px; color: #fff; font-weight: normal; }
+    #panel-header p  { font-size: 10px; color: rgba(255,255,255,.5); margin-top: 2px; }
 
     .admin-tabs {
       display: flex; background: #fafafa; border-bottom: 1.5px solid #e8e8e8; flex-shrink: 0;
@@ -212,60 +339,35 @@
     #panel-content::-webkit-scrollbar       { width: 3px; }
     #panel-content::-webkit-scrollbar-thumb { background: #e0e0e0; }
 
-    /* ── ADMIN PANEL — mobile: full-screen slide-up sheet ── */
+    /* ── MOBILE SHEET ── */
     @media (max-width: 600px) {
-      #app { display: block; position: relative; }
-
+      #app { display: block; }
       #main { width: 100vw; height: 100vh; }
-
       #admin-panel {
         position: fixed;
         bottom: 0; left: 0; right: 0;
         width: 100% !important; min-width: 0 !important;
-        height: 0;
-        border-left: none;
+        height: 0; border-left: none;
         border-top: 1.5px solid #e8e8e8;
         transition: height .32s cubic-bezier(.22,.68,0,1.1);
-        overflow: hidden;
         z-index: 500;
       }
-      #admin-panel.open {
-        height: 70vh;
-        height: 70dvh;
-      }
-
-      #panel-inner {
-        width: 100% !important;
-        height: 70vh;
-        height: 70dvh;
-      }
-
-      /* hide mobile code box when panel is open */
-      #admin-panel.open ~ #mobile-code-box,
-      body.admin-open #mobile-code-box { display: none !important; }
-
-      /* drag handle bar at top of sheet */
-      #panel-header {
-        display: flex; flex-direction: column; align-items: center;
-        padding-top: 8px;
-      }
+      #admin-panel.open { height: 70vh; height: 70dvh; }
+      #panel-inner { width: 100% !important; height: 70vh; height: 70dvh; }
+      #panel-header { display: flex; flex-direction: column; align-items: center; padding-top: 8px; }
       #panel-header::before {
-        content: '';
-        display: block;
+        content: ''; display: block;
         width: 36px; height: 4px;
         background: rgba(255,255,255,.35);
-        border-radius: 2px;
-        margin-bottom: 8px;
+        border-radius: 2px; margin-bottom: 8px;
       }
-
+      body.admin-open #mobile-code-box { display: none !important; }
       .admin-tab { font-size: 12px; padding: 10px 4px; }
-
       .tab-panel { padding: 12px 14px; }
     }
 
     .tab-panel        { display: none; padding: 13px; }
     .tab-panel.active { display: block; }
-
     .panel-label { font-size: 11px; color: #bbb; margin-bottom: 6px; letter-spacing: .5px; text-transform: uppercase; }
 
     .admin-input {
@@ -289,6 +391,10 @@
     .admin-btn.ghost:hover { border-color: #111; color: #111; }
     .admin-btn.red    { background: #e63946; }
     .admin-btn.red:hover { background: #c1121f; opacity: 1; }
+    .admin-btn.blue   { background: #4cc9f0; color: #000; }
+    .admin-btn.blue:hover { background: #38b0d8; opacity: 1; }
+    .admin-btn.purple { background: #7b2d8b; }
+    .admin-btn.purple:hover { background: #5a1f68; opacity: 1; }
 
     .divider { height: 1px; background: #eee; margin: 11px 0; }
 
@@ -358,19 +464,17 @@
     #draw-toggle-btn.drawing { background: #111; color: #fff; }
 
     /* Abuse tab */
-    .abuse-btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 8px; }
     .abuse-big-btn {
       font-family: 'Patrick Hand', cursive; font-size: 14px;
       background: #fff; border: 1.5px solid #e0e0e0;
       padding: 12px 6px; cursor: pointer; color: #111;
-      text-align: center; line-height: 1.3;
-      transition: all .15s;
+      text-align: center; line-height: 1.3; width: 100%;
+      transition: all .15s; margin-bottom: 6px;
     }
     .abuse-big-btn:hover  { border-color: #111; background: #f5f5f5; }
     .abuse-big-btn:active { background: #111; color: #fff; }
     .abuse-big-btn .abuse-icon { font-size: 22px; display: block; margin-bottom: 3px; }
 
-    /* jumpscare preset thumbnails */
     .js-presets { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 8px; }
     .js-preset {
       width: 56px; height: 56px; cursor: pointer; object-fit: cover;
@@ -383,7 +487,7 @@
     /* ── NAME OVERLAY ── */
     #name-overlay {
       display: none; position: fixed; inset: 0;
-      background: rgba(255,255,255,.97); z-index: 1000;
+      background: rgba(255,255,255,.97); z-index: 10000;
       align-items: center; justify-content: center; flex-direction: column; gap: 14px;
     }
     #name-overlay.show { display: flex; }
@@ -405,24 +509,45 @@
 </head>
 <body>
 
-<!-- JUMPSCARE OVERLAY (fixed, full screen) -->
+<!-- TACO RAIN -->
+<div id="taco-container"></div>
+
+<!-- JUMPSCARE -->
 <div id="jumpscare-overlay">
   <img id="jumpscare-img" src="" alt=""/>
 </div>
 
-<div id="app">
+<!-- TIME FREEZE -->
+<div id="timefreeze-overlay">
+  <div id="timefreeze-flash"></div>
+  <svg id="timefreeze-cracks" viewBox="0 0 100 100" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+    <line x1="50" y1="50" x2="10" y2="5"   stroke="#a8d8ff" stroke-width=".4" opacity=".9"/>
+    <line x1="50" y1="50" x2="85" y2="8"   stroke="#c8eaff" stroke-width=".3" opacity=".8"/>
+    <line x1="50" y1="50" x2="95" y2="40"  stroke="#a8d8ff" stroke-width=".5" opacity=".9"/>
+    <line x1="50" y1="50" x2="90" y2="75"  stroke="#c8eaff" stroke-width=".3" opacity=".7"/>
+    <line x1="50" y1="50" x2="60" y2="100" stroke="#a8d8ff" stroke-width=".4" opacity=".9"/>
+    <line x1="50" y1="50" x2="20" y2="95"  stroke="#c8eaff" stroke-width=".3" opacity=".8"/>
+    <line x1="50" y1="50" x2="5"  y2="70"  stroke="#a8d8ff" stroke-width=".5" opacity=".9"/>
+    <line x1="50" y1="50" x2="8"  y2="35"  stroke="#c8eaff" stroke-width=".3" opacity=".7"/>
+    <line x1="20" y1="20" x2="35" y2="35"  stroke="#a8d8ff" stroke-width=".2" opacity=".6"/>
+    <line x1="75" y1="15" x2="65" y2="30"  stroke="#c8eaff" stroke-width=".2" opacity=".6"/>
+    <line x1="80" y1="60" x2="68" y2="52"  stroke="#a8d8ff" stroke-width=".2" opacity=".6"/>
+    <line x1="30" y1="80" x2="42" y2="65"  stroke="#c8eaff" stroke-width=".2" opacity=".6"/>
+  </svg>
+  <div id="timefreeze-vignette"></div>
+  <div id="timefreeze-text">⏸ time has stopped ⏸</div>
+</div>
 
-  <!-- MAIN AREA -->
+<div id="app">
+  <!-- MAIN -->
   <div id="main">
     <canvas id="draw-canvas"></canvas>
     <div id="banner-stack"></div>
-
     <div id="poll-widget">
       <div id="poll-question"></div>
       <div id="poll-options"></div>
       <button id="poll-close">dismiss</button>
     </div>
-
     <div id="viewer-pill">👁 <b id="viewer-count">1</b> viewing</div>
   </div>
 
@@ -434,11 +559,13 @@
         <p id="admin-name-display">not logged in</p>
       </div>
       <div class="admin-tabs">
-        <button class="admin-tab active" data-tab="msg">💬 msg</button>
-        <button class="admin-tab" data-tab="abuse">💥 abuse</button>
-        <button class="admin-tab" data-tab="draw">🖌 draw</button>
-        <button class="admin-tab" data-tab="poll">📊 poll</button>
-        <button class="admin-tab" data-tab="bg">🎨 bg</button>
+        <button class="admin-tab active" data-tab="msg">💬</button>
+        <button class="admin-tab" data-tab="abuse">💥</button>
+        <button class="admin-tab" data-tab="party">🎉</button>
+        <button class="admin-tab" data-tab="freeze">⏸</button>
+        <button class="admin-tab" data-tab="draw">🖌</button>
+        <button class="admin-tab" data-tab="poll">📊</button>
+        <button class="admin-tab" data-tab="bg">🎨</button>
       </div>
       <div id="panel-content">
 
@@ -451,39 +578,43 @@
 
         <!-- ABUSE -->
         <div class="tab-panel" id="tab-abuse">
-
-          <!-- Shake -->
           <div class="panel-label">screen shake</div>
-          <div class="abuse-btn-grid" style="margin-bottom:12px">
-            <button class="abuse-big-btn" id="shake-sm-btn">
-              <span class="abuse-icon">📳</span>light
-            </button>
-            <button class="abuse-big-btn" id="shake-lg-btn">
-              <span class="abuse-icon">💥</span>NUKE
-            </button>
-          </div>
-
+          <button class="abuse-big-btn" id="shake-sm-btn">
+            <span class="abuse-icon">📳</span>shake
+          </button>
           <div class="divider"></div>
-
-          <!-- Jumpscare -->
           <div class="panel-label">jumpscare</div>
-
           <div class="panel-label" style="margin-top:4px">presets</div>
-          <div class="js-presets" id="js-presets">
-            <!-- populated by JS -->
-          </div>
-
+          <div class="js-presets" id="js-presets"></div>
           <div class="panel-label">or custom image url</div>
           <input class="admin-input" id="js-custom-url" type="url" placeholder="https://…" style="margin-bottom:6px"/>
-
           <div class="panel-label">duration</div>
           <div style="display:flex;gap:5px;margin-bottom:8px">
             <button class="tool-btn active" data-dur="800">short</button>
             <button class="tool-btn" data-dur="1800">mid</button>
             <button class="tool-btn" data-dur="3500">long</button>
           </div>
-
           <button class="admin-btn red" id="fire-jumpscare-btn">🔴 fire jumpscare</button>
+        </div>
+
+        <!-- PARTY -->
+        <div class="tab-panel" id="tab-party">
+          <div class="panel-label">party mode</div>
+          <p style="font-size:12px;color:#aaa;margin-bottom:10px;line-height:1.5">
+            Rainbow background + raining tacos + It's Raining Tacos plays for everyone 🌮
+          </p>
+          <button class="admin-btn purple" id="party-start-btn">🎉 start party</button>
+          <button class="admin-btn ghost" id="party-stop-btn" style="margin-top:6px">⏹ stop party</button>
+        </div>
+
+        <!-- TIME FREEZE -->
+        <div class="tab-panel" id="tab-freeze">
+          <div class="panel-label">time freeze</div>
+          <p style="font-size:12px;color:#aaa;margin-bottom:10px;line-height:1.5">
+            Gojo's time stop — screen freezes blue with crack effect + Za Warudo sound 🥶
+          </p>
+          <button class="admin-btn blue" id="freeze-btn">⏸ time stop</button>
+          <button class="admin-btn ghost" id="unfreeze-btn" style="margin-top:6px">▶ resume time</button>
         </div>
 
         <!-- DRAW -->
@@ -580,11 +711,14 @@
   </div>
 </div>
 
+<!-- MOBILE PANEL TOGGLE -->
+<button id="admin-toggle-btn" title="toggle admin panel">🛠</button>
+
 <script type="module">
   import { initializeApp }
     from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
   import { getDatabase, ref, push, set, remove, onValue,
-           query, orderByChild, startAfter, onChildAdded }
+           orderByChild, onChildAdded }
     from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
   import { getAuth, signInAnonymously }
     from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
@@ -599,16 +733,13 @@
     appId:             "1:756244892931:web:18d3975a67547ab3936d36"
   };
 
-  const SECRET   = "191817161514131211";
-  const HOLD_MS  = 5500;
-  const joinedAt = Date.now();
+  const SECRET  = "10222211";
+  const HOLD_MS = 5500;
 
   let adminName  = localStorage.getItem('admin_name') || '';
   let myVotes    = {};
   let keyBuffer  = '';
   let isAdmin    = false;
-
-  // Draw state
   let drawMode   = false;
   let isPointing = false;
   let drawColor  = '#111111';
@@ -616,25 +747,23 @@
   let drawTool   = 'pen';
   let strokeId   = null;
   let lastPt     = null;
-
-  // Jumpscare state
   let jsSelectedUrl = '';
   let jsDuration    = 800;
+  let partyInterval = null;
+  let partyAudio    = null;
+  let isFrozen      = false;
 
-  // Jumpscare preset images (freely usable meme-style images)
+  // ── Jumpscare presets ─────────────────────────────
   const JS_PRESETS = [
-    { label: 'scary', url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/3a/Cat03.jpg/481px-Cat03.jpg' },
-    { label: 'wow',   url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/4d/Cat_November_2010-1a.jpg/1200px-Cat_November_2010-1a.jpg' },
-    { label: 'bruh',  url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/bb/Kittyply_edit1.jpg/1200px-Kittyply_edit1.jpg' },
+    { url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/3a/Cat03.jpg/481px-Cat03.jpg' },
+    { url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/4d/Cat_November_2010-1a.jpg/1200px-Cat_November_2010-1a.jpg' },
+    { url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/bb/Kittyply_edit1.jpg/1200px-Kittyply_edit1.jpg' },
   ];
-
-  // Populate preset thumbnails
   const presetsEl = document.getElementById('js-presets');
   JS_PRESETS.forEach((p, i) => {
     const img = document.createElement('img');
     img.className = 'js-preset';
     img.src = p.url;
-    img.title = p.label;
     img.addEventListener('click', () => {
       document.querySelectorAll('.js-preset').forEach(el => el.classList.remove('selected'));
       img.classList.add('selected');
@@ -644,15 +773,12 @@
     presetsEl.appendChild(img);
     if (i === 0) { img.classList.add('selected'); jsSelectedUrl = p.url; }
   });
-
   document.getElementById('js-custom-url').addEventListener('input', e => {
     if (e.target.value.trim()) {
       jsSelectedUrl = e.target.value.trim();
       document.querySelectorAll('.js-preset').forEach(el => el.classList.remove('selected'));
     }
   });
-
-  // Duration buttons
   document.querySelectorAll('[data-dur]').forEach(btn => {
     btn.addEventListener('click', () => {
       document.querySelectorAll('[data-dur]').forEach(b => b.classList.remove('active'));
@@ -671,16 +797,13 @@
   const presRef    = ref(db, 'presence');
   const shakeRef   = ref(db, 'shake');
   const jumpRef    = ref(db, 'jumpscare');
+  const partyRef   = ref(db, 'party');
+  const freezeRef  = ref(db, 'freeze');
 
-  // ── Clear all event data on every page load ─────
-  // Wipes messages, poll, strokes, shake, jumpscare, bgcolor so each
-  // refresh starts fresh. Background resets to white.
+  // Clear everything on load
   Promise.all([
-    remove(msgsRef),
-    remove(pollRef),
-    remove(strokesRef),
-    remove(shakeRef),
-    remove(jumpRef),
+    remove(msgsRef), remove(pollRef), remove(strokesRef),
+    remove(shakeRef), remove(jumpRef), remove(partyRef), remove(freezeRef),
     set(bgRef, '#ffffff'),
   ]).catch(console.error);
 
@@ -696,80 +819,145 @@
       snap.exists() ? Object.keys(snap.val()).length : 1;
   });
 
-  // ── Listen: shake ────────────────────────────────
+  // ── Listeners ─────────────────────────────────────
   onValue(shakeRef, snap => {
     if (!snap.exists()) return;
-    const data = snap.val();
-    if (!data || !data.ts || data.ts <= joinedAt) return;
-    triggerShake(data.intensity || 'sm');
+    triggerShake();
   });
 
-  function triggerShake(intensity) {
-    const dur = intensity === 'lg' ? 1200 : 600;
-    const el  = document.body;
-
-    // Override animation duration via style
-    el.style.animationDuration = dur + 'ms';
-    el.classList.remove('shaking');
-    void el.offsetWidth; // reflow to restart
-    el.classList.add('shaking');
-    setTimeout(() => {
-      el.classList.remove('shaking');
-      el.style.animationDuration = '';
-    }, dur + 50);
-
-    // For NUKE: also flash background red briefly
-    if (intensity === 'lg') {
-      const mainEl = document.getElementById('main');
-      const origBg = mainEl.style.background;
-      mainEl.style.transition = 'none';
-      mainEl.style.background = '#e63946';
-      setTimeout(() => {
-        mainEl.style.transition = 'background 1.2s ease';
-        mainEl.style.background = origBg;
-      }, 120);
-    }
-  }
-
-  // ── Listen: jumpscare ────────────────────────────
   onValue(jumpRef, snap => {
     if (!snap.exists()) return;
-    const data = snap.val();
-    if (!data || !data.ts || data.ts <= joinedAt) return;
-    fireJumpscare(data.url, data.duration || 800);
+    const d = snap.val();
+    if (d?.url) fireJumpscare(d.url, d.duration || 800);
   });
 
+  onValue(partyRef, snap => {
+    if (!snap.exists() || !snap.val()) {
+      stopParty();
+    } else {
+      startParty();
+    }
+  });
+
+  onValue(freezeRef, snap => {
+    if (!snap.exists() || !snap.val()) {
+      resumeTime();
+    } else {
+      freezeTime();
+    }
+  });
+
+  // ── Shake ─────────────────────────────────────────
+  function triggerShake() {
+    document.body.style.animationDuration = '600ms';
+    document.body.classList.remove('shaking');
+    void document.body.offsetWidth;
+    document.body.classList.add('shaking');
+    setTimeout(() => { document.body.classList.remove('shaking'); }, 660);
+  }
+
+  document.getElementById('shake-sm-btn').addEventListener('click', () => {
+    set(shakeRef, { ts: Date.now() });
+    triggerShake();
+  });
+
+  // ── Jumpscare ─────────────────────────────────────
   function fireJumpscare(url, duration) {
     const overlay = document.getElementById('jumpscare-overlay');
     const img     = document.getElementById('jumpscare-img');
     img.src = url;
     overlay.classList.add('show');
-
-    // Shake simultaneously
-    triggerShake('sm');
-
-    setTimeout(() => {
-      overlay.classList.remove('show');
-      img.src = '';
-    }, duration);
+    triggerShake();
+    setTimeout(() => { overlay.classList.remove('show'); img.src = ''; }, duration);
   }
 
-  // ── Admin: fire shake ─────────────────────────────
-  document.getElementById('shake-sm-btn').addEventListener('click', () => {
-    set(shakeRef, { intensity: 'sm', ts: Date.now() });
-    triggerShake('sm'); // also shake admin's own screen
-  });
-  document.getElementById('shake-lg-btn').addEventListener('click', () => {
-    set(shakeRef, { intensity: 'lg', ts: Date.now() });
-    triggerShake('lg');
-  });
-
-  // ── Admin: fire jumpscare ─────────────────────────
   document.getElementById('fire-jumpscare-btn').addEventListener('click', () => {
     const url = document.getElementById('js-custom-url').value.trim() || jsSelectedUrl;
     if (!url) { alert('Pick an image or paste a URL!'); return; }
     set(jumpRef, { url, duration: jsDuration, ts: Date.now() });
-    fireJumpscare(url, jsDuration); // also show on admin screen
+    fireJumpscare(url, jsDuration);
+  });
+
+  // ── Party mode ────────────────────────────────────
+  function startParty() {
+    if (document.body.classList.contains('party-mode')) return;
+    document.body.classList.add('party-mode');
+    spawnTacos();
+    // Play It's Raining Tacos via YouTube iframe audio trick
+    if (!partyAudio) {
+      partyAudio = new Audio('https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3');
+      // ↑ placeholder — swap URL below with a direct mp3 link to the actual song
+      // e.g. a CDN or your own hosted file
+    }
+    partyAudio.loop = true;
+    partyAudio.volume = 0.6;
+    partyAudio.play().catch(() => {});
+  }
+
+  function stopParty() {
+    document.body.classList.remove('party-mode');
+    if (partyAudio) { partyAudio.pause(); partyAudio.currentTime = 0; }
+    if (partyInterval) { clearInterval(partyInterval); partyInterval = null; }
+    document.getElementById('taco-container').innerHTML = '';
+  }
+
+  function spawnTacos() {
+    if (partyInterval) clearInterval(partyInterval);
+    partyInterval = setInterval(() => {
+      if (!document.body.classList.contains('party-mode')) return;
+      const taco = document.createElement('div');
+      taco.className = 'taco';
+      taco.textContent = '🌮';
+      taco.style.left = Math.random() * 100 + 'vw';
+      const dur = 2.5 + Math.random() * 2.5;
+      taco.style.animationDuration = dur + 's';
+      taco.style.fontSize = (24 + Math.random() * 24) + 'px';
+      document.getElementById('taco-container').appendChild(taco);
+      setTimeout(() => taco.remove(), dur * 1000 + 200);
+    }, 120);
+  }
+
+  document.getElementById('party-start-btn').addEventListener('click', () => {
+    set(partyRef, true);
+    startParty();
+  });
+  document.getElementById('party-stop-btn').addEventListener('click', () => {
+    remove(partyRef);
+    stopParty();
+  });
+
+  // ── Time Freeze ───────────────────────────────────
+  function freezeTime() {
+    if (isFrozen) return;
+    isFrozen = true;
+    document.body.classList.add('frozen');
+
+    // Play Za Warudo / time stop sound
+    const snd = new Audio('https://www.myinstants.com/media/sounds/za-warudo.mp3');
+    snd.volume = 0.8;
+    snd.play().catch(() => {});
+
+    // Show overlay (re-trigger animation by removing/re-adding)
+    const ov = document.getElementById('timefreeze-overlay');
+    ov.classList.remove('show');
+    void ov.offsetWidth;
+    ov.classList.add('show');
+  }
+
+  function resumeTime() {
+    if (!isFrozen) return;
+    isFrozen = false;
+    document.body.classList.remove('frozen');
+    document.getElementById('timefreeze-overlay').classList.remove('show');
+  }
+
+  document.getElementById('freeze-btn').addEventListener('click', () => {
+    set(freezeRef, true);
+    freezeTime();
+  });
+  document.getElementById('unfreeze-btn').addEventListener('click', () => {
+    remove(freezeRef);
+    resumeTime();
   });
 
   // ── Canvas ────────────────────────────────────────
@@ -783,7 +971,6 @@
     canvas.height = main.clientHeight;
     replayFromCache();
   }
-
   function replayFromCache() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     if (!strokeCache) return;
@@ -792,7 +979,6 @@
       Object.values(stroke.segments).forEach(paintSeg);
     });
   }
-
   resizeCanvas();
   window.addEventListener('resize', resizeCanvas);
 
@@ -803,12 +989,7 @@
       if (!drawMode) canvas.classList.remove('view-only');
       return;
     }
-    const all = snap.val();
-    const filtered = {};
-    Object.entries(all).forEach(([k, v]) => {
-      if (!v.ts || v.ts > joinedAt) filtered[k] = v;
-    });
-    strokeCache = Object.keys(filtered).length ? filtered : null;
+    strokeCache = snap.val();
     replayFromCache();
     if (!drawMode) canvas.classList.toggle('view-only', !!strokeCache);
   });
@@ -823,40 +1004,30 @@
       ctx.strokeStyle = s.color || '#111';
     }
     ctx.lineWidth = s.size || 6;
-    ctx.lineCap   = 'round';
-    ctx.lineJoin  = 'round';
+    ctx.lineCap   = 'round'; ctx.lineJoin = 'round';
     ctx.beginPath();
-    ctx.moveTo(s.x1, s.y1);
-    ctx.lineTo(s.x2, s.y2);
-    ctx.stroke();
-    ctx.restore();
+    ctx.moveTo(s.x1, s.y1); ctx.lineTo(s.x2, s.y2);
+    ctx.stroke(); ctx.restore();
   }
 
-  // ── Messages — only after join ────────────────────
-  const newMsgsQ = query(msgsRef, orderByChild('ts'), startAfter(joinedAt));
-  onChildAdded(newMsgsQ, snap => {
+  // ── Messages ──────────────────────────────────────
+  let msgInitDone = false;
+  onChildAdded(msgsRef, snap => {
+    if (!msgInitDone) return;
     const d = snap.val();
     if (d?.name && d?.text) showBanner(d.name, d.text);
   });
+  setTimeout(() => { msgInitDone = true; }, 1000);
 
   // ── Background ────────────────────────────────────
   onValue(bgRef, snap => {
     if (snap.val()) document.getElementById('main').style.background = snap.val();
   });
 
-  // ── Poll — only if created after join ─────────────
-  // firstPollSnap: suppress the very first onValue fire (existing data on connect).
-  // After that, any change is genuinely new.
-  let firstPollSnap = true;
+  // ── Poll ──────────────────────────────────────────
   onValue(pollRef, snap => {
     if (!snap.exists() || !snap.val()?.question) {
       document.getElementById('poll-widget').classList.remove('show');
-      firstPollSnap = false;
-      return;
-    }
-    // Always swallow the first snapshot — it's whatever was already in the DB
-    if (firstPollSnap) {
-      firstPollSnap = false;
       return;
     }
     renderPoll(snap.val(), snap.key);
@@ -872,7 +1043,7 @@
     }
   });
 
-  // ── Mobile code box ───────────────────────────────
+  // ── Mobile code ───────────────────────────────────
   function checkMobileCode() {
     const val = document.getElementById('mobile-code-input').value.trim();
     if (val === SECRET) {
@@ -887,6 +1058,19 @@
   document.getElementById('mobile-code-btn').addEventListener('click', checkMobileCode);
   document.getElementById('mobile-code-input').addEventListener('keydown', e => {
     if (e.key === 'Enter') checkMobileCode();
+  });
+
+  // ── Admin toggle (mobile) ─────────────────────────
+  document.getElementById('admin-toggle-btn').addEventListener('click', () => {
+    const panel = document.getElementById('admin-panel');
+    const isOpen = panel.classList.contains('open');
+    if (isOpen) {
+      panel.classList.remove('open');
+      document.body.classList.remove('admin-open');
+    } else {
+      panel.classList.add('open');
+      document.body.classList.add('admin-open');
+    }
   });
 
   // ── Unlock ────────────────────────────────────────
@@ -904,6 +1088,7 @@
     document.getElementById('admin-panel').classList.add('open');
     document.getElementById('admin-name-display').textContent = adminName;
     document.getElementById('mobile-code-box').style.display = 'none';
+    document.getElementById('admin-toggle-btn').style.display = 'flex';
     document.body.classList.add('admin-open');
   }
 
@@ -952,16 +1137,13 @@
     opts.forEach((o, i) => { optObj[i] = { label: o, votes: 0 }; });
     set(pollRef, { question: q, options: optObj, ts: Date.now() });
   });
-
   document.getElementById('close-poll-btn').addEventListener('click', () => remove(pollRef));
-
   document.getElementById('poll-options-builder').addEventListener('click', e => {
     if (e.target.classList.contains('remove-option')) {
       const all = document.querySelectorAll('#poll-options-builder .poll-option-input-wrap');
       if (all.length > 2) e.target.closest('.poll-option-input-wrap').remove();
     }
   });
-
   document.getElementById('add-option-btn').addEventListener('click', () => {
     const wrap = document.createElement('div');
     wrap.className = 'poll-option-input-wrap';
@@ -986,7 +1168,7 @@
   });
   document.getElementById('send-bg-btn').addEventListener('click', () => set(bgRef, selBg));
 
-  // ── Draw tools ────────────────────────────────────
+  // ── Draw ──────────────────────────────────────────
   document.querySelectorAll('.tool-btn[data-tool]').forEach(btn => {
     btn.addEventListener('click', () => {
       document.querySelectorAll('.tool-btn[data-tool]').forEach(b => b.classList.remove('active'));
@@ -994,7 +1176,6 @@
       drawTool = btn.dataset.tool;
     });
   });
-
   document.querySelectorAll('.draw-color-swatch').forEach(sw => {
     sw.addEventListener('click', () => {
       document.querySelectorAll('.draw-color-swatch').forEach(s => s.classList.remove('selected'));
@@ -1002,7 +1183,6 @@
       drawColor = sw.dataset.color;
     });
   });
-
   document.getElementById('brush-size').addEventListener('input', e => {
     brushSize = parseInt(e.target.value);
     document.getElementById('brush-size-val').textContent = brushSize;
@@ -1012,13 +1192,11 @@
   drawToggleBtn.addEventListener('click', () => {
     drawMode = !drawMode;
     if (drawMode) {
-      canvas.classList.add('active');
-      canvas.classList.remove('view-only');
+      canvas.classList.add('active'); canvas.classList.remove('view-only');
       drawToggleBtn.textContent = '⏹ stop drawing';
       drawToggleBtn.classList.add('drawing');
     } else {
-      canvas.classList.remove('active');
-      canvas.classList.add('view-only');
+      canvas.classList.remove('active'); canvas.classList.add('view-only');
       drawToggleBtn.textContent = '✏️ start drawing';
       drawToggleBtn.classList.remove('drawing');
       strokeId = null; lastPt = null; isPointing = false;
@@ -1033,32 +1211,26 @@
     strokeCache = null;
   });
 
-  // ── Canvas pointer events ─────────────────────────
   function getPos(e) {
     const r = canvas.getBoundingClientRect();
     const s = e.touches ? e.touches[0] : e;
     return { x: s.clientX - r.left, y: s.clientY - r.top };
   }
-
   canvas.addEventListener('pointerdown', e => {
     if (!drawMode || !isAdmin) return;
-    isPointing = true;
-    lastPt     = getPos(e);
-    strokeId   = push(strokesRef).key;
+    isPointing = true; lastPt = getPos(e);
+    strokeId = push(strokesRef).key;
     set(ref(db, `strokes/${strokeId}/ts`), Date.now());
     canvas.setPointerCapture(e.pointerId);
   });
-
   canvas.addEventListener('pointermove', e => {
     if (!isPointing || !drawMode || !isAdmin) return;
     const pt  = getPos(e);
-    const seg = { x1: lastPt.x, y1: lastPt.y, x2: pt.x, y2: pt.y,
-                  color: drawColor, size: brushSize, tool: drawTool };
+    const seg = { x1: lastPt.x, y1: lastPt.y, x2: pt.x, y2: pt.y, color: drawColor, size: brushSize, tool: drawTool };
     paintSeg(seg);
     push(ref(db, `strokes/${strokeId}/segments`), seg);
     lastPt = pt;
   });
-
   const stopDraw = () => { isPointing = false; lastPt = null; };
   canvas.addEventListener('pointerup',     stopDraw);
   canvas.addEventListener('pointercancel', stopDraw);
@@ -1097,7 +1269,6 @@
     });
     document.getElementById('poll-widget').classList.add('show');
   }
-
   document.getElementById('poll-close').addEventListener('click', () => {
     document.getElementById('poll-widget').classList.remove('show');
   });
@@ -1111,8 +1282,7 @@
     stackEl.insertBefore(el, stackEl.firstChild);
     requestAnimationFrame(() => requestAnimationFrame(() => el.classList.add('visible')));
     setTimeout(() => {
-      el.classList.remove('visible');
-      el.classList.add('fading');
+      el.classList.remove('visible'); el.classList.add('fading');
       el.addEventListener('transitionend', () => el.remove(), { once: true });
     }, HOLD_MS);
   }
