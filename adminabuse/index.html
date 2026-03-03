@@ -8,40 +8,31 @@
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-    :root {
-      --bg: #ffffff;
-      --panel: #ffffff;
-      --panel2: #f5f5f5;
-      --accent: #111111;
-      --accent2: #111111;
-      --green: #111111;
-      --text: #111111;
-      --muted: #888888;
-      --border: #e0e0e0;
-      --radius: 10px;
+    body {
+      font-family: 'Patrick Hand', cursive;
+      background: #fff;
+      color: #111;
+      height: 100vh;
+      overflow: hidden;
     }
-
-    html, body { height: 100%; font-family: 'Patrick Hand', cursive; background: var(--bg); color: var(--text); overflow: hidden; }
 
     #app { display: flex; height: 100vh; width: 100vw; }
 
-    /* ── MAIN AREA ── */
+    /* ── MAIN ── */
     #main {
       flex: 1;
       position: relative;
       overflow: hidden;
       transition: background 1.2s ease;
-      background: var(--bg);
+      background: #fff;
     }
 
+    /* ── CANVAS ── */
     #draw-canvas {
-      position: absolute;
-      inset: 0;
-      z-index: 10;
-      display: none;
-      touch-action: none;
+      position: absolute; inset: 0; z-index: 10;
+      display: none; touch-action: none;
     }
-    #draw-canvas.active   { display: block; cursor: crosshair; }
+    #draw-canvas.active    { display: block; cursor: crosshair; }
     #draw-canvas.view-only { display: block; pointer-events: none; }
 
     /* ── BANNERS ── */
@@ -51,253 +42,284 @@
       transform: translateX(-50%);
       display: flex; flex-direction: column; align-items: center; gap: 8px;
       z-index: 100; pointer-events: none;
-      width: 90%; max-width: 560px;
+      width: 90%; max-width: 540px;
     }
     .banner {
-      background: #111;
-      color:#fff; padding:12px 24px;
-      font-size:17px; font-weight:800; text-align:center;
-      width:100%; border-radius:8px;
-      box-shadow:0 4px 16px rgba(0,0,0,0.12);
-      opacity:0; transform:translateY(-14px) scale(.96);
-      transition:transform .35s cubic-bezier(.22,.68,0,1.2),opacity .35s ease;
+      background: #111; color: #fff;
+      padding: 11px 22px;
+      font-family: 'Patrick Hand', cursive;
+      font-size: 16px; font-weight: normal;
+      text-align: center; width: 100%;
+      border-radius: 6px;
+      box-shadow: 0 3px 14px rgba(0,0,0,0.13);
+      opacity: 0; transform: translateY(-12px) scale(.97);
+      transition: transform .34s cubic-bezier(.22,.68,0,1.2), opacity .34s ease;
     }
-    .banner.visible { opacity:1; transform:translateY(0) scale(1); }
-    .banner.fading  { opacity:0; transform:translateY(-8px) scale(.97); transition:opacity 1.4s ease,transform 1.4s ease; }
-    .banner-name    { color:#fff; font-weight:bold; }
+    .banner.visible { opacity: 1; transform: translateY(0) scale(1); }
+    .banner.fading  { opacity: 0; transform: translateY(-8px); transition: opacity 1.4s ease, transform 1.4s ease; }
+    .banner-name    { font-weight: bold; }
 
     /* ── POLL ── */
     #poll-widget {
-      position:absolute; top:50%; left:50%;
-      transform:translate(-50%,-50%) scale(.9);
-      background:var(--panel); border:2px solid var(--accent); border-radius:var(--radius);
-      padding:22px 26px; width:88%; max-width:400px;
-      box-shadow:0 4px 24px rgba(0,0,0,0.10);
-      z-index:80; opacity:0; pointer-events:none;
-      transition:opacity .3s ease,transform .3s ease;
+      position: absolute; top: 50%; left: 50%;
+      transform: translate(-50%, -50%) scale(.92);
+      background: #fff; border: 1.5px solid #111;
+      padding: 22px 24px; width: 88%; max-width: 380px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.10);
+      z-index: 80; opacity: 0; pointer-events: none;
+      transition: opacity .28s ease, transform .28s ease;
     }
-    #poll-widget.show { opacity:1; pointer-events:all; transform:translate(-50%,-50%) scale(1); }
-    #poll-question { font-size:18px; font-weight:900; margin-bottom:14px; color:#111; line-height:1.35; }
-    .poll-option   { margin-bottom:9px; cursor:pointer; }
-    .poll-bar-wrap { background:#f5f5f5; height:38px; border-radius:6px; position:relative; overflow:hidden; border:1.5px solid var(--border); }
-    .poll-bar-fill { background:#111; height:100%; width:0%; transition:width .5s ease; border-radius:6px 0 0 6px; }
-    .poll-bar-label { position:absolute; inset:0; display:flex; align-items:center; justify-content:space-between; padding:0 12px; font-size:14px; font-weight:800; color:#fff; pointer-events:none; mix-blend-mode:difference; }
-    .poll-voted .poll-bar-fill { background:#111; }
-    #poll-close { margin-top:14px; font-family:'Patrick Hand',cursive; font-size:13px; font-weight:700; background:none; border:1.5px solid var(--border); border-radius:6px; padding:6px 16px; cursor:pointer; color:var(--muted); width:100%; transition:border-color .2s,color .2s; }
-    #poll-close:hover { border-color:var(--accent); color:var(--accent); }
+    #poll-widget.show { opacity: 1; pointer-events: all; transform: translate(-50%, -50%) scale(1); }
+    #poll-question { font-size: 17px; margin-bottom: 14px; color: #111; line-height: 1.4; }
+    .poll-option   { margin-bottom: 8px; cursor: pointer; }
+    .poll-bar-wrap { background: #f3f3f3; height: 36px; position: relative; overflow: hidden; border: 1px solid #e0e0e0; }
+    .poll-bar-fill { background: #111; height: 100%; width: 0%; transition: width .5s ease; }
+    .poll-bar-label { position: absolute; inset: 0; display: flex; align-items: center; justify-content: space-between; padding: 0 11px; font-size: 14px; color: #fff; mix-blend-mode: difference; pointer-events: none; }
+    #poll-close { margin-top: 12px; font-family: 'Patrick Hand', cursive; font-size: 13px; background: none; border: 1px solid #ccc; padding: 6px 14px; cursor: pointer; color: #888; width: 100%; transition: border-color .2s, color .2s; }
+    #poll-close:hover { border-color: #111; color: #111; }
 
-    /* ── VIEWER COUNT ── */
+    /* ── VIEWER PILL ── */
     #viewer-pill {
-      position:absolute; bottom:16px; left:16px;
-      background:rgba(255,255,255,0.85); border:1.5px solid var(--border); border-radius:20px;
-      padding:5px 13px; font-size:12px; font-weight:800; color:#888;
-      z-index:50; pointer-events:none; backdrop-filter:blur(6px);
+      position: absolute; bottom: 14px; left: 14px;
+      background: rgba(255,255,255,0.9); border: 1px solid #e0e0e0;
+      padding: 4px 12px; font-size: 12px; color: #888;
+      z-index: 50; pointer-events: none;
     }
-    #viewer-pill span { color:var(--green); }
+    #viewer-pill b { color: #111; }
+
+    /* ── MOBILE CODE BOX ── */
+    #mobile-code-box {
+      display: none;
+      position: absolute; bottom: 14px; right: 14px;
+      z-index: 50; text-align: center;
+    }
+    @media (hover: none) and (pointer: coarse) {
+      #mobile-code-box { display: block; }
+    }
+    #mobile-code-label { font-size: 11px; color: #aaa; margin-bottom: 4px; letter-spacing: .5px; }
+    #mobile-code-row   { display: flex; gap: 5px; align-items: center; }
+    #mobile-code-input {
+      font-family: 'Patrick Hand', cursive;
+      font-size: 14px; width: 100px;
+      border: 1px solid #ccc; padding: 5px 8px;
+      outline: none; color: #111; background: #fff;
+      letter-spacing: 3px; text-align: center;
+    }
+    #mobile-code-input:focus { border-color: #111; }
+    #mobile-code-btn {
+      font-family: 'Patrick Hand', cursive;
+      font-size: 13px; background: #111; color: #fff;
+      border: none; padding: 6px 10px; cursor: pointer;
+    }
+    #mobile-code-btn:active { opacity: .8; }
 
     /* ── ADMIN SIDEBAR ── */
     #admin-panel {
-      width:0; min-width:0; overflow:hidden;
-      background:var(--panel); border-left:2px solid var(--border);
-      display:flex; flex-direction:column;
-      transition:width .35s cubic-bezier(.22,.68,0,1.1),min-width .35s;
-      z-index:200; flex-shrink:0;
+      width: 0; min-width: 0; overflow: hidden;
+      background: #fff; border-left: 1.5px solid #e8e8e8;
+      display: flex; flex-direction: column;
+      transition: width .32s cubic-bezier(.22,.68,0,1.1), min-width .32s;
+      z-index: 200; flex-shrink: 0;
     }
-    #admin-panel.open { width:290px; min-width:290px; }
+    #admin-panel.open { width: 272px; min-width: 272px; }
 
-    #panel-inner { width:290px; height:100%; display:flex; flex-direction:column; overflow:hidden; }
+    #panel-inner { width: 272px; height: 100%; display: flex; flex-direction: column; overflow: hidden; }
 
-    #panel-header {
-      background:#111;
-      padding:14px 16px 12px; flex-shrink:0;
+    #panel-header { background: #111; padding: 13px 15px 11px; flex-shrink: 0; }
+    #panel-header h1 { font-size: 16px; color: #fff; font-weight: normal; letter-spacing: .2px; }
+    #panel-header p  { font-size: 11px; color: rgba(255,255,255,.5); margin-top: 3px; letter-spacing: .5px; }
+
+    .admin-tabs { display: flex; background: #fafafa; border-bottom: 1.5px solid #e8e8e8; flex-shrink: 0; }
+    .admin-tab {
+      flex: 1; padding: 9px 4px;
+      font-family: 'Patrick Hand', cursive; font-size: 12px;
+      background: none; border: none; cursor: pointer; color: #bbb;
+      border-bottom: 2px solid transparent; margin-bottom: -1.5px;
+      transition: color .15s;
     }
-    #panel-header h1 { font-size:18px; font-weight:900; color:#fff; letter-spacing:-.3px; }
-    #panel-header p  { font-size:11px; font-weight:700; color:rgba(255,255,255,.6); margin-top:2px; text-transform:uppercase; letter-spacing:1px; }
+    .admin-tab.active           { color: #111; border-bottom-color: #111; }
+    .admin-tab:hover:not(.active) { color: #555; }
 
-    .admin-tabs { display:flex; background:var(--panel2); border-bottom:2px solid var(--border); flex-shrink:0; }
-    .admin-tab  {
-      flex:1; padding:10px 4px;
-      font-family:'Patrick Hand',cursive; font-size:11px; font-weight:800;
-      background:none; border:none; cursor:pointer; color:#888;
-      transition:color .15s,background .15s;
-      border-bottom:3px solid transparent; margin-bottom:-2px;
-      text-transform:uppercase; letter-spacing:.3px;
-    }
-    .admin-tab.active           { color:var(--accent); border-bottom-color:var(--accent); }
-    .admin-tab:hover:not(.active) { color:var(--text); background:#fafafa; }
+    #panel-content { flex: 1; overflow-y: auto; overflow-x: hidden; }
+    #panel-content::-webkit-scrollbar       { width: 3px; }
+    #panel-content::-webkit-scrollbar-thumb { background: #e0e0e0; }
 
-    #panel-content { flex:1; overflow-y:auto; overflow-x:hidden; }
-    #panel-content::-webkit-scrollbar       { width:4px; }
-    #panel-content::-webkit-scrollbar-track { background:transparent; }
-    #panel-content::-webkit-scrollbar-thumb { background:var(--border); border-radius:2px; }
+    .tab-panel        { display: none; padding: 13px; }
+    .tab-panel.active { display: block; }
 
-    .tab-panel        { display:none; padding:14px; }
-    .tab-panel.active { display:block; }
-
-    .panel-label { font-size:10px; color:var(--muted); margin-bottom:6px; letter-spacing:1px; text-transform:uppercase; font-weight:800; }
+    .panel-label { font-size: 11px; color: #bbb; margin-bottom: 6px; letter-spacing: .5px; text-transform: uppercase; }
 
     .admin-input {
-      width:100%; font-family:'Patrick Hand',cursive; font-size:13px; font-weight:700;
-      border:1.5px solid var(--border); border-radius:7px; padding:8px 10px;
-      outline:none; color:var(--text); background:#fafafa; margin-bottom:9px;
-      resize:none; transition:border-color .2s;
+      width: 100%; font-family: 'Patrick Hand', cursive; font-size: 15px;
+      border: 1px solid #e0e0e0; padding: 8px 10px;
+      outline: none; color: #111; background: #fafafa; margin-bottom: 8px;
+      resize: none; transition: border-color .18s;
     }
-    .admin-input:focus       { border-color:var(--accent); background:#f5f5f5; }
-    .admin-input::placeholder { color:var(--muted); }
+    .admin-input:focus       { border-color: #111; background: #fff; }
+    .admin-input::placeholder { color: #bbb; }
 
     .admin-btn {
-      width:100%; font-family:'Patrick Hand',cursive; font-size:13px; font-weight:900;
-      background:#111; color:#fff;
-      border:none; border-radius:7px; padding:9px; cursor:pointer;
-      transition:opacity .15s,transform .1s; margin-top:2px;
-      text-transform:uppercase; letter-spacing:.5px;
+      width: 100%; font-family: 'Patrick Hand', cursive; font-size: 15px;
+      background: #111; color: #fff;
+      border: none; padding: 9px; cursor: pointer;
+      transition: opacity .15s; margin-top: 2px;
     }
-    .admin-btn:hover  { opacity:.88; }
-    .admin-btn:active { transform:scale(.98); }
-    .admin-btn.yellow { background:#111; color:#fff; }
-    .admin-btn.ghost  { background:#fff; color:#888; border:1.5px solid var(--border); }
-    .admin-btn.ghost:hover { color:var(--text); border-color:var(--muted); }
+    .admin-btn:hover  { opacity: .85; }
+    .admin-btn:active { opacity: .7; }
+    .admin-btn.ghost  { background: #fff; color: #888; border: 1px solid #e0e0e0; }
+    .admin-btn.ghost:hover { border-color: #111; color: #111; }
 
-    .divider { height:1px; background:var(--border); margin:12px 0; }
+    .divider { height: 1px; background: #eee; margin: 11px 0; }
 
     /* Poll builder */
-    .poll-option-input-wrap { display:flex; gap:6px; margin-bottom:7px; align-items:center; }
+    .poll-option-input-wrap { display: flex; gap: 5px; margin-bottom: 6px; align-items: center; }
     .poll-option-input-wrap input {
-      flex:1; font-family:'Patrick Hand',cursive; font-size:13px; font-weight:700;
-      border:1.5px solid var(--border); border-radius:6px; padding:7px 9px;
-      outline:none; background:#fafafa; color:var(--text); transition:border-color .2s;
+      flex: 1; font-family: 'Patrick Hand', cursive; font-size: 14px;
+      border: 1px solid #e0e0e0; padding: 6px 8px;
+      outline: none; background: #fafafa; color: #111; transition: border-color .18s;
     }
-    .poll-option-input-wrap input:focus       { border-color:var(--accent); }
-    .poll-option-input-wrap input::placeholder { color:var(--muted); }
+    .poll-option-input-wrap input:focus       { border-color: #111; }
+    .poll-option-input-wrap input::placeholder { color: #bbb; }
     .remove-option {
-      background:#f5f5f5; border:1.5px solid #e0e0e0; border-radius:5px;
-      font-size:14px; color:#111; cursor:pointer; padding:4px 7px; font-weight:900;
-      transition:background .15s;
+      background: none; border: 1px solid #e0e0e0;
+      font-size: 15px; color: #bbb; cursor: pointer; padding: 3px 7px;
+      transition: border-color .15s, color .15s;
     }
-    .remove-option:hover { background:#e0e0e0; }
+    .remove-option:hover { border-color: #111; color: #111; }
     #add-option-btn {
-      font-family:'Patrick Hand',cursive; font-size:12px; font-weight:800;
-      background:#fafafa; border:1.5px dashed var(--border); border-radius:6px;
-      padding:6px 14px; cursor:pointer; color:var(--muted); margin-bottom:9px; width:100%;
-      transition:border-color .2s,color .2s;
+      font-family: 'Patrick Hand', cursive; font-size: 13px;
+      background: #fafafa; border: 1px dashed #ccc;
+      padding: 6px 12px; cursor: pointer; color: #aaa; margin-bottom: 8px; width: 100%;
+      transition: border-color .18s, color .18s;
     }
-    #add-option-btn:hover { border-color:var(--accent); color:var(--accent); }
+    #add-option-btn:hover { border-color: #111; color: #111; }
 
-    /* Colors */
-    .color-presets { display:grid; grid-template-columns:repeat(5,1fr); gap:6px; margin-bottom:11px; }
-    .color-swatch  { aspect-ratio:1; border-radius:6px; cursor:pointer; border:2px solid transparent; transition:transform .15s,border-color .15s; }
-    .color-swatch:hover    { transform:scale(1.12); }
-    .color-swatch.selected { border-color:#fff; }
-    .color-custom-row { display:flex; gap:9px; align-items:center; margin-bottom:9px; }
-    #custom-color { width:40px; height:30px; border:1.5px solid var(--border); border-radius:6px; padding:2px; cursor:pointer; background:var(--panel2); }
-    #custom-color-label { font-size:12px; font-weight:700; color:var(--muted); }
+    /* BG color picker */
+    .color-presets { display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px; margin-bottom: 10px; }
+    .color-swatch  { aspect-ratio: 1; cursor: pointer; border: 2px solid transparent; transition: transform .15s; }
+    .color-swatch:hover    { transform: scale(1.1); }
+    .color-swatch.selected { border-color: #111; }
+    .color-custom-row { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; }
+    #custom-color { width: 38px; height: 28px; border: 1px solid #e0e0e0; padding: 2px; cursor: pointer; background: #fafafa; }
+    #custom-color-label { font-size: 13px; color: #aaa; }
 
-    /* ── DRAW TAB ── */
-    .draw-tool-row { display:flex; gap:6px; margin-bottom:9px; }
+    /* Draw tab */
+    .draw-tool-row { display: flex; gap: 5px; margin-bottom: 8px; }
     .tool-btn {
-      flex:1;
-      font-family:'Patrick Hand',cursive; font-size:11px; font-weight:900;
-      background:rgba(255,255,255,.05); border:1.5px solid var(--border); border-radius:7px;
-      padding:8px 4px; cursor:pointer; color:#888;
-      transition:all .15s; text-align:center; text-transform:uppercase;
+      flex: 1; font-family: 'Patrick Hand', cursive; font-size: 13px;
+      background: #fafafa; border: 1px solid #e0e0e0;
+      padding: 7px 4px; cursor: pointer; color: #888;
+      transition: all .15s; text-align: center;
     }
-    .tool-btn:hover        { border-color:#111; color:#111; }
-    .tool-btn.active       { background:#111; border-color:#111; color:#fff; }
+    .tool-btn:hover  { border-color: #111; color: #111; }
+    .tool-btn.active { background: #111; border-color: #111; color: #fff; }
 
-    .draw-colors { display:flex; gap:6px; margin-bottom:9px; flex-wrap:wrap; }
+    .draw-colors { display: flex; gap: 5px; margin-bottom: 8px; flex-wrap: wrap; }
     .draw-color-swatch {
-      width:26px; height:26px; border-radius:50%; cursor:pointer;
-      border:2.5px solid transparent; transition:transform .15s,border-color .15s; flex-shrink:0;
+      width: 24px; height: 24px; border-radius: 50%; cursor: pointer;
+      border: 2px solid transparent; transition: transform .15s, border-color .15s; flex-shrink: 0;
     }
-    .draw-color-swatch:hover    { transform:scale(1.2); }
-    .draw-color-swatch.selected { border-color:#fff; }
+    .draw-color-swatch:hover    { transform: scale(1.18); }
+    .draw-color-swatch.selected { border-color: #111; box-shadow: 0 0 0 1px #fff inset; }
 
-    .size-row { display:flex; gap:7px; margin-bottom:9px; align-items:center; }
-    .size-row label { font-size:10px; font-weight:800; color:var(--muted); text-transform:uppercase; white-space:nowrap; }
-    #brush-size     { flex:1; accent-color:var(--accent2); cursor:pointer; }
-    #brush-size-val { font-size:12px; font-weight:900; color:var(--accent2); min-width:20px; text-align:right; }
+    .size-row { display: flex; gap: 6px; margin-bottom: 8px; align-items: center; }
+    .size-row label { font-size: 11px; color: #bbb; text-transform: uppercase; white-space: nowrap; }
+    #brush-size     { flex: 1; accent-color: #111; cursor: pointer; }
+    #brush-size-val { font-size: 13px; color: #111; min-width: 18px; text-align: right; }
 
     #draw-toggle-btn {
-      width:100%; font-family:'Patrick Hand',cursive; font-size:13px; font-weight:900;
-      background:#f5f5f5; border:2px solid #111; border-radius:7px;
-      padding:9px; cursor:pointer; color:var(--green);
-      transition:all .15s; text-transform:uppercase; letter-spacing:.5px; margin-bottom:9px;
+      width: 100%; font-family: 'Patrick Hand', cursive; font-size: 15px;
+      background: #fff; border: 1.5px solid #111;
+      padding: 8px; cursor: pointer; color: #111;
+      transition: all .15s; margin-bottom: 8px;
     }
-    #draw-toggle-btn:hover    { background:#ebebeb; }
-    #draw-toggle-btn.drawing  { background:#111; border-color:#111; color:#fff; }
+    #draw-toggle-btn:hover   { background: #f5f5f5; }
+    #draw-toggle-btn.drawing { background: #111; color: #fff; }
 
     /* ── NAME OVERLAY ── */
     #name-overlay {
-      display:none; position:fixed; inset:0;
-      background:rgba(255,255,255,0.97); z-index:1000;
-      align-items:center; justify-content:center; flex-direction:column; gap:16px;
+      display: none; position: fixed; inset: 0;
+      background: rgba(255,255,255,.97); z-index: 1000;
+      align-items: center; justify-content: center; flex-direction: column; gap: 14px;
     }
-    #name-overlay.show { display:flex; }
-    #name-overlay h2 { font-size:26px; font-weight:900; color:#111; letter-spacing:-.5px; }
-    #name-overlay p  { font-size:13px; color:var(--muted); font-weight:700; }
+    #name-overlay.show { display: flex; }
+    #name-overlay h2   { font-size: 22px; color: #111; font-weight: normal; }
+    #name-overlay p    { font-size: 13px; color: #aaa; }
     #name-input {
-      font-family:'Patrick Hand',cursive; font-size:20px; font-weight:800;
-      border:2px solid #111; border-radius:8px; padding:9px 16px;
-      outline:none; text-align:center; width:230px;
-      background:rgba(255,255,255,.05); color:#fff;
+      font-family: 'Patrick Hand', cursive; font-size: 20px;
+      border: none; border-bottom: 2px solid #111;
+      padding: 6px 2px; outline: none; text-align: center;
+      width: 200px; background: transparent; color: #111;
     }
     #name-confirm {
-      font-family:'Patrick Hand',cursive; font-size:14px; font-weight:900;
-      background:#111; color:#fff;
-      border:none; border-radius:8px; padding:11px 38px; cursor:pointer;
-      text-transform:uppercase; letter-spacing:1px;
+      font-family: 'Patrick Hand', cursive; font-size: 16px;
+      background: #111; color: #fff;
+      border: none; padding: 10px 36px; cursor: pointer;
     }
-    #name-confirm:hover { opacity:.88; }
+    #name-confirm:hover { opacity: .85; }
   </style>
 </head>
 <body>
 
 <div id="app">
-  <!-- MAIN -->
+
+  <!-- MAIN AREA -->
   <div id="main">
     <canvas id="draw-canvas"></canvas>
     <div id="banner-stack"></div>
+
     <div id="poll-widget">
       <div id="poll-question"></div>
       <div id="poll-options"></div>
       <button id="poll-close">dismiss</button>
     </div>
-    <div id="viewer-pill">👁 <span id="viewer-count">1</span> viewing</div>
+
+    <div id="viewer-pill">👁 <b id="viewer-count">1</b> viewing</div>
+
+    <!-- Mobile code entry (shown on touch devices) -->
+    <div id="mobile-code-box">
+      <div id="mobile-code-label">enter code</div>
+      <div id="mobile-code-row">
+        <input id="mobile-code-input" type="number" maxlength="8" placeholder="••••••••" autocomplete="off"/>
+        <button id="mobile-code-btn">→</button>
+      </div>
+    </div>
   </div>
 
   <!-- ADMIN SIDEBAR -->
   <div id="admin-panel">
     <div id="panel-inner">
       <div id="panel-header">
-        <h1>🛠️ Admin Panel</h1>
+        <h1>🛠 admin panel</h1>
         <p id="admin-name-display">not logged in</p>
       </div>
       <div class="admin-tabs">
-        <button class="admin-tab active" data-tab="msg">💬 Msg</button>
-        <button class="admin-tab" data-tab="draw">🖌️ Draw</button>
-        <button class="admin-tab" data-tab="poll">📊 Poll</button>
-        <button class="admin-tab" data-tab="bg">🎨 BG</button>
+        <button class="admin-tab active" data-tab="msg">💬 msg</button>
+        <button class="admin-tab" data-tab="draw">🖌 draw</button>
+        <button class="admin-tab" data-tab="poll">📊 poll</button>
+        <button class="admin-tab" data-tab="bg">🎨 bg</button>
       </div>
       <div id="panel-content">
 
         <!-- MSG -->
         <div class="tab-panel active" id="tab-msg">
-          <div class="panel-label">broadcast message</div>
-          <textarea class="admin-input" id="msg-input" rows="3" maxlength="200" placeholder="say something to everyone…"></textarea>
-          <button class="admin-btn" id="send-msg-btn">📢 Send to All</button>
+          <div class="panel-label">message everyone</div>
+          <textarea class="admin-input" id="msg-input" rows="3" maxlength="200" placeholder="say something…"></textarea>
+          <button class="admin-btn" id="send-msg-btn">send to all</button>
         </div>
 
         <!-- DRAW -->
         <div class="tab-panel" id="tab-draw">
-          <button id="draw-toggle-btn">✏️ Start Drawing</button>
-          <div class="panel-label">Tool</div>
+          <button id="draw-toggle-btn">✏️ start drawing</button>
+          <div class="panel-label">tool</div>
           <div class="draw-tool-row">
-            <button class="tool-btn active" data-tool="pen">✏️ Pen</button>
-            <button class="tool-btn" data-tool="eraser">🧹 Erase</button>
+            <button class="tool-btn active" data-tool="pen">✏️ pen</button>
+            <button class="tool-btn" data-tool="eraser">🧹 erase</button>
           </div>
-          <div class="panel-label">Color</div>
+          <div class="panel-label">color</div>
           <div class="draw-colors">
-            <div class="draw-color-swatch selected" style="background:#ffffff" data-color="#ffffff"></div>
+            <div class="draw-color-swatch selected" style="background:#111111" data-color="#111111"></div>
+            <div class="draw-color-swatch" style="background:#ffffff;border-color:#ccc" data-color="#ffffff"></div>
             <div class="draw-color-swatch" style="background:#e94560" data-color="#e94560"></div>
             <div class="draw-color-swatch" style="background:#ffe135" data-color="#ffe135"></div>
             <div class="draw-color-swatch" style="background:#0bce83" data-color="#0bce83"></div>
@@ -305,21 +327,20 @@
             <div class="draw-color-swatch" style="background:#f5a623" data-color="#f5a623"></div>
             <div class="draw-color-swatch" style="background:#b44fff" data-color="#b44fff"></div>
             <div class="draw-color-swatch" style="background:#ff6b35" data-color="#ff6b35"></div>
-            <div class="draw-color-swatch" style="background:#111111" data-color="#111111"></div>
           </div>
           <div class="size-row">
-            <label>Size</label>
+            <label>size</label>
             <input type="range" id="brush-size" min="2" max="40" value="6"/>
             <span id="brush-size-val">6</span>
           </div>
           <div class="divider"></div>
-          <button class="admin-btn yellow" id="clear-canvas-btn">🗑️ Clear Canvas</button>
+          <button class="admin-btn ghost" id="clear-canvas-btn">🗑 clear canvas</button>
         </div>
 
         <!-- POLL -->
         <div class="tab-panel" id="tab-poll">
           <div class="panel-label">question</div>
-          <input class="admin-input" id="poll-q-input" type="text" maxlength="120" placeholder="Ask something…"/>
+          <input class="admin-input" id="poll-q-input" type="text" maxlength="120" placeholder="ask something…"/>
           <div class="panel-label">options</div>
           <div id="poll-options-builder">
             <div class="poll-option-input-wrap">
@@ -332,31 +353,31 @@
             </div>
           </div>
           <button id="add-option-btn">+ add option</button>
-          <button class="admin-btn" id="send-poll-btn">🚀 Launch Poll</button>
+          <button class="admin-btn" id="send-poll-btn">launch poll</button>
           <div class="divider"></div>
-          <button class="admin-btn ghost" id="close-poll-btn">✕ Close Poll</button>
+          <button class="admin-btn ghost" id="close-poll-btn">✕ close poll</button>
         </div>
 
         <!-- BG -->
         <div class="tab-panel" id="tab-bg">
           <div class="panel-label">background color</div>
           <div class="color-presets">
-            <div class="color-swatch selected" style="background:#ffffff" data-color="#ffffff"></div>
-            <div class="color-swatch" style="background:#ffffff"          data-color="#ffffff"></div>
-            <div class="color-swatch" style="background:#0d1b2a"          data-color="#0d1b2a"></div>
-            <div class="color-swatch" style="background:#f9f3e8"          data-color="#f9f3e8"></div>
-            <div class="color-swatch" style="background:#1a2e1a"          data-color="#1a2e1a"></div>
-            <div class="color-swatch" style="background:#2e1a1a"          data-color="#2e1a1a"></div>
-            <div class="color-swatch" style="background:#ffe135"          data-color="#ffe135"></div>
-            <div class="color-swatch" style="background:#e94560"          data-color="#e94560"></div>
-            <div class="color-swatch" style="background:#0f3460"          data-color="#0f3460"></div>
-            <div class="color-swatch" style="background:#111111"          data-color="#111111"></div>
+            <div class="color-swatch selected" style="background:#ffffff;border-color:#ccc" data-color="#ffffff"></div>
+            <div class="color-swatch" style="background:#111111" data-color="#111111"></div>
+            <div class="color-swatch" style="background:#f9f3e8" data-color="#f9f3e8"></div>
+            <div class="color-swatch" style="background:#e8f4f9" data-color="#e8f4f9"></div>
+            <div class="color-swatch" style="background:#edf9e8" data-color="#edf9e8"></div>
+            <div class="color-swatch" style="background:#f9e8e8" data-color="#f9e8e8"></div>
+            <div class="color-swatch" style="background:#ffe135" data-color="#ffe135"></div>
+            <div class="color-swatch" style="background:#0d1b2a" data-color="#0d1b2a"></div>
+            <div class="color-swatch" style="background:#e94560" data-color="#e94560"></div>
+            <div class="color-swatch" style="background:#0f3460" data-color="#0f3460"></div>
           </div>
           <div class="color-custom-row">
             <input type="color" id="custom-color" value="#ffffff"/>
-            <span id="custom-color-label">custom color</span>
+            <span id="custom-color-label">custom</span>
           </div>
-          <button class="admin-btn" id="send-bg-btn">🌈 Apply to Everyone</button>
+          <button class="admin-btn" id="send-bg-btn">apply to everyone</button>
         </div>
 
       </div>
@@ -366,10 +387,10 @@
 
 <!-- NAME OVERLAY -->
 <div id="name-overlay">
-  <h2>🛠️ Admin Access</h2>
-  <p>Enter your display name</p>
+  <h2>🛠 admin access</h2>
+  <p>what's your name?</p>
   <input id="name-input" type="text" maxlength="30" placeholder="your name" autocomplete="off"/>
-  <button id="name-confirm">Enter Panel</button>
+  <button id="name-confirm">enter</button>
 </div>
 
 <script type="module">
@@ -391,25 +412,26 @@
     appId:             "1:756244892931:web:18d3975a67547ab3936d36"
   };
 
-  const SECRET  = "22112011";
-  const HOLD_MS = 5500;
+  const SECRET   = "22112011";
+  const HOLD_MS  = 5500;
+  // Capture join time before any async — messages/draws older than this are ignored
   const joinedAt = Date.now();
 
-  let adminName = localStorage.getItem('admin_name') || '';
-  let myVotes   = {};
-  let keyBuffer = '';
-  let isAdmin   = false;
+  let adminName  = localStorage.getItem('admin_name') || '';
+  let myVotes    = {};
+  let keyBuffer  = '';
+  let isAdmin    = false;
 
   // Draw state
-  let drawMode  = false;
+  let drawMode   = false;
   let isPointing = false;
-  let drawColor = '#ffffff';
-  let brushSize = 6;
-  let drawTool  = 'pen';
-  let strokeId  = null;
-  let lastPt    = null;
+  let drawColor  = '#111111';
+  let brushSize  = 6;
+  let drawTool   = 'pen';
+  let strokeId   = null;
+  let lastPt     = null;
 
-  // ── Firebase init ──────────────────────────────
+  // ── Firebase ──────────────────────────────────────
   const app        = initializeApp(firebaseConfig);
   const db         = getDatabase(app);
   const msgsRef    = ref(db, 'messages');
@@ -421,10 +443,8 @@
   signInAnonymously(getAuth(app)).then(({ user }) => {
     const myPres = ref(db, `presence/${user.uid}`);
     set(myPres, { t: Date.now() });
-    // onDisconnect cleanup — import lazily to avoid top-level issues
     import("https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js")
-      .then(m => m.onDisconnect(myPres).remove())
-      .catch(() => {});
+      .then(m => m.onDisconnect(myPres).remove()).catch(() => {});
   }).catch(console.error);
 
   onValue(presRef, snap => {
@@ -432,37 +452,54 @@
       snap.exists() ? Object.keys(snap.val()).length : 1;
   });
 
-  // ── Canvas ──────────────────────────────────────
+  // ── Canvas ────────────────────────────────────────
   const canvas = document.getElementById('draw-canvas');
   const ctx    = canvas.getContext('2d');
 
   function resizeCanvas() {
     const main = document.getElementById('main');
-    const w = main.clientWidth, h = main.clientHeight;
-    // Save pixels, resize, restore
-    const tmp = ctx.getImageData(0, 0, canvas.width, canvas.height);
-    canvas.width = w; canvas.height = h;
-    ctx.putImageData(tmp, 0, 0);
+    // Don't save/restore pixels on resize — strokes are replayed from Firebase anyway
+    canvas.width  = main.clientWidth;
+    canvas.height = main.clientHeight;
+    // Trigger a replay from current Firebase data
+    replayFromCache();
   }
-  resizeCanvas();
-  window.addEventListener('resize', resizeCanvas);
 
-  // Replay all strokes from Firebase
-  function replayStrokes(data) {
+  let strokeCache = null; // last known strokes data
+
+  function replayFromCache() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    if (!data) return;
-    Object.values(data).forEach(stroke => {
+    if (!strokeCache) return;
+    Object.values(strokeCache).forEach(stroke => {
       if (!stroke.segments) return;
       Object.values(stroke.segments).forEach(paintSeg);
     });
   }
 
+  resizeCanvas();
+  window.addEventListener('resize', resizeCanvas);
+
+  // Only show strokes that existed AFTER joinedAt
+  // We track the canvas joinedAt separately from messages joinedAt
+  // Since draw strokes are a canvas "current state" (not a feed), we DO replay them for viewers.
+  // BUT — we only replay strokes whose ts > joinedAt. Strokes without ts (older) are skipped.
   onValue(strokesRef, snap => {
-    replayStrokes(snap.exists() ? snap.val() : null);
-    // Ensure viewers see the canvas even when not in draw mode
+    if (!snap.exists()) {
+      strokeCache = null;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      if (!drawMode) canvas.classList.remove('view-only');
+      return;
+    }
+    const all = snap.val();
+    // Filter to only strokes created after this user joined
+    const filtered = {};
+    Object.entries(all).forEach(([k, v]) => {
+      if (!v.ts || v.ts > joinedAt) filtered[k] = v;
+    });
+    strokeCache = Object.keys(filtered).length ? filtered : null;
+    replayFromCache();
     if (!drawMode) {
-      canvas.classList.toggle('view-only', snap.exists());
-      if (!snap.exists()) canvas.classList.remove('view-only');
+      canvas.classList.toggle('view-only', !!strokeCache);
     }
   });
 
@@ -473,7 +510,7 @@
       ctx.strokeStyle = 'rgba(0,0,0,1)';
     } else {
       ctx.globalCompositeOperation = 'source-over';
-      ctx.strokeStyle = s.color || '#fff';
+      ctx.strokeStyle = s.color || '#111';
     }
     ctx.lineWidth = s.size || 6;
     ctx.lineCap   = 'round';
@@ -485,7 +522,7 @@
     ctx.restore();
   }
 
-  // ── Messages (only new ones) ─────────────────────
+  // ── Messages — only after join ────────────────────
   const newMsgsQ = query(msgsRef, orderByChild('ts'), startAfter(joinedAt));
   onChildAdded(newMsgsQ, snap => {
     const d = snap.val();
@@ -497,16 +534,22 @@
     if (snap.val()) document.getElementById('main').style.background = snap.val();
   });
 
-  // ── Poll ─────────────────────────────────────────
+  // ── Poll — only show if created after join ────────
   onValue(pollRef, snap => {
     if (!snap.exists() || !snap.val()?.question) {
       document.getElementById('poll-widget').classList.remove('show');
       return;
     }
-    renderPoll(snap.val(), snap.key);
+    const data = snap.val();
+    // If poll was created before this user joined, don't show it
+    if (data.ts && data.ts <= joinedAt) {
+      document.getElementById('poll-widget').classList.remove('show');
+      return;
+    }
+    renderPoll(data, snap.key);
   });
 
-  // ── Secret code unlock ───────────────────────────
+  // ── Keyboard secret code ──────────────────────────
   document.addEventListener('keydown', e => {
     if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
     if (/^\d$/.test(e.key)) {
@@ -516,6 +559,23 @@
     }
   });
 
+  // ── Mobile code box ───────────────────────────────
+  function checkMobileCode() {
+    const val = document.getElementById('mobile-code-input').value.trim();
+    if (val === SECRET) {
+      document.getElementById('mobile-code-input').value = '';
+      unlockAdmin();
+    } else {
+      document.getElementById('mobile-code-input').style.borderColor = '#e94560';
+      setTimeout(() => document.getElementById('mobile-code-input').style.borderColor = '', 900);
+    }
+  }
+  document.getElementById('mobile-code-btn').addEventListener('click', checkMobileCode);
+  document.getElementById('mobile-code-input').addEventListener('keydown', e => {
+    if (e.key === 'Enter') checkMobileCode();
+  });
+
+  // ── Unlock ────────────────────────────────────────
   function unlockAdmin() {
     if (!adminName) {
       document.getElementById('name-overlay').classList.add('show');
@@ -528,10 +588,12 @@
   function openPanel() {
     isAdmin = true;
     document.getElementById('admin-panel').classList.add('open');
-    document.getElementById('admin-name-display').textContent = `logged in as ${adminName}`;
+    document.getElementById('admin-name-display').textContent = adminName;
+    // Hide mobile code box once admin
+    document.getElementById('mobile-code-box').style.display = 'none';
   }
 
-  // ── Name ─────────────────────────────────────────
+  // ── Name ──────────────────────────────────────────
   document.getElementById('name-confirm').addEventListener('click', saveName);
   document.getElementById('name-input').addEventListener('keydown', e => { if (e.key === 'Enter') saveName(); });
   function saveName() {
@@ -543,7 +605,7 @@
     openPanel();
   }
 
-  // ── Tabs ─────────────────────────────────────────
+  // ── Tabs ──────────────────────────────────────────
   document.querySelectorAll('.admin-tab').forEach(btn => {
     btn.addEventListener('click', () => {
       document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
@@ -553,7 +615,7 @@
     });
   });
 
-  // ── Send message ─────────────────────────────────
+  // ── Send message ──────────────────────────────────
   document.getElementById('send-msg-btn').addEventListener('click', sendMsg);
   document.getElementById('msg-input').addEventListener('keydown', e => {
     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMsg(); }
@@ -565,7 +627,7 @@
     document.getElementById('msg-input').value = '';
   }
 
-  // ── Poll ─────────────────────────────────────────
+  // ── Poll ──────────────────────────────────────────
   document.getElementById('send-poll-btn').addEventListener('click', () => {
     const q = document.getElementById('poll-q-input').value.trim();
     if (!q) return;
@@ -610,7 +672,7 @@
   });
   document.getElementById('send-bg-btn').addEventListener('click', () => set(bgRef, selBg));
 
-  // ── Draw: tool / color / size ─────────────────────
+  // ── Draw tools ────────────────────────────────────
   document.querySelectorAll('.tool-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
@@ -639,12 +701,12 @@
     if (drawMode) {
       canvas.classList.add('active');
       canvas.classList.remove('view-only');
-      drawToggleBtn.textContent = '⏹️ Stop Drawing';
+      drawToggleBtn.textContent = '⏹ stop drawing';
       drawToggleBtn.classList.add('drawing');
     } else {
       canvas.classList.remove('active');
       canvas.classList.add('view-only');
-      drawToggleBtn.textContent = '✏️ Start Drawing';
+      drawToggleBtn.textContent = '✏️ start drawing';
       drawToggleBtn.classList.remove('drawing');
       strokeId = null; lastPt = null; isPointing = false;
     }
@@ -655,9 +717,10 @@
     remove(strokesRef);
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     canvas.classList.remove('view-only');
+    strokeCache = null;
   });
 
-  // ── Canvas pointer events ─────────────────────────
+  // ── Canvas events ─────────────────────────────────
   function getPos(e) {
     const r = canvas.getBoundingClientRect();
     const s = e.touches ? e.touches[0] : e;
@@ -669,6 +732,8 @@
     isPointing = true;
     lastPt     = getPos(e);
     strokeId   = push(strokesRef).key;
+    // Tag stroke with current time so new joiners can filter it
+    set(ref(db, `strokes/${strokeId}/ts`), Date.now());
     canvas.setPointerCapture(e.pointerId);
   });
 
@@ -677,18 +742,15 @@
     const pt  = getPos(e);
     const seg = { x1: lastPt.x, y1: lastPt.y, x2: pt.x, y2: pt.y,
                   color: drawColor, size: brushSize, tool: drawTool };
-    // Draw locally right away (smooth)
     paintSeg(seg);
-    // Push to Firebase so everyone sees it
     push(ref(db, `strokes/${strokeId}/segments`), seg);
     lastPt = pt;
   });
 
   const stopDraw = () => { isPointing = false; lastPt = null; };
-  canvas.addEventListener('pointerup',    stopDraw);
+  canvas.addEventListener('pointerup',     stopDraw);
   canvas.addEventListener('pointercancel', stopDraw);
 
-  // Prevent scroll on touch devices while drawing
   canvas.addEventListener('touchstart', e => { if (drawMode) e.preventDefault(); }, { passive: false });
   canvas.addEventListener('touchmove',  e => { if (drawMode) e.preventDefault(); }, { passive: false });
 
