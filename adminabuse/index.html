@@ -293,9 +293,7 @@ body.glitching #main::after{content:'';position:absolute;inset:0;z-index:9998;ba
 ═══════════════════════════════════════ */
 #join-overlay{
   position:fixed;inset:0;z-index:9500;
-  backdrop-filter:blur(20px);
-  -webkit-backdrop-filter:blur(20px);
-  background:rgba(255,255,255,.5);
+  background:#fff;
   display:flex;flex-direction:column;
   align-items:center;justify-content:center;
   gap:22px;
@@ -306,9 +304,9 @@ body.glitching #main::after{content:'';position:absolute;inset:0;z-index:9998;ba
   transition:opacity .5s ease;
 }
 #join-title{
-  font-size:clamp(24px,5vw,34px);color:#111;
+  font-size:clamp(18px,3.5vw,26px);color:#111;
   font-weight:normal;font-family:'Patrick Hand',cursive;
-  text-align:center;
+  text-align:center;letter-spacing:.5px;
 }
 #join-sub{
   font-size:14px;color:#777;font-family:'Patrick Hand',cursive;
@@ -327,7 +325,6 @@ body.glitching #main::after{content:'';position:absolute;inset:0;z-index:9998;ba
   box-shadow:13px 13px 100px #969696,-13px -13px 100px #ffffff;
 }
 #join-name-input::placeholder{color:#aaa}
-#join-hint{font-size:12px;color:#aaa;font-family:'Patrick Hand',cursive;margin-top:-8px}
 
 /* name-overlay (admin) */
 #name-overlay{display:none;position:fixed;inset:0;background:rgba(255,255,255,.97);z-index:10000;align-items:center;justify-content:center;flex-direction:column;gap:14px}
@@ -418,7 +415,7 @@ body.glitching #main::after{content:'';position:absolute;inset:0;z-index:9998;ba
   left:50%;
   transform:translateX(-50%);
   z-index:600;
-  display:flex;flex-direction:column;align-items:center;gap:7px;
+  display:flex;flex-direction:column;align-items:center;gap:10px;
 }
 .coin-btn{
   --primary:255,90,120;
@@ -434,6 +431,11 @@ body.glitching #main::after{content:'';position:absolute;inset:0;z-index:9998;ba
   background:transparent;
   -webkit-tap-highlight-color:transparent;
   flex-shrink:0;
+}
+@media(min-width:601px){
+  .coin-btn{width:110px;height:96px;outline:14px solid rgb(var(--primary),.3)}
+  .coin-btn .front{font-size:2.2rem}
+  #coin-btn-label{font-size:14px}
 }
 .coin-btn .back{
   background:rgb(var(--secondary));
@@ -506,6 +508,120 @@ body.party-mode #taco-badge{display:block}
 .currency-row .cr-amt{color:#ff5a78;font-weight:bold;margin-right:8px}
 .currency-row .cr-give{background:#111;color:#fff;border:none;font-family:'Patrick Hand',cursive;font-size:12px;padding:3px 10px;border-radius:4px;cursor:pointer}
 .currency-row .cr-give:hover{opacity:.8}
+
+/* ═══════════════════════════════════════
+   NUMBER GUESS WIDGET (viewer)
+═══════════════════════════════════════ */
+#guess-widget{
+  position:absolute;bottom:140px;left:50%;
+  transform:translateX(-50%) scale(.92);
+  background:#fff;border:1.5px solid #111;
+  padding:20px 22px 16px;width:88%;max-width:320px;
+  box-shadow:0 4px 28px rgba(0,0,0,.13);
+  z-index:310;opacity:0;pointer-events:none;
+  transition:opacity .28s,transform .28s;
+  text-align:center;border-radius:4px;
+}
+#guess-widget.show{opacity:1;pointer-events:all;transform:translateX(-50%) scale(1)}
+#guess-title{font-size:17px;color:#111;margin-bottom:4px;font-weight:bold;font-family:'Patrick Hand',cursive}
+#guess-subtitle{font-size:12px;color:#888;margin-bottom:14px;font-family:'Patrick Hand',cursive}
+#guess-input-field{font-family:'Patrick Hand',cursive;font-size:26px;width:100%;border:1.5px solid #e0e0e0;padding:10px;outline:none;color:#111;text-align:center;border-radius:6px;margin-bottom:10px;-webkit-appearance:none;background:#fafafa;transition:border-color .18s}
+#guess-input-field:focus{border-color:#111;background:#fff}
+#guess-submit-btn{width:100%;font-family:'Patrick Hand',cursive;font-size:15px;background:#111;color:#fff;border:none;padding:10px;cursor:pointer;border-radius:6px;transition:opacity .15s}
+#guess-submit-btn:hover{opacity:.85}
+#guess-submit-btn:disabled{background:#ccc;cursor:default;opacity:1}
+#guess-status{font-size:13px;color:#888;margin-top:10px;min-height:18px;font-family:'Patrick Hand',cursive;line-height:1.4}
+#guess-status.winner{color:#06d6a0;font-weight:bold}
+#guess-status.close{color:#ff9e00}
+
+/* admin guess list */
+#guess-live-list{border:1px solid #f0f0f0;border-radius:8px;overflow:hidden;margin-bottom:10px;max-height:180px;overflow-y:auto}
+.guess-row{display:flex;align-items:center;padding:6px 10px;font-size:13px;font-family:'Patrick Hand',cursive;border-bottom:1px solid #f8f8f8;gap:6px}
+.guess-row:last-child{border-bottom:none}
+.guess-row.gr-winner{background:#edfff8}
+.guess-row .gr-name{flex:1;color:#111;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.guess-row .gr-val{font-weight:bold;color:#111;min-width:32px;text-align:right}
+.guess-row .gr-diff{font-size:11px;color:#aaa;min-width:44px;text-align:right}
+.guess-row .gr-crown{font-size:13px;flex-shrink:0}
+
+/* ═══════════════════════════════════════
+   SHOP
+═══════════════════════════════════════ */
+#shop-btn{
+  position:fixed;top:16px;left:16px;z-index:600;
+  background:rgba(255,255,255,.95);border:1.5px solid #e8e8e8;border-radius:999px;
+  padding:7px 14px 7px 10px;display:flex;align-items:center;gap:7px;
+  box-shadow:0 2px 12px rgba(0,0,0,.09);
+  font-family:'Patrick Hand',cursive;cursor:pointer;
+  transition:all .2s;user-select:none;
+}
+#shop-btn:hover{border-color:#aaa;box-shadow:0 2px 16px rgba(0,0,0,.13)}
+#shop-btn .shop-icon{font-size:17px;line-height:1}
+#shop-btn .shop-label{font-size:13px;color:#555}
+#shop-btn.closed .shop-label{color:#ccc}
+
+#shop-overlay{
+  display:none;position:fixed;inset:0;z-index:4500;
+  background:rgba(0,0,0,.45);backdrop-filter:blur(4px);
+  align-items:flex-end;justify-content:center;
+}
+#shop-overlay.show{display:flex}
+#shop-panel{
+  background:#fff;width:min(500px,100vw);max-height:72dvh;
+  border-radius:16px 16px 0 0;overflow:hidden;
+  display:flex;flex-direction:column;
+  animation:shopUp .3s cubic-bezier(.22,.68,0,1.2) forwards;
+}
+@keyframes shopUp{0%{transform:translateY(100%)}100%{transform:translateY(0)}}
+#shop-panel-header{
+  background:#111;padding:16px 18px 13px;
+  display:flex;align-items:center;justify-content:space-between;flex-shrink:0;
+}
+#shop-panel-header h2{font-size:16px;color:#fff;font-weight:normal;font-family:'Patrick Hand',cursive;margin:0}
+#shop-header-right{display:flex;align-items:center;gap:12px}
+#shop-bal{font-size:13px;color:rgba(255,255,255,.55);font-family:'Patrick Hand',cursive}
+#shop-close-btn{background:none;border:none;color:rgba(255,255,255,.6);font-size:20px;cursor:pointer;line-height:1;padding:2px 4px}
+#shop-close-btn:hover{color:#fff}
+#shop-items-grid{
+  flex:1;overflow-y:auto;padding:14px;
+  display:grid;grid-template-columns:1fr 1fr;gap:10px;
+}
+@media(min-width:501px){#shop-items-grid{grid-template-columns:repeat(3,1fr)}}
+.shop-item{
+  border:1.5px solid #e8e8e8;border-radius:12px;padding:14px 10px 12px;
+  display:flex;flex-direction:column;align-items:center;gap:5px;
+  text-align:center;transition:border-color .15s,box-shadow .15s;
+}
+.shop-item:hover{border-color:#bbb;box-shadow:0 2px 10px rgba(0,0,0,.07)}
+.shop-item .si-icon{font-size:30px;line-height:1;margin-bottom:2px}
+.shop-item .si-name{font-size:13px;font-family:'Patrick Hand',cursive;color:#111;font-weight:bold;line-height:1.3}
+.shop-item .si-desc{font-size:11px;font-family:'Patrick Hand',cursive;color:#999;line-height:1.4}
+.shop-item .si-price{font-size:14px;font-family:'Patrick Hand',cursive;color:#ff5a78;font-weight:bold;margin-top:3px}
+.shop-item .si-buy{
+  margin-top:7px;width:100%;font-family:'Patrick Hand',cursive;font-size:13px;
+  background:#111;color:#fff;border:none;padding:7px 4px;border-radius:6px;
+  cursor:pointer;transition:opacity .15s;
+}
+.shop-item .si-buy:hover{opacity:.8}
+.shop-item .si-buy:disabled{background:#e0e0e0;color:#aaa;cursor:not-allowed;opacity:1}
+#shop-closed-msg{
+  flex:1;display:none;align-items:center;justify-content:center;
+  flex-direction:column;gap:8px;padding:40px 20px;
+  font-family:'Patrick Hand',cursive;color:#ccc;font-size:16px;text-align:center;
+}
+#shop-closed-msg.show{display:flex}
+
+/* admin shop config */
+.shop-cfg-item{display:flex;align-items:center;gap:10px;margin-bottom:8px;background:#fafafa;border:1px solid #f0f0f0;border-radius:8px;padding:10px 12px}
+.shop-cfg-item .sci-icon{font-size:22px;flex-shrink:0}
+.shop-cfg-item .sci-info{flex:1;min-width:0}
+.shop-cfg-item .sci-name{font-size:14px;font-family:'Patrick Hand',cursive;color:#111}
+.shop-cfg-item .sci-desc{font-size:11px;font-family:'Patrick Hand',cursive;color:#bbb;line-height:1.3}
+.shop-cfg-item .sci-price-wrap{display:flex;align-items:center;gap:4px;flex-shrink:0}
+.shop-cfg-item .sci-price-wrap input{font-family:'Patrick Hand',cursive;font-size:14px;width:50px;border:1px solid #e0e0e0;padding:5px 6px;border-radius:4px;text-align:center;color:#111;background:#fff;outline:none}
+.shop-cfg-item .sci-price-wrap input:focus{border-color:#111}
+.shop-cfg-item .sci-price-wrap span{font-size:12px;color:#aaa;font-family:'Patrick Hand',cursive}
+#shop-purchase-log{font-size:12px;color:#999;font-family:'Patrick Hand',cursive;max-height:100px;overflow-y:auto;line-height:1.8}
 </style>
 </head>
 <body>
@@ -522,10 +638,32 @@ body.party-mode #taco-badge{display:block}
 
 <!-- JOIN OVERLAY -->
 <div id="join-overlay">
-  <div id="join-title">👋 welcome!</div>
-  <div id="join-sub">enter your name to join</div>
-  <input id="join-name-input" type="text" maxlength="28" placeholder="your name…" autocomplete="off" autocorrect="off" spellcheck="false"/>
-  <div id="join-hint">press Enter ↵ to join</div>
+  <div id="join-title">name eingeben jetzt sofort</div>
+  <input id="join-name-input" type="text" maxlength="28" placeholder="dein name…" autocomplete="off" autocorrect="off" spellcheck="false"/>
+</div>
+
+<!-- SHOP BUTTON (top-left, viewers) -->
+<button id="shop-btn">
+  <span class="shop-icon">🛒</span>
+  <span class="shop-label">shop</span>
+</button>
+
+<!-- SHOP OVERLAY -->
+<div id="shop-overlay">
+  <div id="shop-panel">
+    <div id="shop-panel-header">
+      <h2>shop</h2>
+      <div id="shop-header-right">
+        <span id="shop-bal">0.00€</span>
+        <button id="shop-close-btn">✕</button>
+      </div>
+    </div>
+    <div id="shop-items-grid"></div>
+    <div id="shop-closed-msg">
+      <span style="font-size:36px">🔒</span>
+      <span>shop ist gerade geschlossen</span>
+    </div>
+  </div>
 </div>
 
 <!-- PLAYERS LIST panel -->
@@ -545,7 +683,7 @@ body.party-mode #taco-badge{display:block}
 <div id="coin-btn-wrap">
   <button class="coin-btn" id="coin-btn">
     <div class="back"></div>
-    <div class="front">💶</div>
+    <div class="front"></div>
   </button>
   <div id="coin-btn-label">+1€</div>
 </div>
@@ -560,6 +698,14 @@ body.party-mode #taco-badge{display:block}
     <button id="poll-close">dismiss</button>
   </div>
   <div id="viewer-pill">👁 <b id="viewer-count">1</b> viewing</div>
+  <!-- NUMBER GUESS WIDGET (viewer) -->
+  <div id="guess-widget">
+    <div id="guess-title">Zahl erraten</div>
+    <div id="guess-subtitle">1 – 100</div>
+    <input id="guess-input-field" type="number" placeholder="?" min="1" max="100" autocomplete="off"/>
+    <button id="guess-submit-btn">abschicken</button>
+    <div id="guess-status"></div>
+  </div>
   <!-- TACO TUESDAY BADGE -->
   <div id="taco-badge">
     <div id="taco-badge-inner">
@@ -611,6 +757,8 @@ body.party-mode #taco-badge{display:block}
     <button class="admin-tab" data-tab="poll">📊 poll</button>
     <button class="admin-tab" data-tab="bg">🎨 bg</button>
     <button class="admin-tab" data-tab="currency">💶 €€€</button>
+    <button class="admin-tab" data-tab="guess">🔢 guess</button>
+    <button class="admin-tab" data-tab="shop">🛒 shop</button>
   </div>
 
   <div id="panel-content">
@@ -759,6 +907,42 @@ body.party-mode #taco-badge{display:block}
       <button class="admin-btn ghost" id="reset-currency-btn" style="font-size:12px;margin-top:8px;border-color:#e63946;color:#e63946">🗑 reset all balances</button>
     </div>
 
+    <!-- ── GUESS ── -->
+    <div class="tab-panel" id="tab-guess">
+      <div class="panel-label">range</div>
+      <div style="display:flex;gap:8px;margin-bottom:8px">
+        <input class="admin-input" id="guess-min" type="number" value="1" placeholder="min" style="margin:0;text-align:center"/>
+        <input class="admin-input" id="guess-max" type="number" value="100" placeholder="max" style="margin:0;text-align:center"/>
+      </div>
+      <div class="panel-label">geheime zahl</div>
+      <input class="admin-input" id="guess-secret" type="number" placeholder="z.B. 42"/>
+      <div class="panel-label">preis (coins)</div>
+      <input class="admin-input" id="guess-prize" type="number" value="50" placeholder="50"/>
+      <div class="btn-grid" style="margin-bottom:8px">
+        <button class="admin-btn green" id="guess-start-btn">start</button>
+        <button class="admin-btn ghost" id="guess-stop-btn">stop</button>
+      </div>
+      <button class="admin-btn orange" id="guess-reveal-btn" style="margin-bottom:12px">gewinner bekannt geben</button>
+      <div class="divider"></div>
+      <div class="panel-label">einsendungen (<span id="guess-count">0</span>)</div>
+      <div id="guess-live-list">
+        <div class="guess-row" style="color:#ccc;font-size:13px;justify-content:center">noch keine einsendungen</div>
+      </div>
+    </div>
+
+    <!-- ── SHOP ── -->
+    <div class="tab-panel" id="tab-shop">
+      <div class="panel-label">shop status</div>
+      <button class="toggle-btn" id="shop-toggle-btn">shop öffnen</button>
+      <div class="divider"></div>
+      <div class="panel-label">items & preise</div>
+      <div id="shop-cfg-list"></div>
+      <button class="admin-btn" id="save-shop-prices-btn">preise speichern</button>
+      <div class="divider"></div>
+      <div class="panel-label">letzte käufe</div>
+      <div id="shop-purchase-log" style="color:#ccc;font-size:12px">noch keine käufe</div>
+    </div>
+
   </div><!-- /panel-content -->
 
   <div id="panel-hint">Ctrl / ⌘ — toggle panel &nbsp;·&nbsp; tap outside to close</div>
@@ -829,6 +1013,9 @@ const bigtextRef = ref(db,'bigtext');
 const rainRef    = ref(db,'rain');
 const fxRef      = ref(db,'fx');
 const currencyRef= ref(db,'currency');
+const numguessRef = ref(db,'numguess');
+const shopRef     = ref(db,'shop');
+const purchasesRef= ref(db,'purchases');
 
 // BUG FIX 2: Moved startup DB cleanup out of global scope.
 // Now called only once when admin first opens the panel.
@@ -839,6 +1026,7 @@ function doAdminStartupCleanup(){
     remove(msgsRef), remove(pollRef), remove(strokesRef),
     remove(shakeRef), remove(jumpRef), remove(partyRef),
     remove(glitchRef), remove(bigtextRef), remove(rainRef), remove(fxRef),
+    remove(numguessRef),
     set(bgRef,'#ffffff')
   ]).catch(console.error);
 }
@@ -883,10 +1071,8 @@ function registerPlayer(name){
   playerName = name;
   localStorage.setItem('player_name', name);
   dismissJoinOverlay();
-  if(myPresRef){
-    set(myPresRef,{name: playerName, isAdmin: isAdmin, t: Date.now()});
-  }
   initBalance();
+  setTimeout(pushPresence, 400); // push cosmetics after myPresRef is ready
 }
 
 if(playerName){
@@ -921,11 +1107,15 @@ onValue(presRef,snap=>{
     if(!a.isAdmin && b.isAdmin) return 1;
     return (a.name||'').localeCompare(b.name||'');
   });
-  list.innerHTML = sorted.map(p=>`
-    <div class="player-row">
-      <span class="pr-crown">${p.isAdmin?'👑':''}</span>
-      <span class="pr-name" style="${p.isAdmin?'font-weight:bold;color:#111':'color:#555'}">${esc(p.name||'viewer')}</span>
-    </div>`).join('') || '<div class="player-row" style="color:#ccc;font-size:13px">nobody here</div>';
+  list.innerHTML = sorted.map(p=>{
+    const icon  = p.isAdmin ? '👑' : (p.badge||'');
+    const color = p.isAdmin ? '#111' : (p.nameColor||'#555');
+    const bold  = p.isAdmin ? 'font-weight:bold;' : '';
+    return `<div class="player-row">
+      <span class="pr-crown">${icon}</span>
+      <span class="pr-name" style="${bold}color:${color}">${esc(p.name||'viewer')}</span>
+    </div>`;
+  }).join('') || '<div class="player-row" style="color:#ccc;font-size:13px">nobody here</div>';
 });
 
 $('viewer-pill').addEventListener('click',()=>{
@@ -1052,6 +1242,12 @@ document.querySelectorAll('.admin-tab').forEach(btn=>{
     $('tab-'+btn.dataset.tab).classList.add('active');
   });
 });
+
+// Mousewheel scrolls the tab bar left/right
+document.querySelector('.admin-tabs').addEventListener('wheel',e=>{
+  e.preventDefault();
+  document.querySelector('.admin-tabs').scrollLeft += e.deltaY || e.deltaX;
+},{passive:false});
 
 /* ════════════════════════════════════
    EFFECTS
@@ -1466,6 +1662,313 @@ $('reset-currency-btn').addEventListener('click',()=>{
   if(!confirm('Reset ALL balances to 0?')) return;
   remove(currencyRef); myBalance=0; localStorage.setItem('my_balance','0'); updateWalletUI(); showToast('🗑 balances reset');
 });
+
+/* ════════════════════════════════════
+   HELPER: push presence with cosmetics
+════════════════════════════════════ */
+function pushPresence(){
+  if(!myPresRef) return;
+  const myItems   = JSON.parse(localStorage.getItem('my_purchases')||'{}');
+  const badge     = myItems.equippedBadge  || null;
+  const nameColor = myItems.equippedColor  || null;
+  const payload   = { name:playerName||adminName||'viewer', isAdmin, t:Date.now() };
+  if(badge)     payload.badge     = badge;
+  if(nameColor) payload.nameColor = nameColor;
+  set(myPresRef, payload);
+}
+
+/* ════════════════════════════════════
+   NUMBER GUESS
+════════════════════════════════════ */
+let ngActive  = false;
+let ngMyGuess = null;
+
+// Viewer: react to game state changes
+onValue(numguessRef, snap=>{
+  const w = $('guess-widget');
+  if(!snap.exists()){ w.classList.remove('show'); ngActive=false; ngMyGuess=null; return; }
+  const d = snap.val();
+
+  // Reset reveal-specific DOM state
+  $('guess-input-field').style.display = '';
+  $('guess-submit-btn').style.display  = '';
+
+  if(d.reveal){
+    // Show result
+    ngActive = false;
+    w.classList.add('show');
+    $('guess-title').textContent    = 'die antwort war…';
+    $('guess-subtitle').textContent = String(d.reveal.answer);
+    $('guess-input-field').style.display = 'none';
+    $('guess-submit-btn').style.display  = 'none';
+    const st = $('guess-status');
+    st.className = 'winner';
+    st.textContent = d.reveal.winner
+      ? `${d.reveal.winner.name} gewinnt ${d.reveal.prize}€! (tip: ${d.reveal.winner.guess})`
+      : 'kein gewinner';
+    setTimeout(()=>w.classList.remove('show'), 9000);
+  } else if(d.active){
+    ngActive = true;
+    w.classList.add('show');
+    $('guess-title').textContent    = 'zahl erraten!';
+    $('guess-subtitle').textContent = `${d.min} – ${d.max} · preis: ${d.prize}€`;
+    $('guess-input-field').min = d.min;
+    $('guess-input-field').max = d.max;
+    $('guess-status').className = '';
+    if(ngMyGuess !== null){
+      $('guess-submit-btn').disabled = true;
+      $('guess-status').textContent  = `du hast ${ngMyGuess} getippt`;
+    } else {
+      $('guess-submit-btn').disabled = false;
+      $('guess-status').textContent  = '';
+    }
+  } else {
+    w.classList.remove('show');
+  }
+});
+
+// Viewer: submit guess
+$('guess-submit-btn').addEventListener('click',()=>{
+  if(!ngActive||ngMyGuess!==null||!myUserId) return;
+  const v = parseInt($('guess-input-field').value);
+  get(numguessRef).then(snap=>{
+    if(!snap.exists()||!snap.val().active) return;
+    const {min,max} = snap.val();
+    if(isNaN(v)||v<min||v>max){ showToast(`wähle ${min}–${max}`); return; }
+    ngMyGuess = v;
+    set(ref(db,`numguess/guesses/${myUserId}`),{
+      name:playerName||adminName||'viewer', guess:v, ts:Date.now()
+    });
+    $('guess-submit-btn').disabled = true;
+    $('guess-status').textContent  = `du hast ${v} getippt`;
+    showToast('tipp abgeschickt!');
+  }).catch(()=>showToast('fehler'));
+});
+
+// Admin: live guess list
+const guessesListRef = ref(db,'numguess/guesses');
+onValue(guessesListRef,snap=>{
+  const cnt=$('guess-count'), list=$('guess-live-list');
+  if(!cnt||!list) return;
+  if(!snap.exists()){
+    cnt.textContent='0';
+    list.innerHTML='<div class="guess-row" style="color:#ccc;justify-content:center">noch keine einsendungen</div>';
+    return;
+  }
+  const secret  = parseInt($('guess-secret').value);
+  const guesses = Object.values(snap.val()).sort((a,b)=>a.ts-b.ts);
+  cnt.textContent = guesses.length;
+  // If secret is set, sort by closeness for display
+  const sorted = !isNaN(secret)
+    ? [...guesses].sort((a,b)=>Math.abs(a.guess-secret)-Math.abs(b.guess-secret))
+    : guesses;
+  list.innerHTML = sorted.map((g,i)=>`
+    <div class="guess-row${!isNaN(secret)&&i===0?' gr-winner':''}">
+      <span class="gr-crown">${!isNaN(secret)&&i===0?'🏆':''}</span>
+      <span class="gr-name">${esc(g.name)}</span>
+      <span class="gr-val">${g.guess}</span>
+      ${!isNaN(secret)?`<span class="gr-diff">±${Math.abs(g.guess-secret)}</span>`:''}
+    </div>`).join('');
+});
+
+// Admin: start
+$('guess-start-btn').addEventListener('click',()=>{
+  const min=parseInt($('guess-min').value)||1, max=parseInt($('guess-max').value)||100;
+  const secret=parseInt($('guess-secret').value), prize=parseInt($('guess-prize').value)||50;
+  if(isNaN(secret)||secret<min||secret>max){ showToast(`geheimzahl muss ${min}–${max} sein`); return; }
+  remove(ref(db,'numguess/guesses'));
+  set(numguessRef,{active:true,min,max,prize,ts:Date.now()});
+  showToast('spiel gestartet!');
+});
+
+// Admin: stop
+$('guess-stop-btn').addEventListener('click',()=>{ remove(numguessRef); showToast('spiel beendet'); });
+
+// Admin: reveal + award
+$('guess-reveal-btn').addEventListener('click', async ()=>{
+  const secret = parseInt($('guess-secret').value);
+  if(isNaN(secret)){ showToast('geheimzahl eingeben!'); return; }
+  const [gameSnap,guessSnap] = await Promise.all([get(numguessRef),get(guessesListRef)]);
+  if(!gameSnap.exists()){ showToast('kein aktives spiel'); return; }
+  const prize = gameSnap.val().prize||50;
+  let winner=null;
+  if(guessSnap.exists()){
+    const all=Object.entries(guessSnap.val()).map(([uid,v])=>({uid,...v}))
+      .sort((a,b)=>{
+        const da=Math.abs(a.guess-secret),db2=Math.abs(b.guess-secret);
+        return da!==db2?da-db2:(a.ts||0)-(b.ts||0);
+      });
+    winner=all[0]||null;
+    if(winner){
+      const wb=ref(db,`currency/${winner.uid}`), ws=await get(wb);
+      const cur=ws.exists()?(ws.val().balance||0):0;
+      await set(wb,{name:winner.name,balance:cur+prize});
+      if(winner.uid===myUserId){myBalance=cur+prize;updateWalletUI();}
+    }
+  }
+  await set(ref(db,'numguess/reveal'),{
+    answer:secret, prize,
+    winner:winner?{name:winner.name,guess:winner.guess,uid:winner.uid}:null
+  });
+  await set(ref(db,'numguess/active'),false);
+  showToast(winner?`${winner.name} gewinnt ${prize}€!`:'aufgedeckt — kein gewinner');
+});
+
+/* ════════════════════════════════════
+   SHOP
+════════════════════════════════════ */
+const SHOP_ITEMS = [
+  {id:'badge_fire',    label:'feuer',     icon:'🔥',price:15,type:'badge'},
+  {id:'badge_star',    label:'star',      icon:'⭐',price:15,type:'badge'},
+  {id:'badge_crown',   label:'krone',     icon:'👑',price:35,type:'badge'},
+  {id:'badge_diamond', label:'diamond',   icon:'💎',price:50,type:'badge'},
+  {id:'badge_ghost',   label:'geist',     icon:'👻',price:20,type:'badge'},
+  {id:'badge_rocket',  label:'rakete',    icon:'🚀',price:20,type:'badge'},
+  {id:'badge_skull',   label:'totenkopf', icon:'💀',price:25,type:'badge'},
+  {id:'badge_rainbow', label:'rainbow',   icon:'🌈',price:30,type:'badge'},
+  {id:'badge_alien',   label:'alien',     icon:'👽',price:20,type:'badge'},
+  {id:'color_red',    label:'rot',  icon:'🔴',price:25,type:'color',value:'#e63946'},
+  {id:'color_blue',   label:'blau', icon:'🔵',price:25,type:'color',value:'#4cc9f0'},
+  {id:'color_gold',   label:'gold', icon:'🟡',price:25,type:'color',value:'#ff9e00'},
+  {id:'color_green',  label:'grün', icon:'🟢',price:25,type:'color',value:'#06d6a0'},
+  {id:'color_pink',   label:'pink', icon:'🩷',price:25,type:'color',value:'#f72585'},
+  {id:'color_purple', label:'lila', icon:'🟣',price:25,type:'color',value:'#7b2d8b'},
+];
+
+let myPurchases = JSON.parse(localStorage.getItem('my_purchases')||'{}');
+// shape: { ownedIds:[], equippedBadge: '🔥'|null, equippedColor: '#hex'|null }
+
+function savePurchases(){
+  localStorage.setItem('my_purchases', JSON.stringify(myPurchases));
+  if(myUserId){
+    set(ref(db,`purchases/${myUserId}`),{
+      name: playerName||adminName||'viewer',
+      ownedIds:       myPurchases.ownedIds       || [],
+      equippedBadge:  myPurchases.equippedBadge  || null,
+      equippedColor:  myPurchases.equippedColor  || null,
+    });
+  }
+  pushPresence(); // show badge/color in player list immediately
+}
+
+// Load saved prices from firebase
+get(ref(db,'shop/prices')).then(snap=>{
+  if(!snap.exists()) return;
+  const p=snap.val();
+  SHOP_ITEMS.forEach(i=>{ if(p[i.id]) i.price=p[i.id]; });
+  // Refresh price inputs if admin cfg is visible
+  document.querySelectorAll('#shop-cfg-list [data-item-id]').forEach(inp=>{
+    const item=SHOP_ITEMS.find(i=>i.id===inp.dataset.itemId);
+    if(item) inp.value=item.price;
+  });
+}).catch(()=>{});
+
+// Build editable price list for admin
+(function buildShopCfg(){
+  const list=$('shop-cfg-list'); if(!list) return;
+  list.innerHTML=SHOP_ITEMS.map(item=>`
+    <div class="shop-cfg-item">
+      <span class="sci-icon">${item.icon}</span>
+      <div class="sci-info">
+        <div class="sci-name">${item.label}</div>
+        <div class="sci-desc">${item.type==='badge'?'badge vor namen':'name farbe'}</div>
+      </div>
+      <div class="sci-price-wrap">
+        <input type="number" value="${item.price}" min="1" max="9999" data-item-id="${item.id}"/>
+        <span>€</span>
+      </div>
+    </div>`).join('');
+})();
+
+$('save-shop-prices-btn').addEventListener('click',()=>{
+  document.querySelectorAll('#shop-cfg-list [data-item-id]').forEach(inp=>{
+    const item=SHOP_ITEMS.find(i=>i.id===inp.dataset.itemId);
+    if(item) item.price=parseInt(inp.value)||item.price;
+  });
+  const priceMap={};
+  SHOP_ITEMS.forEach(i=>{ priceMap[i.id]=i.price; });
+  set(ref(db,'shop/prices'),priceMap);
+  showToast('preise gespeichert!');
+});
+
+// Admin: shop open/close toggle
+let shopIsOpen=false;
+onValue(shopRef,snap=>{
+  shopIsOpen=!!(snap.exists()&&snap.val()?.open);
+  const btn=$('shop-toggle-btn');
+  if(btn){ btn.textContent=shopIsOpen?'shop schließen':'shop öffnen'; btn.classList.toggle('on',shopIsOpen); }
+  const sb=$('shop-btn');
+  if(sb){ sb.classList.toggle('closed',!shopIsOpen); sb.querySelector('.shop-label').textContent=shopIsOpen?'shop':'shop'; }
+  const grid=$('shop-items-grid'), msg=$('shop-closed-msg');
+  if(grid&&msg){ grid.style.display=shopIsOpen?'grid':'none'; msg.classList.toggle('show',!shopIsOpen); }
+});
+$('shop-toggle-btn').addEventListener('click',()=>{
+  set(shopRef, shopIsOpen?null:{open:true,ts:Date.now()});
+});
+
+// Admin: watch purchases log
+onValue(purchasesRef,snap=>{
+  const log=$('shop-purchase-log'); if(!log) return;
+  if(!snap.exists()){ log.textContent='noch keine käufe'; log.style.color='#ccc'; return; }
+  const lines=[];
+  Object.values(snap.val()).forEach(v=>{
+    if(!v.ownedIds||v.ownedIds.length===0) return;
+    const icons=v.ownedIds.map(id=>SHOP_ITEMS.find(i=>i.id===id)?.icon||'').join('');
+    lines.push(`${esc(v.name||'viewer')} — ${icons}`);
+  });
+  if(!lines.length){ log.textContent='noch keine käufe'; log.style.color='#ccc'; return; }
+  log.style.color='#555';
+  log.innerHTML=lines.map(l=>`<div>${l}</div>`).join('');
+});
+
+// Viewer: render shop items
+function renderShopGrid(){
+  const grid=$('shop-items-grid'); if(!grid) return;
+  const owned   = myPurchases.ownedIds      || [];
+  const eqBadge = myPurchases.equippedBadge || null;
+  const eqColor = myPurchases.equippedColor || null;
+
+  grid.innerHTML=SHOP_ITEMS.map(item=>{
+    const isOwned    = owned.includes(item.id);
+    const isEquipped = (item.type==='badge'&&eqBadge===item.icon)||(item.type==='color'&&eqColor===item.value);
+    const label      = !isOwned?`${item.price}€`:isEquipped?'ausgerüstet ✓':'ausrüsten';
+    const cls        = isEquipped?' si-equipped':isOwned?' si-owned':'';
+    return `<div class="shop-item${cls}" data-id="${item.id}">
+      <span class="si-icon">${item.icon}</span>
+      <span class="si-name">${item.label}</span>
+      <span class="si-desc">${item.type==='badge'?'badge':'name farbe'}</span>
+      <button class="si-buy"${(!shopIsOpen&&!isOwned)?' disabled':''}>${label}</button>
+    </div>`;
+  }).join('');
+
+  grid.querySelectorAll('.shop-item').forEach(el=>{
+    el.querySelector('.si-buy').addEventListener('click',()=>{
+      const item=SHOP_ITEMS.find(i=>i.id===el.dataset.id); if(!item) return;
+      const isOwned=(myPurchases.ownedIds||[]).includes(item.id);
+      if(!isOwned){
+        if(!shopIsOpen){ showToast('shop ist geschlossen'); return; }
+        if(myBalance<item.price){ showToast(`du brauchst ${item.price}€`); return; }
+        myBalance-=item.price; updateWalletUI();
+        if(myUserId) set(ref(db,`currency/${myUserId}`),{name:playerName||adminName||'viewer',balance:myBalance});
+        myPurchases.ownedIds=[...(myPurchases.ownedIds||[]),item.id];
+        showToast(`${item.icon} ${item.label} gekauft!`);
+      }
+      // Toggle equip
+      if(item.type==='badge') myPurchases.equippedBadge=(myPurchases.equippedBadge===item.icon)?null:item.icon;
+      else                    myPurchases.equippedColor=(myPurchases.equippedColor===item.value)?null:item.value;
+      savePurchases();
+      renderShopGrid();
+    });
+  });
+  $('shop-bal').textContent=myBalance.toFixed(2)+'€';
+}
+
+$('shop-btn').addEventListener('click',()=>{ renderShopGrid(); $('shop-overlay').classList.add('show'); });
+$('shop-close-btn').addEventListener('click',()=>$('shop-overlay').classList.remove('show'));
+$('shop-overlay').addEventListener('click',e=>{ if(e.target===$('shop-overlay')) $('shop-overlay').classList.remove('show'); });
+
+// On page load: push existing cosmetics to presence once player name is set
+if(playerName) setTimeout(pushPresence, 800);
 
 updateWalletUI();
 </script>
