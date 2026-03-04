@@ -1334,9 +1334,10 @@ let myPresRef  = null;
 let adminCleanupDone = false;
 let isKicked   = false;
 
-// Always clear on load — refresh = clean slate
+// Always clear on load — refresh = clean slate for viewers
 sessionStorage.removeItem('broadcast_session');
 let mySessionToken = null;
+let hasJoined = false; // true only after name is entered this session
 
 /* ── firebase ── */
 const app        = initializeApp(FB);
@@ -1422,6 +1423,7 @@ function initBalance(){
 function registerPlayer(name){
   if(!name) return;
   playerName = name;
+  hasJoined = true;  // gate opens — viewer can now receive Firebase state
   dismissJoinOverlay();
   get(sessionRef).then(snap=>{
     if(snap.exists() && snap.val()?.token){
@@ -1430,8 +1432,10 @@ function registerPlayer(name){
       mySessionToken = token;
       sessionValidated = true;
       reapplyState();
+    } else {
+      reapplyState(); // no token stored yet, still apply state
     }
-  }).catch(()=>{});
+  }).catch(()=>{ reapplyState(); });
   initBalance();
   setTimeout(pushPresence, 400);
   if(myUserId) watchForKick();
@@ -1562,7 +1566,7 @@ document.addEventListener('click',e=>{
 
 /* ── firebase listeners ── */
 let sessionValidated = false;
-const ok = ()=> isAdmin || sessionValidated;
+const ok = ()=> isAdmin || hasJoined;
 onValue(shakeRef,  snap=>{ if(snap.exists()  && ok()) doShake(); });
 onValue(jumpRef,   snap=>{ if(!snap.exists() || !ok()) return; const d=snap.val(); if(d?.url) doJumpscare(d.url,d.duration||800); });
 onValue(partyRef,  snap=>{ snap.exists()&&snap.val() ? doPartyStart() : doPartyStop(); });
@@ -1591,15 +1595,15 @@ onValue(sessionRef, snap => {
     return;
   }
 
-  if(mySessionToken === fbToken) {
-    sessionValidated = true;
-  } else {
+  // Only kick viewers out if they were already in (e.g. admin restarted mid-session)
+  if(hasJoined && mySessionToken && mySessionToken !== fbToken) {
+    hasJoined = false;
     sessionValidated = false;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     canvas.classList.remove('view-only');
     strokeCache = null;
     $('poll-widget').classList.remove('show');
-    $('main').style.background = '#ffffff';
+    $('main').style.background = 'var(--bg)';
   }
 });
 
@@ -1682,6 +1686,7 @@ $('code-input').addEventListener('keydown',e=>{ if(e.key==='Enter') checkCode();
 
 function unlockAdmin(){
   isAdmin = true;
+  hasJoined = true;
   sessionValidated = true;
   if(!adminName){ $('name-overlay').classList.add('show'); $('name-input').focus(); }
   else openPanel();
@@ -1692,6 +1697,7 @@ function saveName(){
   const v=$('name-input').value.trim(); if(!v) return;
   adminName=v;
   isAdmin = true;
+  hasJoined = true;
   sessionValidated = true;
   if(!playerName){ playerName=v; dismissJoinOverlay(); }
   $('name-overlay').classList.remove('show');
