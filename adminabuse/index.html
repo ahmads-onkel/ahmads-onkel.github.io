@@ -967,6 +967,10 @@ let myPresRef  = null;
 let adminCleanupDone = false;
 let isKicked   = false;
 
+// Session token stored in sessionStorage (clears on tab close/refresh)
+// Viewers only see content that happened during their current browser session
+const mySessionToken = sessionStorage.getItem('broadcast_session') || null;
+
 /* ── firebase ── */
 const app        = initializeApp(FB);
 const db         = getDatabase(app);
@@ -987,10 +991,14 @@ const numguessRef = ref(db,'numguess');
 const shopRef     = ref(db,'shop');
 const purchasesRef= ref(db,'purchases');
 const kicksRef    = ref(db,'kicks');
+const sessionRef  = ref(db,'session');
 
 function doAdminStartupCleanup(){
   if(adminCleanupDone) return;
   adminCleanupDone = true;
+  // Write a new session token so viewers know this is a fresh session
+  const newToken = Date.now().toString(36) + Math.random().toString(36).slice(2);
+  set(sessionRef, { token: newToken, startedAt: Date.now() });
   Promise.all([
     remove(msgsRef), remove(pollRef), remove(strokesRef),
     remove(shakeRef), remove(jumpRef), remove(partyRef),
@@ -1040,11 +1048,19 @@ function initBalance(){
 function registerPlayer(name){
   if(!name) return;
   playerName = name;
-  // ── NO localStorage save — intentional, resets on refresh ──
   dismissJoinOverlay();
+  // Grab current session token from Firebase and store in sessionStorage
+  // so this viewer is recognised for the rest of this tab's life
+  get(sessionRef).then(snap=>{
+    if(snap.exists()&&snap.val()?.token){
+      sessionStorage.setItem('broadcast_session', snap.val().token);
+      sessionValidated = true;
+      // Now safe to render any live content that loaded before join
+      onValue(bgRef, snap=>{ if(snap.val()){ currentBg=snap.val(); $('main').style.background=currentBg; selBg=currentBg; } });
+    }
+  }).catch(()=>{});
   initBalance();
   setTimeout(pushPresence, 400);
-  // Start watching for kicks once we have a uid and name
   if(myUserId) watchForKick();
 }
 
@@ -1190,6 +1206,39 @@ onValue(fxRef,snap=>{
   if(d?.type==='spin')     doSpin(d.dur||2000);
 });
 
+// ── SESSION GUARD ──
+// Viewers store the session token in sessionStorage (wiped on refresh).
+// If the token in Firebase doesn't match what we have in sessionStorage,
+// we treat all existing Firebase data as "stale" and hide it.
+let sessionValidated = false; // true once we've confirmed we're in the live session
+
+onValue(sessionRef, snap => {
+  if(!snap.exists()) return;
+  const fbToken = snap.val()?.token;
+  if(!fbToken) return;
+
+  if(isAdmin) {
+    // Admin always valid — store token so their own session is recognised
+    sessionStorage.setItem('broadcast_session', fbToken);
+    sessionValidated = true;
+    return;
+  }
+
+  if(mySessionToken === fbToken) {
+    // Viewer joined during this session — all good
+    sessionValidated = true;
+  } else {
+    // Viewer refreshed — they're seeing stale data. Block it all.
+    sessionValidated = false;
+    // Wipe any stale visuals that may have rendered before this check
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    canvas.classList.remove('view-only');
+    strokeCache = null;
+    $('poll-widget').classList.remove('show');
+    $('main').style.background = '#ffffff';
+  }
+});
+
 let msgInitDone=false;
 onChildAdded(msgsRef,snap=>{
   if(!msgInitDone) return;
@@ -1201,8 +1250,10 @@ setTimeout(()=>{ msgInitDone=true; },1000);
 onValue(bgRef,snap=>{
   if(snap.val()){
     currentBg = snap.val();
-    $('main').style.background = currentBg;
-    selBg = currentBg;
+    if(isAdmin || sessionValidated){
+      $('main').style.background = currentBg;
+      selBg = currentBg;
+    }
   }
 });
 
@@ -1211,6 +1262,7 @@ onValue(pollRef,snap=>{
     $('poll-widget').classList.remove('show');
     return;
   }
+  if(!isAdmin && !sessionValidated) return; // stale — viewer wasn't here for this
   const data=snap.val();
   const pollId = data.question + Object.values(data.options||{}).map(o=>o.label).join('|');
   if(dismissedPolls[pollId] && !myVotes[pollId]) return;
@@ -1219,6 +1271,7 @@ onValue(pollRef,snap=>{
 
 onValue(strokesRef,snap=>{
   if(!snap.exists()){ strokeCache=null; ctx.clearRect(0,0,canvas.width,canvas.height); if(!drawMode) canvas.classList.remove('view-only'); return; }
+  if(!isAdmin && !sessionValidated) return; // stale — don't replay old drawings
   strokeCache=snap.val(); replayCanvas(); if(!drawMode) canvas.classList.toggle('view-only',!!strokeCache);
 });
 
@@ -1230,6 +1283,7 @@ function openPanel(){
   $('admin-panel').classList.add('open');
   $('panel-backdrop').classList.add('show');
   isAdmin=true;
+  sessionValidated=true;
   document.body.classList.add('is-admin');
   $('admin-name-display').textContent=adminName;
   $('code-box').style.display='none';
