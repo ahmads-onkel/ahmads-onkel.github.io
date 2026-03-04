@@ -1334,7 +1334,9 @@ let myPresRef  = null;
 let adminCleanupDone = false;
 let isKicked   = false;
 
-let mySessionToken = sessionStorage.getItem('broadcast_session') || null;
+// Always clear on load — refresh = clean slate
+sessionStorage.removeItem('broadcast_session');
+let mySessionToken = null;
 
 /* ── firebase ── */
 const app        = initializeApp(FB);
@@ -1427,12 +1429,27 @@ function registerPlayer(name){
       sessionStorage.setItem('broadcast_session', token);
       mySessionToken = token;
       sessionValidated = true;
-      if(currentBg){ $('main').style.background = currentBg; selBg = currentBg; }
+      reapplyState();
     }
   }).catch(()=>{});
   initBalance();
   setTimeout(pushPresence, 400);
   if(myUserId) watchForKick();
+}
+
+// Re-reads current Firebase state and applies it after the player joins.
+// Needed because onValue listeners fire before sessionValidated=true on fresh loads.
+function reapplyState(){
+  get(bgRef).then(s=>{ if(s.val()){ currentBg=s.val(); $('main').style.background=currentBg; selBg=currentBg; }}).catch(()=>{});
+  get(strokesRef).then(s=>{ if(s.exists()){ strokeCache=s.val(); replayCanvas(); if(!drawMode) canvas.classList.add('view-only'); }}).catch(()=>{});
+  get(pollRef).then(s=>{
+    if(!s.exists()||!s.val()?.question) return;
+    const data=s.val();
+    const pollId=data.question+Object.values(data.options||{}).map(o=>o.label).join('|');
+    if(!dismissedPolls[pollId]) renderPoll(data,pollId);
+  }).catch(()=>{});
+  get(rainRef).then(s=>{ if(s.exists()&&s.val()) doRainStart(); }).catch(()=>{});
+  get(partyRef).then(s=>{ if(s.exists()&&s.val()) doPartyStart(); }).catch(()=>{});
 }
 
 joinInput.focus();
