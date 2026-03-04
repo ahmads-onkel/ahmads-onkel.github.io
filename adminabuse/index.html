@@ -2,13 +2,33 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="default"/>
+<meta name="theme-color" content="#ffffff"/>
 <title>Broadcast</title>
 <link href="https://fonts.googleapis.com/css2?family=Patrick+Hand&display=swap" rel="stylesheet"/>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-:root{--panel-w:360px;--panel-radius:16px;--accent:#111;--border:#e8e8e8}
-html,body{height:100%;overflow:hidden;font-family:'Patrick Hand',cursive;background:#fff;color:#111;touch-action:manipulation}
+:root{
+  --panel-w:360px;--panel-radius:16px;--accent:#111;--border:#e8e8e8;
+  /* safe area insets for notch/Dynamic Island/home bar */
+  --sat: env(safe-area-inset-top,    0px);
+  --sab: env(safe-area-inset-bottom, 0px);
+  --sal: env(safe-area-inset-left,   0px);
+  --sar: env(safe-area-inset-right,  0px);
+  /* coin button sizes */
+  --coin-size: 80px;
+  --coin-outline: 10px;
+  --coin-font: 1.7rem;
+}
+@media(min-width:601px){
+  :root{ --coin-size:110px; --coin-outline:14px; --coin-font:2.2rem; }
+}
+@media(min-width:1024px){
+  :root{ --coin-size:124px; --coin-outline:16px; --coin-font:2.6rem; }
+}
+html,body{height:100%;overflow:hidden;font-family:'Patrick Hand',cursive;background:#fff;color:#111;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
 
 @keyframes shake{
   0%,100%{transform:translate(0,0) rotate(0)}
@@ -71,14 +91,41 @@ body.glitching #main::after{content:'';position:absolute;inset:0;z-index:9998;ba
 #draw-canvas.active{display:block;cursor:crosshair}
 #draw-canvas.view-only{display:block;pointer-events:none}
 
-#banner-stack{position:absolute;top:18px;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:8px;z-index:200;pointer-events:none;width:90%;max-width:540px}
+#banner-stack{
+  position:absolute;
+  top:calc(70px + var(--sat));
+  left:50%;transform:translateX(-50%);
+  display:flex;flex-direction:column;align-items:center;gap:8px;
+  z-index:200;pointer-events:none;width:88%;max-width:480px;
+}
+@media(min-width:601px){
+  #banner-stack{top:calc(72px + var(--sat));max-width:540px}
+}
 .banner{background:#111;color:#fff;padding:11px 22px;font-family:'Patrick Hand',cursive;font-size:16px;text-align:center;width:100%;box-shadow:0 3px 14px rgba(0,0,0,.13);opacity:0;transform:translateY(-12px) scale(.97);transition:transform .34s cubic-bezier(.22,.68,0,1.2),opacity .34s ease}
 .banner.visible{opacity:1;transform:translateY(0) scale(1)}
 .banner.fading{opacity:0;transform:translateY(-8px);transition:opacity 1.4s ease,transform 1.4s ease}
 .banner-name{font-weight:bold}
 
-#poll-widget{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) scale(.92);background:#fff;border:1.5px solid #111;padding:22px 24px;width:88%;max-width:380px;box-shadow:0 4px 24px rgba(0,0,0,.1);z-index:300;opacity:0;pointer-events:none;transition:opacity .28s,transform .28s}
+#poll-widget{
+  position:absolute;top:50%;left:50%;
+  transform:translate(-50%,-50%) scale(.92);
+  background:#fff;border:1.5px solid #111;
+  padding:22px 24px;width:88%;max-width:380px;
+  box-shadow:0 4px 24px rgba(0,0,0,.1);
+  z-index:300;opacity:0;pointer-events:none;
+  transition:opacity .28s,transform .28s;
+  border-radius:8px;
+}
 #poll-widget.show{opacity:1;pointer-events:all;transform:translate(-50%,-50%) scale(1)}
+@media(max-width:600px){
+  #poll-widget{
+    /* On mobile keep it above the bottom UI elements */
+    top:auto;bottom:calc(116px + var(--sab));
+    transform:translate(-50%,0) scale(.92);
+    width:92%;
+  }
+  #poll-widget.show{transform:translate(-50%,0) scale(1)}
+}
 #poll-question{font-size:17px;margin-bottom:14px;color:#111;line-height:1.4}
 .poll-option{margin-bottom:8px}
 .poll-bar-wrap{background:#f3f3f3;height:36px;position:relative;overflow:hidden;border:1px solid #e0e0e0;cursor:pointer}
@@ -88,7 +135,15 @@ body.glitching #main::after{content:'';position:absolute;inset:0;z-index:9998;ba
 #poll-close{margin-top:12px;font-family:'Patrick Hand',cursive;font-size:13px;background:none;border:1px solid #ccc;padding:6px 14px;cursor:pointer;color:#888;width:100%;transition:border-color .2s,color .2s}
 #poll-close:hover{border-color:#111;color:#111}
 
-#toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:#111;color:#fff;font-family:'Patrick Hand',cursive;font-size:14px;padding:8px 20px;border-radius:4px;opacity:0;pointer-events:none;transition:opacity .25s,transform .25s;z-index:9999;white-space:nowrap}
+#toast{
+  position:fixed;
+  bottom:calc(24px + var(--sab));
+  left:50%;transform:translateX(-50%) translateY(20px);
+  background:#111;color:#fff;font-family:'Patrick Hand',cursive;font-size:14px;
+  padding:9px 22px;border-radius:6px;opacity:0;pointer-events:none;
+  transition:opacity .25s,transform .25s;z-index:9999;white-space:nowrap;
+  max-width:90vw;
+}
 #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 
 /* ── KICK OVERLAY ── */
@@ -154,18 +209,29 @@ body.glitching #main::after{content:'';position:absolute;inset:0;z-index:9998;ba
   #admin-panel{
     top:auto;left:0;right:0;bottom:0;
     transform:translateY(100%);
-    width:100%;max-height:80dvh;
-    border-radius:16px 16px 0 0;
+    width:100%;max-height:88dvh;
+    border-radius:20px 20px 0 0;
     opacity:1;
   }
   #admin-panel.open{transform:translateY(0)}
-  #panel-header{border-radius:16px 16px 0 0}
-  #panel-header::before{content:'';display:block;width:36px;height:4px;background:rgba(255,255,255,.3);border-radius:2px;position:absolute;top:8px;left:50%;transform:translateX(-50%)}
-  #panel-header{position:relative;padding-top:20px}
-  .admin-tab{padding:12px 12px;font-size:11px}
-  .tab-panel{padding:14px}
+  #panel-header{border-radius:20px 20px 0 0}
+  #panel-header::before{content:'';display:block;width:40px;height:4px;background:rgba(255,255,255,.35);border-radius:2px;position:absolute;top:10px;left:50%;transform:translateX(-50%)}
+  #panel-header{position:relative;padding-top:22px}
+  .admin-tab{padding:13px 12px;font-size:11px;min-height:44px}
+  .tab-panel{padding:14px 14px calc(14px + var(--sab))}
+  #panel-hint{padding-bottom:calc(8px + var(--sab))}
+  .admin-btn{min-height:44px;padding:11px 10px}
+  .icon-btn{min-height:52px;padding:12px 6px}
 }
 
+/*
+ * BUG FIX #1: The original code had
+ *   @media(max-width:600px){#admin-fab{display:flex}}
+ * which made the floating admin button visible to ALL mobile visitors,
+ * letting them tap it and gain admin access (openPanel was ungated).
+ * The FAB is now kept display:none always and only revealed via JS
+ * after successful authentication (see openPanel below).
+ */
 #admin-fab{
   position:fixed;bottom:20px;right:20px;z-index:4998;
   width:52px;height:52px;
@@ -177,21 +243,39 @@ body.glitching #main::after{content:'';position:absolute;inset:0;z-index:9998;ba
   -webkit-tap-highlight-color:transparent;
 }
 #admin-fab:active{transform:scale(.9)}
-@media(max-width:600px){#admin-fab{display:flex}}
+/* NOTE: no media-query here - FAB is shown only after admin auth via JS */
 
 #code-box{
   position:fixed;bottom:0;left:0;right:0;
   z-index:4990;background:#fff;border-top:1.5px solid #e8e8e8;
-  padding:12px 16px 20px;text-align:center;
+  padding:12px 16px calc(16px + var(--sab));text-align:center;
 }
 @media(min-width:601px){
-  #code-box{left:auto;right:20px;bottom:20px;border:1px solid #e8e8e8;padding:10px 14px 12px;border-radius:8px;box-shadow:0 2px 12px rgba(0,0,0,.07)}
+  #code-box{
+    left:auto;right:calc(20px + var(--sar));
+    bottom:calc(20px + var(--sab));
+    border:1px solid #e8e8e8;
+    padding:12px 16px 14px;
+    border-radius:10px;
+    box-shadow:0 2px 12px rgba(0,0,0,.07);
+  }
 }
 #code-label{font-size:11px;color:#aaa;margin-bottom:6px;letter-spacing:.5px}
 #code-row{display:flex;gap:8px;align-items:center;justify-content:center}
-#code-input{font-family:'Patrick Hand',cursive;font-size:18px;width:160px;border:1.5px solid #ccc;padding:8px 10px;outline:none;color:#111;letter-spacing:2px;text-align:center;border-radius:4px;-webkit-appearance:none}
+#code-input{
+  font-family:'Patrick Hand',cursive;font-size:18px;
+  width:160px;border:1.5px solid #ccc;
+  padding:10px 10px;outline:none;color:#111;
+  letter-spacing:2px;text-align:center;border-radius:6px;
+  -webkit-appearance:none;min-height:44px;
+}
 #code-input:focus{border-color:#111}
-#code-btn{font-family:'Patrick Hand',cursive;font-size:16px;background:#111;color:#fff;border:none;padding:9px 18px;cursor:pointer;border-radius:4px}
+#code-btn{
+  font-family:'Patrick Hand',cursive;font-size:16px;
+  background:#111;color:#fff;border:none;
+  padding:10px 20px;cursor:pointer;border-radius:6px;
+  min-height:44px;
+}
 
 .panel-label{font-size:10px;color:#bbb;margin-bottom:6px;letter-spacing:.5px;text-transform:uppercase}
 .divider{height:1px;background:#f0f0f0;margin:12px 0}
@@ -261,7 +345,8 @@ body.glitching #main::after{content:'';position:absolute;inset:0;z-index:9998;ba
   background:#fff;
   display:flex;flex-direction:column;
   align-items:center;justify-content:center;
-  gap:22px;
+  gap:24px;
+  padding:calc(24px + var(--sat)) 24px calc(24px + var(--sab));
   transition:opacity .5s ease;
 }
 #join-overlay.gone{
@@ -269,7 +354,7 @@ body.glitching #main::after{content:'';position:absolute;inset:0;z-index:9998;ba
   transition:opacity .5s ease;
 }
 #join-title{
-  font-size:clamp(18px,3.5vw,26px);color:#111;
+  font-size:clamp(20px,4vw,28px);color:#111;
   font-weight:normal;font-family:'Patrick Hand',cursive;
   text-align:center;letter-spacing:.5px;
 }
@@ -278,12 +363,12 @@ body.glitching #main::after{content:'';position:absolute;inset:0;z-index:9998;ba
   text-align:center;margin-top:-12px;
 }
 #join-name-input{
-  border:none;outline:none;border-radius:15px;padding:1em;
+  border:none;outline:none;border-radius:15px;padding:14px 18px;
   background-color:#ccc;
   box-shadow:inset 2px 5px 10px rgba(0,0,0,0.3);
   transition:300ms ease-in-out;
   font-family:'Patrick Hand',cursive;font-size:18px;
-  text-align:center;width:min(280px,78vw);color:#111;
+  text-align:center;width:min(300px,82vw);color:#111;min-height:52px;
 }
 #join-name-input:focus{
   background-color:white;transform:scale(1.05);
@@ -301,13 +386,15 @@ body.glitching #main::after{content:'';position:absolute;inset:0;z-index:9998;ba
 
 /* ── PLAYERS LIST ── */
 #players-panel{
-  position:fixed;bottom:50px;left:14px;
+  position:fixed;
+  bottom:calc(56px + var(--sab));
+  left:calc(14px + var(--sal));
   z-index:550;
   background:#fff;
   border:1.5px solid #e8e8e8;
   border-radius:14px;
   min-width:200px;max-width:280px;
-  max-height:300px;overflow-y:auto;
+  max-height:260px;overflow-y:auto;
   box-shadow:0 8px 32px rgba(0,0,0,.14);
   display:none;
   font-family:'Patrick Hand',cursive;
@@ -325,7 +412,6 @@ body.glitching #main::after{content:'';position:absolute;inset:0;z-index:9998;ba
 }
 .player-row .pr-crown{font-size:15px;flex-shrink:0}
 .player-row .pr-name{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-/* kick button inside player row */
 .player-row .pr-kick{
   background:none;border:1px solid #e0e0e0;color:#e63946;
   font-size:11px;font-family:'Patrick Hand',cursive;
@@ -336,12 +422,15 @@ body.glitching #main::after{content:'';position:absolute;inset:0;z-index:9998;ba
 body.is-admin .player-row .pr-kick{display:inline-block}
 
 #viewer-pill{
-  position:absolute;bottom:14px;left:14px;
+  position:absolute;
+  bottom:calc(14px + var(--sab));
+  left:calc(14px + var(--sal));
   background:rgba(255,255,255,.92);border:1px solid #e0e0e0;
-  padding:5px 14px;font-size:12px;color:#888;
+  padding:6px 16px;font-size:12px;color:#888;
   z-index:50;border-radius:999px;
   cursor:pointer;pointer-events:all;
-  user-select:none;
+  user-select:none;min-height:32px;
+  display:flex;align-items:center;gap:4px;
   transition:background .15s,border-color .15s,box-shadow .15s;
   box-shadow:0 1px 6px rgba(0,0,0,.06);
 }
@@ -352,16 +441,19 @@ body.is-admin .player-row .pr-kick{display:inline-block}
 .color-grid .swatch{width:auto;height:0;padding-bottom:100%;border-radius:6px}
 
 #wallet-pill{
-  position:fixed;top:16px;right:16px;z-index:600;
+  position:fixed;
+  top:calc(16px + var(--sat));
+  right:calc(16px + var(--sar));
+  z-index:600;
   background:rgba(255,255,255,.95);
   border:1.5px solid #e8e8e8;border-radius:999px;
-  padding:7px 16px 7px 10px;
+  padding:8px 18px 8px 12px;
   display:flex;align-items:center;gap:8px;
   box-shadow:0 2px 12px rgba(0,0,0,.09);
   font-size:15px;font-family:'Patrick Hand',cursive;
   pointer-events:none;transition:all .25s;
 }
-#wallet-pill .coin-icon{font-size:18px;line-height:1}
+#wallet-pill .coin-icon{font-size:20px;line-height:1}
 #wallet-amount{font-weight:bold;color:#111;min-width:44px}
 #wallet-pill.boosted{border-color:#ff9e00;background:rgba(255,250,215,.97)}
 #wallet-pill .boost-badge{
@@ -370,20 +462,48 @@ body.is-admin .player-row .pr-kick{display:inline-block}
 }
 #wallet-pill.boosted .boost-badge{display:inline}
 
+/* ── COIN BUTTON WRAP ──
+   Mobile: centered, elevated above the code-entry box (≈100px tall at bottom).
+   Desktop: centered with more breathing room.
+   Large desktop: right-side to free up the main stage center.          */
 #coin-btn-wrap{
   position:fixed;
-  bottom:28px;
   left:50%;
   transform:translateX(-50%);
   z-index:600;
   display:flex;flex-direction:column;align-items:center;gap:10px;
+  /* Mobile default: sit above the full-width code box (~100px) + safe area */
+  bottom:calc(108px + var(--sab));
 }
+@media(min-width:601px){
+  /* Desktop: no code box at bottom, comfortable spacing */
+  #coin-btn-wrap{ bottom:calc(44px + var(--sab)); }
+}
+@media(min-width:1024px){
+  /* Large desktop: move to right side so it doesn't block center content */
+  #coin-btn-wrap{
+    left:auto; right:calc(48px + var(--sar));
+    transform:none;
+    bottom:calc(52px + var(--sab));
+  }
+}
+/* Landscape phone: shrink and hug bottom-right so it doesn't eat the stage */
+@media(max-width:900px) and (orientation:landscape){
+  #coin-btn-wrap{
+    left:auto; right:calc(24px + var(--sar));
+    transform:none;
+    bottom:calc(20px + var(--sab));
+  }
+}
+
 .coin-btn{
   --primary:255,90,120;
   --secondary:150,50,60;
-  width:68px;height:58px;
+  /* Use CSS variable for perfect circle sizing */
+  width:var(--coin-size);
+  height:var(--coin-size);
   border:none;
-  outline:10px solid rgb(var(--primary),.4);
+  outline:var(--coin-outline) solid rgb(var(--primary),.35);
   cursor:pointer;
   user-select:none;touch-action:manipulation;
   border-radius:100%;
@@ -392,11 +512,6 @@ body.is-admin .player-row .pr-kick{display:inline-block}
   background:transparent;
   -webkit-tap-highlight-color:transparent;
   flex-shrink:0;
-}
-@media(min-width:601px){
-  .coin-btn{width:110px;height:96px;outline:14px solid rgb(var(--primary),.3)}
-  .coin-btn .front{font-size:2.2rem}
-  #coin-btn-label{font-size:14px}
 }
 .coin-btn .back{
   background:rgb(var(--secondary));
@@ -411,13 +526,14 @@ body.is-admin .player-row .pr-kick{display:inline-block}
   border:1px solid rgb(var(--secondary));
   left:0;top:0;width:100%;height:100%;
   display:flex;justify-content:center;align-items:center;
-  font-size:1.5rem;
-  transform:translateY(-15%);
+  font-size:var(--coin-font);
+  transform:translateY(-14%);
   transition:.15s;
 }
 .coin-btn:active .front{transform:translateY(0%);box-shadow:0 0}
 #coin-btn-label{
-  font-size:11px;color:#999;font-family:'Patrick Hand',cursive;
+  font-size:clamp(11px,1.4vw,14px);
+  color:#999;font-family:'Patrick Hand',cursive;
   text-align:center;line-height:1.4;white-space:pre;
 }
 
@@ -434,7 +550,9 @@ body.is-admin .player-row .pr-kick{display:inline-block}
 }
 
 #taco-badge{
-  position:absolute;bottom:14px;left:130px;
+  position:absolute;
+  bottom:calc(14px + var(--sab));
+  left:calc(130px + var(--sal));
   display:none;cursor:default;z-index:51;
 }
 body.party-mode #taco-badge{display:block}
@@ -464,14 +582,21 @@ body.party-mode #taco-badge{display:block}
 .currency-row .cr-give:hover{opacity:.8}
 
 #guess-widget{
-  position:absolute;bottom:140px;left:50%;
+  position:absolute;
+  /* mobile: clear code box + coin button */
+  bottom:calc(210px + var(--sab));
+  left:50%;
   transform:translateX(-50%) scale(.92);
   background:#fff;border:1.5px solid #111;
   padding:20px 22px 16px;width:88%;max-width:320px;
   box-shadow:0 4px 28px rgba(0,0,0,.13);
   z-index:310;opacity:0;pointer-events:none;
   transition:opacity .28s,transform .28s;
-  text-align:center;border-radius:4px;
+  text-align:center;border-radius:8px;
+}
+@media(min-width:601px){
+  /* desktop: coin btn is lower, code box is at right only */
+  #guess-widget{ bottom:calc(200px + var(--sab)); max-width:360px; }
 }
 #guess-widget.show{opacity:1;pointer-events:all;transform:translateX(-50%) scale(1)}
 #guess-title{font-size:17px;color:#111;margin-bottom:4px;font-weight:bold;font-family:'Patrick Hand',cursive}
@@ -495,16 +620,19 @@ body.party-mode #taco-badge{display:block}
 .guess-row .gr-crown{font-size:13px;flex-shrink:0}
 
 #shop-btn{
-  position:fixed;top:16px;left:16px;z-index:600;
+  position:fixed;
+  top:calc(16px + var(--sat));
+  left:calc(16px + var(--sal));
+  z-index:600;
   background:rgba(255,255,255,.95);border:1.5px solid #e8e8e8;border-radius:999px;
-  padding:7px 14px 7px 10px;display:flex;align-items:center;gap:7px;
+  padding:8px 16px 8px 12px;display:flex;align-items:center;gap:7px;
   box-shadow:0 2px 12px rgba(0,0,0,.09);
   font-family:'Patrick Hand',cursive;cursor:pointer;
-  transition:all .2s;user-select:none;
+  transition:all .2s;user-select:none;min-height:44px;
 }
 #shop-btn:hover{border-color:#aaa;box-shadow:0 2px 16px rgba(0,0,0,.13)}
-#shop-btn .shop-icon{font-size:17px;line-height:1}
-#shop-btn .shop-label{font-size:13px;color:#555}
+#shop-btn .shop-icon{font-size:18px;line-height:1}
+#shop-btn .shop-label{font-size:14px;color:#555}
 #shop-btn.closed .shop-label{color:#ccc}
 
 #shop-overlay{
@@ -556,10 +684,10 @@ body.party-mode #taco-badge{display:block}
 .shop-item.si-equipped .si-buy{background:#333}
 
 #join-btn{
-  font-family:'Patrick Hand',cursive;font-size:17px;
+  font-family:'Patrick Hand',cursive;font-size:18px;
   background:#111;color:#fff;border:none;
-  padding:13px 48px;border-radius:12px;cursor:pointer;
-  transition:opacity .15s;
+  padding:15px 52px;border-radius:14px;cursor:pointer;
+  transition:opacity .15s;min-height:52px;
 }
 #join-btn:hover{opacity:.85}
 #join-btn:active{opacity:.7}
@@ -580,6 +708,32 @@ body.party-mode #taco-badge{display:block}
 .shop-cfg-item .sci-price-wrap input:focus{border-color:#111}
 .shop-cfg-item .sci-price-wrap span{font-size:12px;color:#aaa;font-family:'Patrick Hand',cursive}
 #shop-purchase-log{font-size:12px;color:#999;font-family:'Patrick Hand',cursive;max-height:100px;overflow-y:auto;line-height:1.8}
+
+/* ── LANDSCAPE PHONE ── */
+@media(max-width:900px) and (orientation:landscape){
+  /* Banner sits lower to avoid top nav overlap */
+  #banner-stack{ top:calc(56px + var(--sat)); }
+  /* Poll sits mid-screen not bottom */
+  #poll-widget{ top:50%; bottom:auto; transform:translate(-50%,-50%) scale(.92); }
+  #poll-widget.show{ transform:translate(-50%,-50%) scale(1); }
+  /* Guess widget a bit lower */
+  #guess-widget{ bottom:calc(110px + var(--sab)); }
+  /* Admin panel takes more height in landscape */
+  #admin-panel{ max-height:96dvh; }
+}
+
+/* ── LARGE DESKTOP (≥1280px) ── */
+@media(min-width:1280px){
+  #admin-panel{ width:520px; max-height:min(700px,90vh); }
+  .tab-panel{ padding:20px; }
+  .admin-tab{ padding:12px 16px; font-size:13px; }
+  #banner-stack{ max-width:600px; }
+  #wallet-pill{ font-size:16px; padding:9px 20px 9px 14px; }
+  #shop-btn{ padding:9px 18px 9px 14px; }
+  #shop-btn .shop-label{ font-size:15px; }
+  .poll-bar-wrap{ height:42px; }
+  #poll-question{ font-size:19px; }
+}
 </style>
 </head>
 <body>
@@ -920,7 +1074,7 @@ body.party-mode #taco-badge{display:block}
   <div id="panel-hint">Ctrl / ⌘ — toggle panel &nbsp;·&nbsp; tap outside to close</div>
 </div>
 
-<!-- FAB (mobile) -->
+<!-- FAB (mobile) — hidden until admin auth, shown via JS in openPanel() -->
 <button id="admin-fab">🛠</button>
 
 <script type="module">
@@ -943,9 +1097,9 @@ const SECRET   = "10222211";
 const HOLD_MS  = 5500;
 const TACO_URL = "https://ahmads-onkel.github.io/ahmads-onkel.github.io/Its%20Raining%20Tacos!.mp3";
 
-/* ── state — NO localStorage for player data; everything resets on refresh ── */
-let adminName  = '';   // was: localStorage.getItem('admin_name')||''
-let playerName = '';   // was: localStorage.getItem('player_name')||''
+/* ── state ── */
+let adminName  = '';
+let playerName = '';
 let isAdmin    = false, panelOpen = false;
 let drawMode   = false, isPointing = false;
 let drawColor  = '#111111', brushSize = 6, drawTool = 'pen';
@@ -961,15 +1115,20 @@ let dismissedPolls = {};
 let keyBuf     = '';
 let partyAudio = null, partyInterval = null, rainInterval = null;
 let spotlightOn = false, trailOn = false, trailH = null;
-let myBalance  = 0;    // was: parseFloat(localStorage.getItem('my_balance')||'0')
+let myBalance  = 0;
 let myUserId   = null;
 let myPresRef  = null;
 let adminCleanupDone = false;
 let isKicked   = false;
 
-// Session token stored in sessionStorage (clears on tab close/refresh)
-// Viewers only see content that happened during their current browser session
-const mySessionToken = sessionStorage.getItem('broadcast_session') || null;
+/*
+ * BUG FIX #3: was `const mySessionToken` — a const captured once at load as null
+ * for new visitors and never updated, so the onValue(sessionRef) listener would
+ * always see (null !== fbToken) and permanently set sessionValidated = false even
+ * after the player joined and saved the token to sessionStorage.
+ * Changed to `let` so we can update it inside registerPlayer().
+ */
+let mySessionToken = sessionStorage.getItem('broadcast_session') || null;
 
 /* ── firebase ── */
 const app        = initializeApp(FB);
@@ -996,7 +1155,6 @@ const sessionRef  = ref(db,'session');
 function doAdminStartupCleanup(){
   if(adminCleanupDone) return;
   adminCleanupDone = true;
-  // Write a new session token so viewers know this is a fresh session
   const newToken = Date.now().toString(36) + Math.random().toString(36).slice(2);
   set(sessionRef, { token: newToken, startedAt: Date.now() });
   Promise.all([
@@ -1037,13 +1195,10 @@ function initBalance(){
   if(balanceListenerActive) return;
   balanceListenerActive = true;
   const myBalRef = ref(db,`currency/${myUserId}`);
-  // Write our starting balance (0) only if no entry exists yet
   get(myBalRef).then(snap=>{
     if(!snap.exists()){
       set(myBalRef,{name:playerName, balance:0});
     }
-    // Only sync FROM firebase when the value is LARGER than what we have locally.
-    // This means admin-given coins arrive, but our own clicks never loop back.
     onValue(myBalRef, s=>{
       if(s.exists()){
         const remote = s.val().balance || 0;
@@ -1056,18 +1211,27 @@ function initBalance(){
   }).catch(console.error);
 }
 
+/*
+ * BUG FIX #4 (duplicate bgRef listener) + BUG FIX #3b (session token update):
+ * Removed the inner onValue(bgRef,...) that was being registered every time
+ * registerPlayer() was called, creating duplicate listeners. Instead we now just
+ * apply the already-stored currentBg directly after validation, and rely solely
+ * on the single top-level onValue(bgRef) listener.
+ * Also update mySessionToken (let, not const) so the onValue(sessionRef) guard
+ * sees the correct token from now on.
+ */
 function registerPlayer(name){
   if(!name) return;
   playerName = name;
   dismissJoinOverlay();
-  // Grab current session token from Firebase and store in sessionStorage
-  // so this viewer is recognised for the rest of this tab's life
   get(sessionRef).then(snap=>{
-    if(snap.exists()&&snap.val()?.token){
-      sessionStorage.setItem('broadcast_session', snap.val().token);
+    if(snap.exists() && snap.val()?.token){
+      const token = snap.val().token;
+      sessionStorage.setItem('broadcast_session', token);
+      mySessionToken = token; // update mutable variable — fixes the const bug
       sessionValidated = true;
-      // Now safe to render any live content that loaded before join
-      onValue(bgRef, snap=>{ if(snap.val()){ currentBg=snap.val(); $('main').style.background=currentBg; selBg=currentBg; } });
+      // Apply the background that was already fetched by the top-level listener
+      if(currentBg){ $('main').style.background = currentBg; selBg = currentBg; }
     }
   }).catch(()=>{});
   initBalance();
@@ -1075,7 +1239,7 @@ function registerPlayer(name){
   if(myUserId) watchForKick();
 }
 
-// Always show join overlay on load (no localStorage restore)
+// Always show join overlay on load
 joinInput.focus();
 
 joinInput.addEventListener('keydown',e=>{
@@ -1092,35 +1256,34 @@ function watchForKick(){
   onValue(myKickRef, snap=>{
     if(snap.exists() && !isAdmin){
       isKicked = true;
-      // Remove from presence so viewer count drops
       if(myPresRef) remove(myPresRef).catch(()=>{});
-      // Wipe the kick entry so it doesn't trigger again
       remove(myKickRef).catch(()=>{});
-      // Show kick screen — takes over everything
       $('kick-overlay').classList.add('show');
-      // Freeze all interaction
       document.body.style.pointerEvents = 'none';
       $('kick-overlay').style.pointerEvents = 'all';
     }
   });
 }
 
-// Sign out any cached session first — forces a brand new anonymous UID on every
-// page load/refresh, so no device can carry over admin status or identity.
+/*
+ * BUG FIX #5: Removed premature pushPresence() call from the signIn callback.
+ * It was called before the player had entered any name, writing a ghost 'viewer'
+ * presence entry with no name. Presence is now only pushed from registerPlayer()
+ * (after the join overlay) or from openPanel() (for the admin).
+ */
 const _auth = getAuth(app);
 signOut(_auth).catch(()=>{}).finally(()=>{
   signInAnonymously(_auth).then(({user})=>{
     myUserId  = user.uid;
     myPresRef = ref(db,`presence/${user.uid}`);
     onDisconnect(myPresRef).remove().catch(()=>{});
-    pushPresence();
-    if(playerName) initBalance();
+    // Do NOT pushPresence() here — player hasn't entered their name yet.
+    // registerPlayer() and openPanel() handle that at the right time.
     if(playerName && !isAdmin) watchForKick();
   }).catch(console.error);
 });
 
 /* ── PRESENCE / PLAYER LIST ── */
-// Track uid→name+isAdmin for kick tab
 let presenceData = {};
 
 onValue(presRef,snap=>{
@@ -1146,12 +1309,10 @@ onValue(presRef,snap=>{
     </div>`;
   }).join('') || '<div class="player-row" style="color:#ccc;font-size:13px">nobody here</div>';
 
-  // Wire kick buttons in player pill
   list.querySelectorAll('.pr-kick').forEach(btn=>{
     btn.addEventListener('click',()=>{ if(isAdmin) kickPlayer(btn.dataset.uid, btn.dataset.name); });
   });
 
-  // Rebuild kick tab list
   rebuildKickTab(data);
 });
 
@@ -1178,10 +1339,8 @@ function rebuildKickTab(data){
 function kickPlayer(uid, name){
   if(!uid){ showToast('no uid — player may have already left'); return; }
   if(!confirm(`Kick "${name}"?`)) return;
-  // Write kick signal — the client watches this path
   set(ref(db,`kicks/${uid}`), {by: adminName, ts: Date.now()})
     .then(()=>{
-      // Remove their presence entry immediately
       remove(ref(db,`presence/${uid}`)).catch(()=>{});
       showToast(`👢 kicked ${name}`);
     })
@@ -1215,30 +1374,23 @@ onValue(fxRef,snap=>{
   if(d?.type==='spin')     doSpin(d.dur||2000);
 });
 
-// ── SESSION GUARD ──
-// Viewers store the session token in sessionStorage (wiped on refresh).
-// If the token in Firebase doesn't match what we have in sessionStorage,
-// we treat all existing Firebase data as "stale" and hide it.
-
+/* ── SESSION GUARD ── */
 onValue(sessionRef, snap => {
   if(!snap.exists()) return;
   const fbToken = snap.val()?.token;
   if(!fbToken) return;
 
   if(isAdmin) {
-    // Admin always valid — store token so their own session is recognised
     sessionStorage.setItem('broadcast_session', fbToken);
+    mySessionToken = fbToken; // keep in sync
     sessionValidated = true;
     return;
   }
 
   if(mySessionToken === fbToken) {
-    // Viewer joined during this session — all good
     sessionValidated = true;
   } else {
-    // Viewer refreshed — they're seeing stale data. Block it all.
     sessionValidated = false;
-    // Wipe any stale visuals that may have rendered before this check
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     canvas.classList.remove('view-only');
     strokeCache = null;
@@ -1255,6 +1407,10 @@ onChildAdded(msgsRef,snap=>{
 });
 setTimeout(()=>{ msgInitDone=true; },1000);
 
+/*
+ * Single top-level bgRef listener — no duplicate in registerPlayer().
+ * Applies background whenever valid session exists.
+ */
 onValue(bgRef,snap=>{
   if(snap.val()){
     currentBg = snap.val();
@@ -1283,15 +1439,31 @@ onValue(strokesRef,snap=>{
 /* ════════════════════════════════════
    PANEL TOGGLE
 ════════════════════════════════════ */
+/*
+ * BUG FIX #2 (main reported bug — mobile admin bypass):
+ *
+ * Original code had openPanel() unconditionally set isAdmin=true and
+ * sessionValidated=true, and the CSS `@media(max-width:600px){#admin-fab{display:flex}}`
+ * made the floating button visible to ALL mobile users. Tapping it called
+ * togglePanel() → openPanel(), granting full admin rights without any secret code.
+ *
+ * Fixes applied:
+ *  a) Removed the CSS media query that auto-showed the FAB (see CSS section).
+ *  b) openPanel() now has a hard `if(!isAdmin) return` guard at the top.
+ *  c) isAdmin and sessionValidated are only set in unlockAdmin() / saveName(),
+ *     which are only reachable after entering the correct secret code.
+ *  d) The FAB click handler also checks isAdmin before toggling.
+ *  e) The FAB's display:flex is set only by JS inside openPanel() after auth.
+ */
 function openPanel(){
+  if(!isAdmin) return; // GUARD: never open for unauthenticated users
   panelOpen=true;
   $('admin-panel').classList.add('open');
   $('panel-backdrop').classList.add('show');
-  isAdmin=true;
-  sessionValidated=true;
   document.body.classList.add('is-admin');
   $('admin-name-display').textContent=adminName;
   $('code-box').style.display='none';
+  // Show FAB only after successful authentication
   $('admin-fab').style.display='flex';
   pushPresence();
   doAdminStartupCleanup();
@@ -1305,7 +1477,8 @@ function togglePanel(){ panelOpen ? closePanel() : openPanel(); }
 
 $('panel-close-btn').addEventListener('click', closePanel);
 $('panel-backdrop').addEventListener('click', closePanel);
-$('admin-fab').addEventListener('click', togglePanel);
+// BUG FIX #2d: FAB click now checks isAdmin before acting
+$('admin-fab').addEventListener('click', ()=>{ if(isAdmin) togglePanel(); });
 
 document.addEventListener('keydown',e=>{
   if(e.key==='Control'||e.key==='Meta'){
@@ -1327,7 +1500,13 @@ function checkCode(){
 $('code-btn').addEventListener('click',checkCode);
 $('code-input').addEventListener('keydown',e=>{ if(e.key==='Enter') checkCode(); });
 
+/*
+ * BUG FIX #2c: isAdmin and sessionValidated are set HERE (after code verified),
+ * not inside openPanel(). This is the only legitimate entry point to admin access.
+ */
 function unlockAdmin(){
+  isAdmin = true;
+  sessionValidated = true;
   if(!adminName){ $('name-overlay').classList.add('show'); $('name-input').focus(); }
   else openPanel();
 }
@@ -1336,9 +1515,12 @@ $('name-input').addEventListener('keydown',e=>{ if(e.key==='Enter') saveName(); 
 function saveName(){
   const v=$('name-input').value.trim(); if(!v) return;
   adminName=v;
-  // ── NO localStorage save ──
+  // isAdmin / sessionValidated already set in unlockAdmin(); set again defensively
+  isAdmin = true;
+  sessionValidated = true;
   if(!playerName){ playerName=v; dismissJoinOverlay(); }
-  $('name-overlay').classList.remove('show'); openPanel();
+  $('name-overlay').classList.remove('show');
+  openPanel();
 }
 
 document.querySelectorAll('.admin-tab').forEach(btn=>{
@@ -1675,7 +1857,6 @@ $('send-bg-btn').addEventListener('click',()=>{ set(bgRef,selBg); showToast('�
    CURRENCY SYSTEM
 ════════════════════════════════════ */
 function updateWalletUI(){
-  // Hard cap to prevent runaway values
   if(myBalance > 999999) myBalance = 999999;
   if(myBalance < 0) myBalance = 0;
   const display = myBalance % 1 === 0 ? myBalance.toFixed(0)+'€' : myBalance.toFixed(2)+'€';
@@ -1695,7 +1876,6 @@ function earnCoin(){
   myBalance += earned;
   updateWalletUI();
 
-  // Debounce the Firebase write — batch rapid clicks into one write every 800ms
   clearTimeout(_coinWriteTimer);
   _coinWriteTimer = setTimeout(()=>{
     if(myUserId){
@@ -1936,11 +2116,9 @@ const SHOP_ITEMS = [
   {id:'color_purple', label:'lila', icon:'🟣',price:25,type:'color',value:'#7b2d8b'},
 ];
 
-// No localStorage for purchases — resets on refresh
 let myPurchases = { ownedIds:[], equippedBadge:null, equippedColor:null };
 
 function savePurchases(){
-  // ── NO localStorage save — session only ──
   if(myUserId){
     set(ref(db,`purchases/${myUserId}`),{
       name: playerName||adminName||'viewer',
