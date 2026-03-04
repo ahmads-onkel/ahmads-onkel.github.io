@@ -1202,14 +1202,16 @@ document.addEventListener('click',e=>{
 });
 
 /* ── firebase listeners ── */
-onValue(shakeRef,  snap=>{ if(snap.exists()) doShake(); });
-onValue(jumpRef,   snap=>{ if(!snap.exists()) return; const d=snap.val(); if(d?.url) doJumpscare(d.url,d.duration||800); });
+let sessionValidated = false;
+const ok = ()=> isAdmin || sessionValidated;
+onValue(shakeRef,  snap=>{ if(snap.exists()  && ok()) doShake(); });
+onValue(jumpRef,   snap=>{ if(!snap.exists() || !ok()) return; const d=snap.val(); if(d?.url) doJumpscare(d.url,d.duration||800); });
 onValue(partyRef,  snap=>{ snap.exists()&&snap.val() ? doPartyStart() : doPartyStop(); });
-onValue(glitchRef, snap=>{ if(!snap.exists()) return; doGlitch(snap.val().dur||1500); });
-onValue(bigtextRef,snap=>{ if(!snap.exists()) return; const d=snap.val(); if(d?.text) doBigText(d.text,d.color||'#fff',d.dur||1200); });
-onValue(rainRef,   snap=>{ snap.exists()&&snap.val() ? doRainStart() : doRainStop(); });
+onValue(glitchRef, snap=>{ if(!snap.exists() || !ok()) return; doGlitch(snap.val().dur||1500); });
+onValue(bigtextRef,snap=>{ if(!snap.exists() || !ok()) return; const d=snap.val(); if(d?.text) doBigText(d.text,d.color||'#fff',d.dur||1200); });
+onValue(rainRef,   snap=>{ if(!ok()) return; snap.exists()&&snap.val() ? doRainStart() : doRainStop(); });
 onValue(fxRef,snap=>{
-  if(!snap.exists()) return;
+  if(!snap.exists() || !ok()) return;
   const d=snap.val();
   if(d?.type==='blackout') doBlackout(d.dur||1000);
   if(d?.type==='strobe')   doStrobe(d.dur||2000);
@@ -1221,7 +1223,6 @@ onValue(fxRef,snap=>{
 // Viewers store the session token in sessionStorage (wiped on refresh).
 // If the token in Firebase doesn't match what we have in sessionStorage,
 // we treat all existing Firebase data as "stale" and hide it.
-let sessionValidated = false; // true once we've confirmed we're in the live session
 
 onValue(sessionRef, snap => {
   if(!snap.exists()) return;
@@ -1252,7 +1253,7 @@ onValue(sessionRef, snap => {
 
 let msgInitDone=false;
 onChildAdded(msgsRef,snap=>{
-  if(!msgInitDone) return;
+  if(!msgInitDone || !ok()) return;
   const d=snap.val();
   if(d?.name&&d?.text){ showBanner(d.name,d.text); if(d.sound&&d.sound!=='none') playBeep(d.sound); }
 });
@@ -1261,7 +1262,7 @@ setTimeout(()=>{ msgInitDone=true; },1000);
 onValue(bgRef,snap=>{
   if(snap.val()){
     currentBg = snap.val();
-    if(isAdmin || sessionValidated){
+    if(ok()){
       $('main').style.background = currentBg;
       selBg = currentBg;
     }
@@ -1269,11 +1270,8 @@ onValue(bgRef,snap=>{
 });
 
 onValue(pollRef,snap=>{
-  if(!snap.exists()||!snap.val()?.question){
-    $('poll-widget').classList.remove('show');
-    return;
-  }
-  if(!isAdmin && !sessionValidated) return; // stale — viewer wasn't here for this
+  if(!snap.exists()||!snap.val()?.question){ $('poll-widget').classList.remove('show'); return; }
+  if(!ok()) return;
   const data=snap.val();
   const pollId = data.question + Object.values(data.options||{}).map(o=>o.label).join('|');
   if(dismissedPolls[pollId] && !myVotes[pollId]) return;
@@ -1281,8 +1279,8 @@ onValue(pollRef,snap=>{
 });
 
 onValue(strokesRef,snap=>{
-  if(!snap.exists()){ strokeCache=null; ctx.clearRect(0,0,canvas.width,canvas.height); if(!drawMode) canvas.classList.remove('view-only'); return; }
-  if(!isAdmin && !sessionValidated) return; // stale — don't replay old drawings
+  if(!snap.exists()){ strokeCache=null; ctx.clearRect(0,0,canvas.width,canvas.height); canvas.classList.remove('view-only'); return; }
+  if(!ok()) return;
   strokeCache=snap.val(); replayCanvas(); if(!drawMode) canvas.classList.toggle('view-only',!!strokeCache);
 });
 
@@ -1799,6 +1797,7 @@ let ngLastGameTs = 0;
 onValue(numguessRef, snap=>{
   const w = $('guess-widget');
   if(!snap.exists()){ w.classList.remove('show'); ngActive=false; ngMyGuess=null; ngLastGameTs=0; return; }
+  if(!ok()) return;
   const d = snap.val();
   $('guess-input-field').style.display = '';
   $('guess-submit-btn').style.display  = '';
