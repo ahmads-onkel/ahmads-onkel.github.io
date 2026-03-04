@@ -1037,11 +1037,22 @@ function initBalance(){
   if(balanceListenerActive) return;
   balanceListenerActive = true;
   const myBalRef = ref(db,`currency/${myUserId}`);
+  // Write our starting balance (0) only if no entry exists yet
   get(myBalRef).then(snap=>{
-    if(snap.exists()){ myBalance = snap.val().balance || 0; }
-    else { set(myBalRef,{name:playerName, balance:myBalance}); }
-    updateWalletUI();
-    onValue(myBalRef, s=>{ if(s.exists()){ myBalance = s.val().balance || 0; updateWalletUI(); } });
+    if(!snap.exists()){
+      set(myBalRef,{name:playerName, balance:0});
+    }
+    // Only sync FROM firebase when the value is LARGER than what we have locally.
+    // This means admin-given coins arrive, but our own clicks never loop back.
+    onValue(myBalRef, s=>{
+      if(s.exists()){
+        const remote = s.val().balance || 0;
+        if(remote > myBalance){
+          myBalance = remote;
+          updateWalletUI();
+        }
+      }
+    });
   }).catch(console.error);
 }
 
@@ -1670,26 +1681,37 @@ $('send-bg-btn').addEventListener('click',()=>{ set(bgRef,selBg); showToast('�
    CURRENCY SYSTEM
 ════════════════════════════════════ */
 function updateWalletUI(){
-  $('wallet-amount').textContent = myBalance.toFixed(2)+'€';
-  if($('admin-balance-display')) $('admin-balance-display').textContent = myBalance.toFixed(2)+'€';
-  if($('shop-bal')) $('shop-bal').textContent = myBalance.toFixed(2)+'€';
-  // ── NO localStorage save ──
+  // Hard cap to prevent runaway values
+  if(myBalance > 999999) myBalance = 999999;
+  if(myBalance < 0) myBalance = 0;
+  const display = myBalance % 1 === 0 ? myBalance.toFixed(0)+'€' : myBalance.toFixed(2)+'€';
+  $('wallet-amount').textContent = display;
+  if($('admin-balance-display')) $('admin-balance-display').textContent = display;
+  if($('shop-bal')) $('shop-bal').textContent = display;
   const boosted = document.body.classList.contains('party-mode');
   $('wallet-pill').classList.toggle('boosted', boosted);
   $('coin-btn-label').textContent = boosted ? '+2€ 🌮' : '+1€';
 }
 
+let _coinWriteTimer = null;
 function earnCoin(){
+  if(isKicked) return;
   const boosted = document.body.classList.contains('party-mode');
   const earned  = boosted ? 2 : 1;
   myBalance += earned;
   updateWalletUI();
-  if(myUserId){
-    set(ref(db,`currency/${myUserId}`),{
-      name: playerName||adminName||'viewer',
-      balance: myBalance
-    });
-  }
+
+  // Debounce the Firebase write — batch rapid clicks into one write every 800ms
+  clearTimeout(_coinWriteTimer);
+  _coinWriteTimer = setTimeout(()=>{
+    if(myUserId){
+      set(ref(db,`currency/${myUserId}`),{
+        name: playerName||adminName||'viewer',
+        balance: myBalance
+      });
+    }
+  }, 800);
+
   const fl=document.createElement('div');
   fl.className='coin-float';
   fl.textContent = boosted ? '+2€ 🌮' : '+1€';
