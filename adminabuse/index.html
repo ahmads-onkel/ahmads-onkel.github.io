@@ -314,7 +314,6 @@ body.glitching #main::after{content:'';position:absolute;inset:0;z-index:9998;ba
   font-size:14px;color:#777;font-family:'Patrick Hand',cursive;
   text-align:center;margin-top:-12px;
 }
-/* exact input style from spec */
 #join-name-input{
   border:none;outline:none;border-radius:15px;padding:1em;
   background-color:#ccc;
@@ -330,7 +329,7 @@ body.glitching #main::after{content:'';position:absolute;inset:0;z-index:9998;ba
 #join-name-input::placeholder{color:#aaa}
 #join-hint{font-size:12px;color:#aaa;font-family:'Patrick Hand',cursive;margin-top:-8px}
 
-/* name-overlay (admin) stays for admin flow */
+/* name-overlay (admin) */
 #name-overlay{display:none;position:fixed;inset:0;background:rgba(255,255,255,.97);z-index:10000;align-items:center;justify-content:center;flex-direction:column;gap:14px}
 #name-overlay.show{display:flex}
 #name-overlay h2{font-size:22px;color:#111;font-weight:normal}
@@ -340,7 +339,7 @@ body.glitching #main::after{content:'';position:absolute;inset:0;z-index:9998;ba
 #name-confirm:hover{opacity:.85}
 
 /* ═══════════════════════════════════════
-   PLAYERS LIST panel (click viewer pill)
+   PLAYERS LIST panel
 ═══════════════════════════════════════ */
 #players-panel{
   position:fixed;bottom:50px;left:14px;
@@ -367,7 +366,6 @@ body.glitching #main::after{content:'';position:absolute;inset:0;z-index:9998;ba
 }
 .player-row .pr-crown{font-size:15px;flex-shrink:0}
 .player-row .pr-name{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.player-row .pr-bal{font-size:12px;color:#ff5a78;font-weight:bold;flex-shrink:0}
 
 /* ═══════════════════════════════════════
    VIEWER PILL — clickable
@@ -413,8 +411,6 @@ body.glitching #main::after{content:'';position:absolute;inset:0;z-index:9998;ba
 
 /* ═══════════════════════════════════════
    CURRENCY — CLICKER BUTTON
-   Centered horizontally, above bottom edge.
-   Works on both mobile and desktop.
 ═══════════════════════════════════════ */
 #coin-btn-wrap{
   position:fixed;
@@ -510,8 +506,7 @@ body.party-mode #taco-badge{display:block}
 .currency-row .cr-amt{color:#ff5a78;font-weight:bold;margin-right:8px}
 .currency-row .cr-give{background:#111;color:#fff;border:none;font-family:'Patrick Hand',cursive;font-size:12px;padding:3px 10px;border-radius:4px;cursor:pointer}
 .currency-row .cr-give:hover{opacity:.8}
-.give-custom-row{display:flex;gap:6px;align-items:center;margin-bottom:8px}
-.give-custom-row input{flex:1;font-family:'Patrick Hand',cursive;font-size:15px;border:1px solid #e0e0e0;padding:8px 10px;outline:none;color:#111;background:#fafafa;border-radius:6px}
+</style>
 </head>
 <body>
 
@@ -525,7 +520,7 @@ body.party-mode #taco-badge{display:block}
 <div id="bigtext-overlay"><div id="bigtext-content"></div></div>
 <div id="toast"></div>
 
-<!-- JOIN OVERLAY (everyone must enter name first) -->
+<!-- JOIN OVERLAY -->
 <div id="join-overlay">
   <div id="join-title">👋 welcome!</div>
   <div id="join-sub">enter your name to join</div>
@@ -773,11 +768,13 @@ body.party-mode #taco-badge{display:block}
 <button id="admin-fab">🛠</button>
 
 <script type="module">
-import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getDatabase, ref, push, set, remove, onValue, onChildAdded }
-                           from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+// ── BUG FIX 1: Add `get` and `onDisconnect` to top-level import so dynamic
+//   import() calls inside functions are no longer needed. ──
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getDatabase, ref, push, set, remove, get, onValue, onChildAdded, onDisconnect }
+  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 import { getAuth, signInAnonymously }
-                           from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
 const FB = {
   apiKey:"AIzaSyC2umvpkas9QCC1PHrWXjk6g67i7Wyr11A",
@@ -794,7 +791,7 @@ const TACO_URL = "https://ahmads-onkel.github.io/ahmads-onkel.github.io/Its%20Ra
 
 /* ── state ── */
 let adminName  = localStorage.getItem('admin_name')||'';
-let playerName = localStorage.getItem('player_name')||''; // all users have this
+let playerName = localStorage.getItem('player_name')||'';
 let isAdmin    = false, panelOpen = false;
 let drawMode   = false, isPointing = false;
 let drawColor  = '#111111', brushSize = 6, drawTool = 'pen';
@@ -805,48 +802,80 @@ let btColor    = '#ffffff', btDur = 1200;
 let msgSound   = 'none';
 let selBg      = '#ffffff';
 let myVotes    = {};
+// BUG FIX 5: Track dismissed poll IDs so re-renders from votes don't re-open
+let dismissedPolls = {};
 let keyBuf     = '';
 let partyAudio = null, partyInterval = null, rainInterval = null;
 let spotlightOn = false, trailOn = false, trailH = null;
-let strokesRef2;
-let myBalance = parseFloat(localStorage.getItem('my_balance')||'0');
-let myUserId = null;
-let myPresRef = null;
+let myBalance  = parseFloat(localStorage.getItem('my_balance')||'0');
+let myUserId   = null;
+let myPresRef  = null;
+// BUG FIX 2: Flag so startup cleanup only runs once, and only for admin
+let adminCleanupDone = false;
 
 /* ── firebase ── */
-const app       = initializeApp(FB);
-const db        = getDatabase(app);
-const msgsRef   = ref(db,'messages');
-const pollRef   = ref(db,'poll');
-const bgRef     = ref(db,'bgcolor');
-const strokesRef= ref(db,'strokes');
-const presRef   = ref(db,'presence');
-const shakeRef  = ref(db,'shake');
-const jumpRef   = ref(db,'jumpscare');
-const partyRef  = ref(db,'party');
-const glitchRef = ref(db,'glitch');
-const bigtextRef= ref(db,'bigtext');
-const rainRef   = ref(db,'rain');
-const fxRef     = ref(db,'fx');
-const currencyRef = ref(db,'currency'); // { uid: { name, balance } }
+const app        = initializeApp(FB);
+const db         = getDatabase(app);
+const msgsRef    = ref(db,'messages');
+const pollRef    = ref(db,'poll');
+const bgRef      = ref(db,'bgcolor');
+const strokesRef = ref(db,'strokes');
+const presRef    = ref(db,'presence');
+const shakeRef   = ref(db,'shake');
+const jumpRef    = ref(db,'jumpscare');
+const partyRef   = ref(db,'party');
+const glitchRef  = ref(db,'glitch');
+const bigtextRef = ref(db,'bigtext');
+const rainRef    = ref(db,'rain');
+const fxRef      = ref(db,'fx');
+const currencyRef= ref(db,'currency');
 
-strokesRef2 = strokesRef;
+// BUG FIX 2: Moved startup DB cleanup out of global scope.
+// Now called only once when admin first opens the panel.
+function doAdminStartupCleanup(){
+  if(adminCleanupDone) return;
+  adminCleanupDone = true;
+  Promise.all([
+    remove(msgsRef), remove(pollRef), remove(strokesRef),
+    remove(shakeRef), remove(jumpRef), remove(partyRef),
+    remove(glitchRef), remove(bigtextRef), remove(rainRef), remove(fxRef),
+    set(bgRef,'#ffffff')
+  ]).catch(console.error);
+}
 
-Promise.all([
-  remove(msgsRef),remove(pollRef),remove(strokesRef),
-  remove(shakeRef),remove(jumpRef),remove(partyRef),
-  remove(glitchRef),remove(bigtextRef),remove(rainRef),remove(fxRef),
-  set(bgRef,'#ffffff')
-]).catch(console.error);
+/* ── helpers ── */
+const $ = id => document.getElementById(id);
+function showToast(msg,ms=1800){ const t=$('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),ms); }
+function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function playBeep(type){
+  try{
+    const ctx2=new(window.AudioContext||window.webkitAudioContext)();
+    const osc=ctx2.createOscillator(), g=ctx2.createGain();
+    osc.connect(g); g.connect(ctx2.destination);
+    if(type==='ding'){ osc.type='sine'; osc.frequency.setValueAtTime(880,ctx2.currentTime); g.gain.setValueAtTime(.4,ctx2.currentTime); g.gain.exponentialRampToValueAtTime(.001,ctx2.currentTime+.6); osc.start(); osc.stop(ctx2.currentTime+.6); }
+    else if(type==='horn'){ osc.type='sawtooth'; osc.frequency.setValueAtTime(220,ctx2.currentTime); g.gain.setValueAtTime(.3,ctx2.currentTime); g.gain.exponentialRampToValueAtTime(.001,ctx2.currentTime+.4); osc.start(); osc.stop(ctx2.currentTime+.4); }
+  }catch(e){}
+}
 
-// ── JOIN OVERLAY ──
-// Show blur overlay until player enters their name
-const joinOverlay = document.getElementById('join-overlay');
-const joinInput   = document.getElementById('join-name-input');
+/* ── JOIN OVERLAY ── */
+const joinOverlay = $('join-overlay');
+const joinInput   = $('join-name-input');
 
 function dismissJoinOverlay(){
   joinOverlay.classList.add('gone');
   setTimeout(()=>{ joinOverlay.style.display='none'; }, 520);
+}
+
+// BUG FIX 3: Replaced dynamic import() with top-level `get`, `set`, `onValue`
+function initBalance(){
+  if(!myUserId || !playerName) return;
+  const myBalRef = ref(db,`currency/${myUserId}`);
+  get(myBalRef).then(snap=>{
+    if(snap.exists()){ myBalance = snap.val().balance || 0; }
+    else { set(myBalRef,{name:playerName, balance:myBalance}); }
+    updateWalletUI();
+    onValue(myBalRef, s=>{ if(s.exists()){ myBalance = s.val().balance || 0; updateWalletUI(); } });
+  }).catch(console.error);
 }
 
 function registerPlayer(name){
@@ -854,25 +883,12 @@ function registerPlayer(name){
   playerName = name;
   localStorage.setItem('player_name', name);
   dismissJoinOverlay();
-  // write presence with name
   if(myPresRef){
     set(myPresRef,{name: playerName, isAdmin: isAdmin, t: Date.now()});
   }
-  // init currency
-  if(myUserId){
-    const myBalRef = ref(db,`currency/${myUserId}`);
-    import("https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js").then(m=>{
-      m.get(myBalRef).then(snap=>{
-        if(snap.exists()){ myBalance=snap.val().balance||0; }
-        else { m.set(myBalRef,{name:playerName,balance:myBalance}); }
-        updateWalletUI();
-        m.onValue(myBalRef,s=>{ if(s.exists()){ myBalance=s.val().balance||0; updateWalletUI(); } });
-      });
-    }).catch(()=>{});
-  }
+  initBalance();
 }
 
-// If they already have a saved name, skip overlay
 if(playerName){
   dismissJoinOverlay();
 } else {
@@ -884,36 +900,22 @@ joinInput.addEventListener('keydown',e=>{
 });
 
 signInAnonymously(getAuth(app)).then(({user})=>{
-  myUserId = user.uid;
+  myUserId  = user.uid;
   myPresRef = ref(db,`presence/${user.uid}`);
   const name = playerName || 'viewer';
   set(myPresRef,{name, isAdmin, t:Date.now()});
-  import("https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js")
-    .then(m=>{ m.onDisconnect(myPresRef).remove().catch(()=>{}); })
-    .catch(()=>{});
-  // if already have name, init balance right away
-  if(playerName){
-    const myBalRef = ref(db,`currency/${user.uid}`);
-    import("https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js").then(m=>{
-      m.get(myBalRef).then(snap=>{
-        if(snap.exists()){ myBalance=snap.val().balance||0; }
-        else { m.set(myBalRef,{name:playerName,balance:myBalance}); }
-        updateWalletUI();
-        m.onValue(myBalRef,s=>{ if(s.exists()){ myBalance=s.val().balance||0; updateWalletUI(); } });
-      });
-    }).catch(()=>{});
-  }
+  // BUG FIX 3: Use top-level onDisconnect instead of dynamic import
+  onDisconnect(myPresRef).remove().catch(()=>{});
+  if(playerName) initBalance();
 }).catch(console.error);
 
-// ── PRESENCE / PLAYER LIST ──
+/* ── PRESENCE / PLAYER LIST ── */
 onValue(presRef,snap=>{
   const data = snap.exists() ? snap.val() : {};
   const players = Object.values(data);
   $('viewer-count').textContent = players.length || 1;
-  // render player list
   const list = $('players-list');
   if(!list) return;
-  // admins first, then sort by name
   const sorted = players.slice().sort((a,b)=>{
     if(a.isAdmin && !b.isAdmin) return -1;
     if(!a.isAdmin && b.isAdmin) return 1;
@@ -926,11 +928,9 @@ onValue(presRef,snap=>{
     </div>`).join('') || '<div class="player-row" style="color:#ccc;font-size:13px">nobody here</div>';
 });
 
-// viewer pill click toggles players panel
 $('viewer-pill').addEventListener('click',()=>{
   $('players-panel').classList.toggle('show');
 });
-// close if clicking outside
 document.addEventListener('click',e=>{
   if(!$('players-panel').contains(e.target)&&!$('viewer-pill').contains(e.target)){
     $('players-panel').classList.remove('show');
@@ -938,12 +938,12 @@ document.addEventListener('click',e=>{
 });
 
 /* ── firebase listeners ── */
-onValue(shakeRef,snap=>{ if(snap.exists()) doShake(); });
-onValue(jumpRef,snap=>{ if(!snap.exists()) return; const d=snap.val(); if(d?.url) doJumpscare(d.url,d.duration||800); });
-onValue(partyRef,snap=>{ snap.exists()&&snap.val() ? doPartyStart() : doPartyStop(); });
-onValue(glitchRef,snap=>{ if(!snap.exists()) return; doGlitch(snap.val().dur||1500); });
+onValue(shakeRef,  snap=>{ if(snap.exists()) doShake(); });
+onValue(jumpRef,   snap=>{ if(!snap.exists()) return; const d=snap.val(); if(d?.url) doJumpscare(d.url,d.duration||800); });
+onValue(partyRef,  snap=>{ snap.exists()&&snap.val() ? doPartyStart() : doPartyStop(); });
+onValue(glitchRef, snap=>{ if(!snap.exists()) return; doGlitch(snap.val().dur||1500); });
 onValue(bigtextRef,snap=>{ if(!snap.exists()) return; const d=snap.val(); if(d?.text) doBigText(d.text,d.color||'#fff',d.dur||1200); });
-onValue(rainRef,snap=>{ snap.exists()&&snap.val() ? doRainStart() : doRainStop(); });
+onValue(rainRef,   snap=>{ snap.exists()&&snap.val() ? doRainStart() : doRainStop(); });
 onValue(fxRef,snap=>{
   if(!snap.exists()) return;
   const d=snap.val();
@@ -962,27 +962,29 @@ onChildAdded(msgsRef,snap=>{
 setTimeout(()=>{ msgInitDone=true; },1000);
 
 onValue(bgRef,snap=>{ if(snap.val()) $('main').style.background=snap.val(); });
-onValue(pollRef,snap=>{ if(!snap.exists()||!snap.val()?.question){ $('poll-widget').classList.remove('show'); return; } renderPoll(snap.val(),snap.key); });
+
+// BUG FIX 5: Guard against re-showing a poll the user already dismissed
+onValue(pollRef,snap=>{
+  if(!snap.exists()||!snap.val()?.question){
+    $('poll-widget').classList.remove('show');
+    return;
+  }
+  const data=snap.val();
+  // Build a stable poll identity from question+option labels
+  const pollId = data.question + Object.values(data.options||{}).map(o=>o.label).join('|');
+  // If user dismissed this exact poll (and hasn't voted), don't re-show it
+  if(dismissedPolls[pollId] && !myVotes[pollId]) return;
+  renderPoll(data, pollId);
+});
+
 onValue(strokesRef,snap=>{
   if(!snap.exists()){ strokeCache=null; ctx.clearRect(0,0,canvas.width,canvas.height); if(!drawMode) canvas.classList.remove('view-only'); return; }
   strokeCache=snap.val(); replayCanvas(); if(!drawMode) canvas.classList.toggle('view-only',!!strokeCache);
 });
 
-/* ── helpers ── */
-const $ = id => document.getElementById(id);
-function showToast(msg,ms=1800){ const t=$('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),ms); }
-function playBeep(type){
-  try{
-    const ctx2=new(window.AudioContext||window.webkitAudioContext)();
-    const osc=ctx2.createOscillator(), g=ctx2.createGain();
-    osc.connect(g); g.connect(ctx2.destination);
-    if(type==='ding'){ osc.type='sine'; osc.frequency.setValueAtTime(880,ctx2.currentTime); g.gain.setValueAtTime(.4,ctx2.currentTime); g.gain.exponentialRampToValueAtTime(.001,ctx2.currentTime+.6); osc.start(); osc.stop(ctx2.currentTime+.6); }
-    else if(type==='horn'){ osc.type='sawtooth'; osc.frequency.setValueAtTime(220,ctx2.currentTime); g.gain.setValueAtTime(.3,ctx2.currentTime); g.gain.exponentialRampToValueAtTime(.001,ctx2.currentTime+.4); osc.start(); osc.stop(ctx2.currentTime+.4); }
-  }catch(e){}
-}
-function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-
-/* ── panel toggle ── */
+/* ════════════════════════════════════
+   PANEL TOGGLE
+════════════════════════════════════ */
 function openPanel(){
   panelOpen=true;
   $('admin-panel').classList.add('open');
@@ -991,8 +993,9 @@ function openPanel(){
   $('admin-name-display').textContent=adminName;
   $('code-box').style.display='none';
   $('admin-fab').style.display='flex';
-  // mark presence as admin
   if(myPresRef) set(myPresRef,{name:adminName||playerName,isAdmin:true,t:Date.now()});
+  // BUG FIX 2: Run DB cleanup only once, only for admin
+  doAdminStartupCleanup();
 }
 function closePanel(){
   panelOpen=false;
@@ -1036,7 +1039,6 @@ $('name-input').addEventListener('keydown',e=>{ if(e.key==='Enter') saveName(); 
 function saveName(){
   const v=$('name-input').value.trim(); if(!v) return;
   adminName=v; localStorage.setItem('admin_name',adminName);
-  // also set as player name if not set
   if(!playerName){ playerName=v; localStorage.setItem('player_name',v); dismissJoinOverlay(); }
   $('name-overlay').classList.remove('show'); openPanel();
 }
@@ -1054,15 +1056,12 @@ document.querySelectorAll('.admin-tab').forEach(btn=>{
 /* ════════════════════════════════════
    EFFECTS
 ════════════════════════════════════ */
-/* shake */
 function doShake(){ document.body.classList.remove('shaking'); void document.body.offsetWidth; document.body.classList.add('shaking'); setTimeout(()=>document.body.classList.remove('shaking'),660); }
 $('shake-btn').addEventListener('click',()=>{ set(shakeRef,{ts:Date.now()}); doShake(); showToast('📳 shaking'); });
 
-/* glitch */
 function doGlitch(dur){ document.body.classList.add('glitching'); setTimeout(()=>document.body.classList.remove('glitching'),dur); }
 $('glitch-btn').addEventListener('click',()=>{ set(glitchRef,{dur:glitchDur,ts:Date.now()}); doGlitch(glitchDur); showToast('⚡ glitching'); });
 
-/* blackout */
 function doBlackout(dur){
   const m=$('main'), old=m.style.background;
   m.style.transition='background .1s'; m.style.background='#000';
@@ -1070,7 +1069,6 @@ function doBlackout(dur){
 }
 $('blackout-btn').addEventListener('click',()=>{ set(fxRef,{type:'blackout',dur:1200,ts:Date.now()}); doBlackout(1200); showToast('🌑 blackout'); });
 
-/* strobe */
 let strobeTimer=null;
 function doStrobe(dur){
   let i=0; const m=$('main'), orig=m.style.background;
@@ -1079,11 +1077,9 @@ function doStrobe(dur){
 }
 $('strobe-btn').addEventListener('click',()=>{ set(fxRef,{type:'strobe',dur:2000,ts:Date.now()}); doStrobe(2000); showToast('💡 strobe'); });
 
-/* flip */
 function doFlip(dur){ $('main').style.transform='scaleY(-1)'; setTimeout(()=>$('main').style.transform='',dur); }
 $('flip-btn').addEventListener('click',()=>{ set(fxRef,{type:'flip',dur:3000,ts:Date.now()}); doFlip(3000); showToast('🙃 flipped'); });
 
-/* spin */
 function doSpin(dur){
   const m=$('main');
   m.style.transition=`transform ${dur}ms linear`;
@@ -1126,17 +1122,20 @@ function doPartyStart(){
   if(document.body.classList.contains('party-mode')) return;
   document.body.classList.add('party-mode');
   spawnTacos();
-  // Re-create audio each time to bypass autoplay restrictions
   if(partyAudio){ partyAudio.pause(); partyAudio=null; }
   partyAudio=new Audio(TACO_URL);
   partyAudio.loop=true; partyAudio.volume=0.6;
   partyAudio.play().catch(e=>console.warn('audio blocked:',e));
+  // BUG FIX 6: Update wallet UI here instead of a duplicate onValue listener
+  updateWalletUI();
 }
 function doPartyStop(){
   document.body.classList.remove('party-mode');
   if(partyAudio){ partyAudio.pause(); partyAudio.currentTime=0; partyAudio=null; }
   if(partyInterval){ clearInterval(partyInterval); partyInterval=null; }
   $('taco-container').innerHTML='';
+  // BUG FIX 6: Update wallet UI here instead of a duplicate onValue listener
+  updateWalletUI();
 }
 function spawnTacos(){
   if(partyInterval) clearInterval(partyInterval);
@@ -1177,7 +1176,6 @@ const btColRow=$('bt-colors');
 BT_COLORS.forEach((c,i)=>{
   const s=document.createElement('div'); s.className='swatch'+(i===0?' sel':'');
   s.style.background=c; if(c==='#ffffff'||c==='#111111') s.style.outline='1px solid #ccc';
-  s.dataset.btc=c;
   s.addEventListener('click',()=>{ document.querySelectorAll('#bt-colors .swatch').forEach(x=>x.classList.remove('sel')); s.classList.add('sel'); btColor=c; });
   btColRow.appendChild(s);
 });
@@ -1227,14 +1225,11 @@ const drawColRow=$('draw-colors');
 DRAW_COLORS.forEach((c,i)=>{
   const s=document.createElement('div'); s.className='swatch'+(i===0?' sel':'');
   s.style.background=c; if(c==='#ffffff') s.style.outline='1px solid #ccc';
-  s.dataset.c=c;
   s.addEventListener('click',()=>{ document.querySelectorAll('#draw-colors .swatch').forEach(x=>x.classList.remove('sel')); s.classList.add('sel'); drawColor=c; });
   drawColRow.appendChild(s);
 });
 
-function resizeCanvas(){
-  canvas.width=$('main').clientWidth; canvas.height=$('main').clientHeight; replayCanvas();
-}
+function resizeCanvas(){ canvas.width=$('main').clientWidth; canvas.height=$('main').clientHeight; replayCanvas(); }
 function replayCanvas(){
   ctx.clearRect(0,0,canvas.width,canvas.height);
   if(!strokeCache) return;
@@ -1306,9 +1301,8 @@ function showBanner(name,text){
 /* ════════════════════════════════════
    POLL
 ════════════════════════════════════ */
-// builder — seed 2 default options
 (function seedPoll(){
-  ['Option 1','Option 2'].forEach((pl,i)=>{
+  ['Option 1','Option 2'].forEach(pl=>{
     const wrap=document.createElement('div'); wrap.className='poll-opt-wrap';
     wrap.innerHTML=`<input type="text" placeholder="${pl}" maxlength="60"/><button class="rm-opt" type="button">×</button>`;
     $('poll-builder').appendChild(wrap);
@@ -1331,26 +1325,40 @@ $('send-poll-btn').addEventListener('click',()=>{
   const opts=Array.from($('poll-builder').querySelectorAll('input')).map(i=>i.value.trim()).filter(Boolean);
   if(opts.length<2){ showToast('Need 2+ options!'); return; }
   const optObj={}; opts.forEach((o,i)=>{ optObj[i]={label:o,votes:0}; });
+  // Reset dismissals when a new poll is launched
+  dismissedPolls={};
   set(pollRef,{question:q,options:optObj,ts:Date.now()}); showToast('📊 poll launched');
 });
 $('close-poll-btn').addEventListener('click',()=>{ remove(pollRef); showToast('Poll closed'); });
 
-function renderPoll(data,pollKey){
+function renderPoll(data, pollId){
   $('poll-question').textContent=data.question;
   const container=$('poll-options-display'); container.innerHTML='';
   const opts=data.options||{}, keys=Object.keys(opts);
   const total=keys.reduce((s,k)=>s+(opts[k].votes||0),0);
-  const voted=myVotes[pollKey];
+  const voted=myVotes[pollId];
   keys.forEach(k=>{
     const opt=opts[k], pct=total>0?Math.round((opt.votes||0)/total*100):0;
     const div=document.createElement('div'); div.className='poll-option'+(voted?' voted':'');
     div.innerHTML=`<div class="poll-bar-wrap"><div class="poll-bar-fill" style="width:${voted?pct:0}%"></div><div class="poll-bar-label"><span>${esc(opt.label)}</span>${voted?`<span>${pct}%</span>`:''}</div></div>`;
-    if(!voted){ div.style.cursor='pointer'; div.addEventListener('click',()=>{ myVotes[pollKey]=k; set(ref(db,`poll/options/${k}/votes`),(opt.votes||0)+1); }); }
+    if(!voted){ div.style.cursor='pointer'; div.addEventListener('click',()=>{ myVotes[pollId]=k; set(ref(db,`poll/options/${k}/votes`),(opt.votes||0)+1); }); }
     container.appendChild(div);
   });
   $('poll-widget').classList.add('show');
 }
-$('poll-close').addEventListener('click',()=>$('poll-widget').classList.remove('show'));
+
+// BUG FIX 5: Dismiss stores the pollId so re-renders from new votes don't re-open
+$('poll-close').addEventListener('click',()=>{
+  const q=$('poll-question').textContent;
+  // Mark current poll as dismissed using its question text as key
+  // (full pollId isn't directly accessible here, so we use question)
+  Object.keys(dismissedPolls); // already scoped
+  $('poll-widget').classList.remove('show');
+  // Reconstruct pollId from current DOM state to mark as dismissed
+  const opts=Array.from($('poll-options-display').querySelectorAll('.poll-bar-label span:first-child')).map(s=>s.textContent);
+  const pid=q+opts.join('|');
+  dismissedPolls[pid]=true;
+});
 
 /* ════════════════════════════════════
    BACKGROUND
@@ -1360,7 +1368,6 @@ const bgGrid=$('bg-swatches');
 BG_COLORS.forEach((c,i)=>{
   const s=document.createElement('div'); s.className='swatch square'+(i===0?' sel':'');
   s.style.background=c; if(c==='#ffffff') s.style.outline='1px solid #ccc';
-  s.dataset.bg=c;
   s.addEventListener('click',()=>{ document.querySelectorAll('#bg-swatches .swatch').forEach(x=>x.classList.remove('sel')); s.classList.add('sel'); selBg=c; $('custom-color').value=c; });
   bgGrid.appendChild(s);
 });
@@ -1370,7 +1377,6 @@ $('send-bg-btn').addEventListener('click',()=>{ set(bgRef,selBg); showToast('�
 /* ════════════════════════════════════
    CURRENCY SYSTEM
 ════════════════════════════════════ */
-
 function updateWalletUI(){
   $('wallet-amount').textContent = myBalance.toFixed(2)+'€';
   if($('admin-balance-display')) $('admin-balance-display').textContent = myBalance.toFixed(2)+'€';
@@ -1380,7 +1386,7 @@ function updateWalletUI(){
   $('coin-btn-label').textContent = boosted ? '+2€ 🌮' : '+1€';
 }
 
-function earnCoin(e){
+function earnCoin(){
   const boosted = document.body.classList.contains('party-mode');
   const earned  = boosted ? 2 : 1;
   myBalance += earned;
@@ -1391,30 +1397,30 @@ function earnCoin(e){
       balance: myBalance
     });
   }
-  const fl = document.createElement('div');
+  const fl=document.createElement('div');
   fl.className='coin-float';
   fl.textContent = boosted ? '+2€ 🌮' : '+1€';
-  // center above button
   const wrap=$('coin-btn-wrap'), r=wrap.getBoundingClientRect();
-  fl.style.left = (r.left+r.width/2-20)+'px';
-  fl.style.top  = (r.top-10)+'px';
+  fl.style.left=(r.left+r.width/2-20)+'px';
+  fl.style.top=(r.top-10)+'px';
   document.body.appendChild(fl);
   setTimeout(()=>fl.remove(), 1000);
 }
 
 $('coin-btn').addEventListener('click', earnCoin);
 
-onValue(partyRef, snap=>{ setTimeout(updateWalletUI, 100); });
+// BUG FIX 6: Removed duplicate onValue(partyRef) listener for wallet update.
+// updateWalletUI() is now called directly inside doPartyStart() and doPartyStop().
 
-// ── ADMIN: currency leaderboard ──
+/* ── ADMIN: currency leaderboard ── */
 onValue(currencyRef, snap=>{
-  const lb = $('currency-leaderboard');
+  const lb=$('currency-leaderboard');
   if(!lb) return;
   if(!snap.exists()){ lb.innerHTML='<div class="currency-row" style="color:#ccc;font-size:13px;justify-content:center">no balances yet</div>'; return; }
-  const entries = Object.entries(snap.val())
+  const entries=Object.entries(snap.val())
     .map(([uid,v])=>({uid, name:v.name||'viewer', balance:v.balance||0}))
     .sort((a,b)=>b.balance-a.balance);
-  lb.innerHTML = entries.map((e,i)=>`
+  lb.innerHTML=entries.map((e,i)=>`
     <div class="currency-row">
       <span class="cr-name">${i===0?'🥇':i===1?'🥈':i===2?'🥉':'  '} ${esc(e.name)}</span>
       <span class="cr-amt">${e.balance.toFixed(2)}€</span>
@@ -1422,27 +1428,25 @@ onValue(currencyRef, snap=>{
     </div>`).join('');
   lb.querySelectorAll('.cr-give').forEach(btn=>{
     btn.addEventListener('click',()=>{
-      $('give-name-input').value = btn.dataset.name;
+      $('give-name-input').value=btn.dataset.name;
       $('give-amount-input').focus();
     });
   });
 });
 
-// give currency
+// BUG FIX 3: Replaced dynamic import() in giveCurrency with top-level `get` and `set`
 function giveCurrency(name, amount){
   if(!name||!amount||amount<=0){ showToast('enter name + amount'); return; }
-  import("https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js").then(m=>{
-    m.get(currencyRef).then(snap=>{
-      if(!snap.exists()){ showToast('no players found'); return; }
-      const entries = Object.entries(snap.val());
-      const match = entries.find(([uid,v])=>(v.name||'').toLowerCase()===name.toLowerCase());
-      if(!match){ showToast(`"${name}" not found`); return; }
-      const [uid, v] = match;
-      const newBal = (v.balance||0) + amount;
-      m.set(ref(db,`currency/${uid}`),{name:v.name, balance:newBal});
-      showToast(`💸 gave ${amount}€ to ${v.name}!`);
-      if(uid===myUserId){ myBalance=newBal; updateWalletUI(); }
-    });
+  get(currencyRef).then(snap=>{
+    if(!snap.exists()){ showToast('no players found'); return; }
+    const entries=Object.entries(snap.val());
+    const match=entries.find(([uid,v])=>(v.name||'').toLowerCase()===name.toLowerCase());
+    if(!match){ showToast(`"${name}" not found`); return; }
+    const [uid, v]=match;
+    const newBal=(v.balance||0)+amount;
+    set(ref(db,`currency/${uid}`),{name:v.name, balance:newBal});
+    showToast(`💸 gave ${amount}€ to ${v.name}!`);
+    if(uid===myUserId){ myBalance=newBal; updateWalletUI(); }
   }).catch(()=>showToast('firebase error'));
 }
 
@@ -1464,7 +1468,6 @@ $('reset-currency-btn').addEventListener('click',()=>{
 });
 
 updateWalletUI();
-
 </script>
 </body>
 </html>
