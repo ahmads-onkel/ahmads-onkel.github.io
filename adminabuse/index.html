@@ -10,9 +10,6 @@
 :root{--panel-w:360px;--panel-radius:16px;--accent:#111;--border:#e8e8e8}
 html,body{height:100%;overflow:hidden;font-family:'Patrick Hand',cursive;background:#fff;color:#111;touch-action:manipulation}
 
-/* ═══════════════════════════════════════
-   EFFECTS
-═══════════════════════════════════════ */
 @keyframes shake{
   0%,100%{transform:translate(0,0) rotate(0)}
   10%{transform:translate(-8px,-6px) rotate(-1.5deg)}
@@ -34,50 +31,40 @@ body.shaking{animation:shake .6s ease}
 }
 body.party-mode #main{animation:partyBg 1.2s linear infinite}
 
-/* tacos */
 #taco-container{position:fixed;inset:0;z-index:1500;pointer-events:none;overflow:hidden;display:none}
 body.party-mode #taco-container{display:block}
 .taco{position:absolute;top:-60px;font-size:32px;animation:tacoFall linear forwards;user-select:none}
 @keyframes tacoFall{0%{transform:translateY(0) rotate(0);opacity:1}90%{opacity:1}100%{transform:translateY(110vh) rotate(720deg);opacity:0}}
 
-/* glitch */
 body.glitching #main{animation:glitchMain .12s steps(1) infinite}
 body.glitching #main::before{content:'';position:absolute;inset:0;z-index:9999;background:rgba(255,0,60,.18);pointer-events:none;animation:glitchA .1s steps(1) infinite}
 body.glitching #main::after{content:'';position:absolute;inset:0;z-index:9998;background:rgba(0,200,255,.15);pointer-events:none;animation:glitchMain .13s steps(1) .04s infinite}
 @keyframes glitchMain{0%,100%{clip-path:inset(0 0 95% 0);transform:translate(-4px,0)}20%{clip-path:inset(30% 0 50% 0);transform:translate(4px,0)}40%{clip-path:inset(60% 0 20% 0);transform:translate(-2px,0)}60%{clip-path:inset(80% 0 5% 0);transform:translate(2px,0)}80%{clip-path:inset(10% 0 70% 0);transform:translate(-4px,0)}}
 @keyframes glitchA{0%,100%{clip-path:inset(5% 0 80% 0);transform:translate(4px,0) skewX(2deg)}25%{clip-path:inset(50% 0 30% 0);transform:translate(-4px,0) skewX(-2deg)}50%{clip-path:inset(20% 0 60% 0);transform:translate(3px,0) skewX(1deg)}75%{clip-path:inset(70% 0 10% 0);transform:translate(-3px,0) skewX(-1deg)}}
 
-/* rain */
 #rain-container{position:fixed;inset:0;z-index:800;pointer-events:none;overflow:hidden;display:none}
 #rain-container.show{display:block}
 .raindrop{position:absolute;top:-20px;width:2px;background:linear-gradient(to bottom,transparent,rgba(120,180,255,.7));animation:rainFall linear infinite;border-radius:0 0 2px 2px}
 @keyframes rainFall{0%{transform:translateY(0);opacity:.7}100%{transform:translateY(110vh);opacity:.2}}
 
-/* spotlight */
 #spotlight-overlay{display:none;position:fixed;inset:0;z-index:900;pointer-events:none;background:rgba(0,0,0,.85);-webkit-mask-image:radial-gradient(circle 160px at 50% 50%,transparent 100%,black 100%);mask-image:radial-gradient(circle 160px at 50% 50%,transparent 100%,black 100%)}
 #spotlight-overlay.show{display:block}
 
-/* cursor trail */
 .cursor-spark{position:fixed;pointer-events:none;z-index:9000;border-radius:50%;transform:translate(-50%,-50%);animation:sparkFade .6s ease-out forwards}
 @keyframes sparkFade{0%{opacity:1;transform:translate(-50%,-50%) scale(1)}100%{opacity:0;transform:translate(-50%,-50%) scale(.1)}}
 
-/* jumpscare */
 #jumpscare-overlay{display:none;position:fixed;inset:0;z-index:4000;background:#000;align-items:center;justify-content:center;pointer-events:none}
 #jumpscare-overlay.show{display:flex;animation:jsFlash .08s steps(1) infinite}
 #jumpscare-img{max-width:90vw;max-height:90vh;object-fit:contain;animation:jsPop .15s ease-out forwards}
 @keyframes jsPop{0%{transform:scale(.4);opacity:0}60%{transform:scale(1.08);opacity:1}100%{transform:scale(1);opacity:1}}
 @keyframes jsFlash{0%{outline:8px solid red}50%{outline:8px solid #ff0}100%{outline:8px solid red}}
 
-/* big text */
 #bigtext-overlay{display:none;position:fixed;inset:0;z-index:3500;pointer-events:none;align-items:center;justify-content:center}
 #bigtext-overlay.show{display:flex}
 #bigtext-content{font-size:clamp(48px,12vw,140px);font-weight:bold;text-align:center;padding:0 20px;line-height:1.1;opacity:0;transform:scale(.3);text-shadow:4px 4px 0 rgba(0,0,0,.15)}
 #bigtext-overlay.show #bigtext-content{animation:bigPop .5s cubic-bezier(.22,.68,0,1.3) forwards}
 @keyframes bigPop{0%{opacity:0;transform:scale(.3) rotate(-5deg)}70%{opacity:1;transform:scale(1.06) rotate(1deg)}100%{opacity:1;transform:scale(1) rotate(0)}}
 
-/* ═══════════════════════════════════════
-   MAIN STAGE
-═══════════════════════════════════════ */
 #main{position:fixed;inset:0;overflow:hidden;transition:background 1.2s ease;background:#fff}
 
 #draw-canvas{position:absolute;inset:0;z-index:10;display:none;touch-action:none}
@@ -101,15 +88,20 @@ body.glitching #main::after{content:'';position:absolute;inset:0;z-index:9998;ba
 #poll-close{margin-top:12px;font-family:'Patrick Hand',cursive;font-size:13px;background:none;border:1px solid #ccc;padding:6px 14px;cursor:pointer;color:#888;width:100%;transition:border-color .2s,color .2s}
 #poll-close:hover{border-color:#111;color:#111}
 
-/* ═══════════════════════════════════════
-   TOAST
-═══════════════════════════════════════ */
 #toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:#111;color:#fff;font-family:'Patrick Hand',cursive;font-size:14px;padding:8px 20px;border-radius:4px;opacity:0;pointer-events:none;transition:opacity .25s,transform .25s;z-index:9999;white-space:nowrap}
 #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 
-/* ═══════════════════════════════════════
-   ADMIN PANEL — FLOATING CENTER (desktop)
-═══════════════════════════════════════ */
+/* ── KICK OVERLAY ── */
+#kick-overlay{
+  display:none;position:fixed;inset:0;z-index:99999;
+  background:#000;align-items:center;justify-content:center;flex-direction:column;gap:18px;
+}
+#kick-overlay.show{display:flex}
+#kick-overlay .kick-emoji{font-size:72px;animation:kickBounce .5s ease infinite alternate}
+@keyframes kickBounce{0%{transform:scale(1)}100%{transform:scale(1.15)}}
+#kick-overlay .kick-msg{font-family:'Patrick Hand',cursive;font-size:24px;color:#fff;text-align:center}
+#kick-overlay .kick-sub{font-family:'Patrick Hand',cursive;font-size:14px;color:#888;text-align:center}
+
 #panel-backdrop{display:none;position:fixed;inset:0;z-index:4999;background:rgba(0,0,0,.35);backdrop-filter:blur(2px)}
 #panel-backdrop.show{display:block}
 
@@ -131,7 +123,6 @@ body.glitching #main::after{content:'';position:absolute;inset:0;z-index:9998;ba
 }
 #admin-panel.open{display:flex;transform:translate(-50%,-50%) scale(1);opacity:1}
 
-/* header */
 #panel-header{
   background:#111;
   padding:14px 18px 12px;
@@ -144,14 +135,12 @@ body.glitching #main::after{content:'';position:absolute;inset:0;z-index:9998;ba
 #panel-close-btn{background:none;border:none;color:rgba(255,255,255,.6);font-size:20px;cursor:pointer;line-height:1;padding:2px 4px}
 #panel-close-btn:hover{color:#fff}
 
-/* tabs — horizontal scroll */
 .admin-tabs{display:flex;background:#fafafa;border-bottom:1.5px solid #e8e8e8;flex-shrink:0;overflow-x:auto;scrollbar-width:none}
 .admin-tabs::-webkit-scrollbar{display:none}
 .admin-tab{flex:none;padding:10px 14px;font-family:'Patrick Hand',cursive;font-size:12px;background:none;border:none;cursor:pointer;color:#aaa;border-bottom:2px solid transparent;margin-bottom:-1.5px;transition:color .15s;white-space:nowrap}
 .admin-tab.active{color:#111;border-bottom-color:#111}
 .admin-tab:hover:not(.active){color:#555}
 
-/* panel body */
 #panel-content{flex:1;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
 #panel-content::-webkit-scrollbar{width:3px}
 #panel-content::-webkit-scrollbar-thumb{background:#e0e0e0}
@@ -159,12 +148,8 @@ body.glitching #main::after{content:'';position:absolute;inset:0;z-index:9998;ba
 .tab-panel{display:none;padding:16px}
 .tab-panel.active{display:block}
 
-/* hint bar */
 #panel-hint{text-align:center;font-size:10px;color:#bbb;padding:6px 0;border-top:1px solid #f0f0f0;flex-shrink:0}
 
-/* ═══════════════════════════════════════
-   MOBILE SHEET
-═══════════════════════════════════════ */
 @media(max-width:600px){
   #admin-panel{
     top:auto;left:0;right:0;bottom:0;
@@ -181,9 +166,6 @@ body.glitching #main::after{content:'';position:absolute;inset:0;z-index:9998;ba
   .tab-panel{padding:14px}
 }
 
-/* ═══════════════════════════════════════
-   FAB — floating action button
-═══════════════════════════════════════ */
 #admin-fab{
   position:fixed;bottom:20px;right:20px;z-index:4998;
   width:52px;height:52px;
@@ -197,9 +179,6 @@ body.glitching #main::after{content:'';position:absolute;inset:0;z-index:9998;ba
 #admin-fab:active{transform:scale(.9)}
 @media(max-width:600px){#admin-fab{display:flex}}
 
-/* ═══════════════════════════════════════
-   CODE BOX (non-admin view)
-═══════════════════════════════════════ */
 #code-box{
   position:fixed;bottom:0;left:0;right:0;
   z-index:4990;background:#fff;border-top:1.5px solid #e8e8e8;
@@ -214,9 +193,6 @@ body.glitching #main::after{content:'';position:absolute;inset:0;z-index:9998;ba
 #code-input:focus{border-color:#111}
 #code-btn{font-family:'Patrick Hand',cursive;font-size:16px;background:#111;color:#fff;border:none;padding:9px 18px;cursor:pointer;border-radius:4px}
 
-/* ═══════════════════════════════════════
-   COMPONENT STYLES
-═══════════════════════════════════════ */
 .panel-label{font-size:10px;color:#bbb;margin-bottom:6px;letter-spacing:.5px;text-transform:uppercase}
 .divider{height:1px;background:#f0f0f0;margin:12px 0}
 
@@ -236,18 +212,15 @@ body.glitching #main::after{content:'';position:absolute;inset:0;z-index:9998;ba
 .admin-btn.orange{background:#ff9e00;color:#000}
 .admin-btn.pink{background:#f72585}
 
-/* button grid */
 .btn-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:4px}
 .btn-grid .admin-btn{margin-top:0}
 
-/* icon big buttons */
 .icon-btn-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:8px}
 .icon-btn{font-family:'Patrick Hand',cursive;font-size:12px;background:#fafafa;border:1.5px solid #e8e8e8;padding:10px 6px;cursor:pointer;color:#111;text-align:center;line-height:1.4;border-radius:8px;transition:all .15s}
 .icon-btn:hover{border-color:#111;background:#f0f0f0}
 .icon-btn:active{background:#111;color:#fff}
 .icon-btn .ib-icon{font-size:20px;display:block;margin-bottom:2px}
 
-/* swatches */
 .swatch-row{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:8px}
 .swatch{width:26px;height:26px;border-radius:50%;cursor:pointer;border:2px solid transparent;transition:transform .15s,border-color .15s;flex-shrink:0}
 .swatch:hover{transform:scale(1.15)}
@@ -255,19 +228,16 @@ body.glitching #main::after{content:'';position:absolute;inset:0;z-index:9998;ba
 .swatch.square{border-radius:4px}
 .swatch.square.sel{border-color:#111}
 
-/* tool toggles */
 .tool-row{display:flex;gap:5px;margin-bottom:8px}
 .tool-btn{flex:1;font-family:'Patrick Hand',cursive;font-size:13px;background:#fafafa;border:1px solid #e0e0e0;padding:7px 4px;cursor:pointer;color:#888;transition:all .15s;text-align:center;border-radius:4px}
 .tool-btn:hover{border-color:#111;color:#111}
 .tool-btn.active{background:#111;border-color:#111;color:#fff}
 
-/* size row */
 .size-row{display:flex;gap:6px;margin-bottom:8px;align-items:center}
 .size-row label{font-size:11px;color:#bbb;text-transform:uppercase;white-space:nowrap}
 .size-row input[type=range]{flex:1;accent-color:#111;cursor:pointer}
 .size-row span{font-size:13px;color:#111;min-width:18px;text-align:right}
 
-/* poll builder */
 .poll-opt-wrap{display:flex;gap:5px;margin-bottom:6px;align-items:center}
 .poll-opt-wrap input{flex:1;font-family:'Patrick Hand',cursive;font-size:14px;border:1px solid #e0e0e0;padding:7px 8px;outline:none;background:#fafafa;color:#111;transition:border-color .18s;border-radius:4px}
 .poll-opt-wrap input:focus{border-color:#111}
@@ -277,20 +247,15 @@ body.glitching #main::after{content:'';position:absolute;inset:0;z-index:9998;ba
 #add-opt-btn{font-family:'Patrick Hand',cursive;font-size:13px;background:#fafafa;border:1px dashed #ccc;padding:7px 12px;cursor:pointer;color:#aaa;margin-bottom:8px;width:100%;border-radius:4px;transition:border-color .18s,color .18s}
 #add-opt-btn:hover{border-color:#111;color:#111}
 
-/* js presets */
 .js-presets{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}
 .js-preset{width:54px;height:54px;cursor:pointer;object-fit:cover;border:2px solid transparent;border-radius:6px;transition:border-color .15s,transform .15s;background:#f0f0f0}
 .js-preset:hover{border-color:#111;transform:scale(1.05)}
 .js-preset.sel{border-color:#e63946}
 
-/* toggle button */
 .toggle-btn{width:100%;font-family:'Patrick Hand',cursive;font-size:15px;background:#fff;border:1.5px solid #111;padding:9px;cursor:pointer;color:#111;transition:all .15s;margin-bottom:8px;border-radius:6px}
 .toggle-btn:hover{background:#f5f5f5}
 .toggle-btn.on{background:#111;color:#fff}
 
-/* ═══════════════════════════════════════
-   JOIN SCREEN — blurred background, name entry
-═══════════════════════════════════════ */
 #join-overlay{
   position:fixed;inset:0;z-index:9500;
   background:#fff;
@@ -326,7 +291,6 @@ body.glitching #main::after{content:'';position:absolute;inset:0;z-index:9998;ba
 }
 #join-name-input::placeholder{color:#aaa}
 
-/* name-overlay (admin) */
 #name-overlay{display:none;position:fixed;inset:0;background:rgba(255,255,255,.97);z-index:10000;align-items:center;justify-content:center;flex-direction:column;gap:14px}
 #name-overlay.show{display:flex}
 #name-overlay h2{font-size:22px;color:#111;font-weight:normal}
@@ -335,17 +299,15 @@ body.glitching #main::after{content:'';position:absolute;inset:0;z-index:9998;ba
 #name-confirm{font-family:'Patrick Hand',cursive;font-size:16px;background:#111;color:#fff;border:none;padding:10px 36px;cursor:pointer;border-radius:4px}
 #name-confirm:hover{opacity:.85}
 
-/* ═══════════════════════════════════════
-   PLAYERS LIST panel
-═══════════════════════════════════════ */
+/* ── PLAYERS LIST ── */
 #players-panel{
   position:fixed;bottom:50px;left:14px;
   z-index:550;
   background:#fff;
   border:1.5px solid #e8e8e8;
   border-radius:14px;
-  min-width:200px;max-width:260px;
-  max-height:260px;overflow-y:auto;
+  min-width:200px;max-width:280px;
+  max-height:300px;overflow-y:auto;
   box-shadow:0 8px 32px rgba(0,0,0,.14);
   display:none;
   font-family:'Patrick Hand',cursive;
@@ -363,10 +325,16 @@ body.glitching #main::after{content:'';position:absolute;inset:0;z-index:9998;ba
 }
 .player-row .pr-crown{font-size:15px;flex-shrink:0}
 .player-row .pr-name{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+/* kick button inside player row */
+.player-row .pr-kick{
+  background:none;border:1px solid #e0e0e0;color:#e63946;
+  font-size:11px;font-family:'Patrick Hand',cursive;
+  padding:2px 7px;border-radius:4px;cursor:pointer;
+  flex-shrink:0;transition:all .15s;display:none;
+}
+.player-row .pr-kick:hover{background:#e63946;border-color:#e63946;color:#fff}
+body.is-admin .player-row .pr-kick{display:inline-block}
 
-/* ═══════════════════════════════════════
-   VIEWER PILL — clickable
-═══════════════════════════════════════ */
 #viewer-pill{
   position:absolute;bottom:14px;left:14px;
   background:rgba(255,255,255,.92);border:1px solid #e0e0e0;
@@ -380,13 +348,9 @@ body.glitching #main::after{content:'';position:absolute;inset:0;z-index:9998;ba
 #viewer-pill:hover{background:#fff;border-color:#aaa;box-shadow:0 2px 10px rgba(0,0,0,.1)}
 #viewer-pill b{color:#111}
 
-/* color grid for BG */
 .color-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin-bottom:10px}
 .color-grid .swatch{width:auto;height:0;padding-bottom:100%;border-radius:6px}
 
-/* ═══════════════════════════════════════
-   CURRENCY — WALLET PILL
-═══════════════════════════════════════ */
 #wallet-pill{
   position:fixed;top:16px;right:16px;z-index:600;
   background:rgba(255,255,255,.95);
@@ -406,9 +370,6 @@ body.glitching #main::after{content:'';position:absolute;inset:0;z-index:9998;ba
 }
 #wallet-pill.boosted .boost-badge{display:inline}
 
-/* ═══════════════════════════════════════
-   CURRENCY — CLICKER BUTTON
-═══════════════════════════════════════ */
 #coin-btn-wrap{
   position:fixed;
   bottom:28px;
@@ -460,7 +421,6 @@ body.glitching #main::after{content:'';position:absolute;inset:0;z-index:9998;ba
   text-align:center;line-height:1.4;white-space:pre;
 }
 
-/* coin float */
 .coin-float{
   position:fixed;z-index:700;pointer-events:none;
   font-family:'Patrick Hand',cursive;font-weight:bold;
@@ -473,9 +433,6 @@ body.glitching #main::after{content:'';position:absolute;inset:0;z-index:9998;ba
   100%{opacity:0;transform:translateY(-80px) scale(.6)}
 }
 
-/* ═══════════════════════════════════════
-   TACO TUESDAY BADGE
-═══════════════════════════════════════ */
 #taco-badge{
   position:absolute;bottom:14px;left:130px;
   display:none;cursor:default;z-index:51;
@@ -498,9 +455,6 @@ body.party-mode #taco-badge{display:block}
 .taco-tooltip p{font-size:12px;color:#888;font-family:'Patrick Hand',cursive;line-height:1.4}
 .taco-tooltip::after{content:'';position:absolute;top:100%;left:50%;transform:translateX(-50%);border:6px solid transparent;border-top-color:#ff9e00}
 
-/* ═══════════════════════════════════════
-   ADMIN — CURRENCY TAB
-═══════════════════════════════════════ */
 .currency-leaderboard{border:1px solid #f0f0f0;border-radius:8px;overflow:hidden;margin-bottom:10px}
 .currency-row{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;font-size:14px;font-family:'Patrick Hand',cursive;border-bottom:1px solid #f8f8f8}
 .currency-row:last-child{border-bottom:none}
@@ -509,9 +463,6 @@ body.party-mode #taco-badge{display:block}
 .currency-row .cr-give{background:#111;color:#fff;border:none;font-family:'Patrick Hand',cursive;font-size:12px;padding:3px 10px;border-radius:4px;cursor:pointer}
 .currency-row .cr-give:hover{opacity:.8}
 
-/* ═══════════════════════════════════════
-   NUMBER GUESS WIDGET (viewer)
-═══════════════════════════════════════ */
 #guess-widget{
   position:absolute;bottom:140px;left:50%;
   transform:translateX(-50%) scale(.92);
@@ -534,7 +485,6 @@ body.party-mode #taco-badge{display:block}
 #guess-status.winner{color:#06d6a0;font-weight:bold}
 #guess-status.close{color:#ff9e00}
 
-/* admin guess list */
 #guess-live-list{border:1px solid #f0f0f0;border-radius:8px;overflow:hidden;margin-bottom:10px;max-height:180px;overflow-y:auto}
 .guess-row{display:flex;align-items:center;padding:6px 10px;font-size:13px;font-family:'Patrick Hand',cursive;border-bottom:1px solid #f8f8f8;gap:6px}
 .guess-row:last-child{border-bottom:none}
@@ -544,9 +494,6 @@ body.party-mode #taco-badge{display:block}
 .guess-row .gr-diff{font-size:11px;color:#aaa;min-width:44px;text-align:right}
 .guess-row .gr-crown{font-size:13px;flex-shrink:0}
 
-/* ═══════════════════════════════════════
-   SHOP
-═══════════════════════════════════════ */
 #shop-btn{
   position:fixed;top:16px;left:16px;z-index:600;
   background:rgba(255,255,255,.95);border:1.5px solid #e8e8e8;border-radius:999px;
@@ -604,6 +551,18 @@ body.party-mode #taco-badge{display:block}
 }
 .shop-item .si-buy:hover{opacity:.8}
 .shop-item .si-buy:disabled{background:#e0e0e0;color:#aaa;cursor:not-allowed;opacity:1}
+.shop-item.si-owned{border-color:#c8c8c8;background:#fafafa}
+.shop-item.si-equipped{border-color:#111;background:#f0f0f0;box-shadow:0 0 0 2px #111 inset}
+.shop-item.si-equipped .si-buy{background:#333}
+
+#join-btn{
+  font-family:'Patrick Hand',cursive;font-size:17px;
+  background:#111;color:#fff;border:none;
+  padding:13px 48px;border-radius:12px;cursor:pointer;
+  transition:opacity .15s;
+}
+#join-btn:hover{opacity:.85}
+#join-btn:active{opacity:.7}
 #shop-closed-msg{
   flex:1;display:none;align-items:center;justify-content:center;
   flex-direction:column;gap:8px;padding:40px 20px;
@@ -611,7 +570,6 @@ body.party-mode #taco-badge{display:block}
 }
 #shop-closed-msg.show{display:flex}
 
-/* admin shop config */
 .shop-cfg-item{display:flex;align-items:center;gap:10px;margin-bottom:8px;background:#fafafa;border:1px solid #f0f0f0;border-radius:8px;padding:10px 12px}
 .shop-cfg-item .sci-icon{font-size:22px;flex-shrink:0}
 .shop-cfg-item .sci-info{flex:1;min-width:0}
@@ -636,13 +594,21 @@ body.party-mode #taco-badge{display:block}
 <div id="bigtext-overlay"><div id="bigtext-content"></div></div>
 <div id="toast"></div>
 
+<!-- KICK OVERLAY (shown when you get kicked) -->
+<div id="kick-overlay">
+  <div class="kick-emoji">👢</div>
+  <div class="kick-msg">du wurdest gekickt lol</div>
+  <div class="kick-sub">refreshe die seite um wieder rein zu kommen</div>
+</div>
+
 <!-- JOIN OVERLAY -->
 <div id="join-overlay">
   <div id="join-title">name eingeben jetzt sofort</div>
   <input id="join-name-input" type="text" maxlength="28" placeholder="dein name…" autocomplete="off" autocorrect="off" spellcheck="false"/>
+  <button id="join-btn">los</button>
 </div>
 
-<!-- SHOP BUTTON (top-left, viewers) -->
+<!-- SHOP BUTTON -->
 <button id="shop-btn">
   <span class="shop-icon">🛒</span>
   <span class="shop-label">shop</span>
@@ -666,7 +632,7 @@ body.party-mode #taco-badge{display:block}
   </div>
 </div>
 
-<!-- PLAYERS LIST panel -->
+<!-- PLAYERS LIST -->
 <div id="players-panel">
   <div id="players-panel-title">active players</div>
   <div id="players-list"></div>
@@ -698,7 +664,6 @@ body.party-mode #taco-badge{display:block}
     <button id="poll-close">dismiss</button>
   </div>
   <div id="viewer-pill">👁 <b id="viewer-count">1</b> viewing</div>
-  <!-- NUMBER GUESS WIDGET (viewer) -->
   <div id="guess-widget">
     <div id="guess-title">Zahl erraten</div>
     <div id="guess-subtitle">1 – 100</div>
@@ -706,7 +671,6 @@ body.party-mode #taco-badge{display:block}
     <button id="guess-submit-btn">abschicken</button>
     <div id="guess-status"></div>
   </div>
-  <!-- TACO TUESDAY BADGE -->
   <div id="taco-badge">
     <div id="taco-badge-inner">
       🌮 <span style="font-size:11px;color:#ff9e00;font-weight:bold">x2</span>
@@ -759,6 +723,7 @@ body.party-mode #taco-badge{display:block}
     <button class="admin-tab" data-tab="currency">💶 €€€</button>
     <button class="admin-tab" data-tab="guess">🔢 guess</button>
     <button class="admin-tab" data-tab="shop">🛒 shop</button>
+    <button class="admin-tab" data-tab="players">👢 kick</button>
   </div>
 
   <div id="panel-content">
@@ -943,17 +908,22 @@ body.party-mode #taco-badge{display:block}
       <div id="shop-purchase-log" style="color:#ccc;font-size:12px">noch keine käufe</div>
     </div>
 
+    <!-- ── KICK / PLAYERS ── -->
+    <div class="tab-panel" id="tab-players">
+      <div class="panel-label">online players — click to kick</div>
+      <div id="kick-players-list" style="display:flex;flex-direction:column;gap:6px;margin-bottom:8px"></div>
+      <p style="font-size:11px;color:#ccc;line-height:1.6;margin-top:4px">kicked players see a 👢 screen and must refresh to rejoin. all their session data (name, balance, badges) is wiped on refresh.</p>
+    </div>
+
   </div><!-- /panel-content -->
 
   <div id="panel-hint">Ctrl / ⌘ — toggle panel &nbsp;·&nbsp; tap outside to close</div>
-</div><!-- /admin-panel -->
+</div>
 
 <!-- FAB (mobile) -->
 <button id="admin-fab">🛠</button>
 
 <script type="module">
-// ── BUG FIX 1: Add `get` and `onDisconnect` to top-level import so dynamic
-//   import() calls inside functions are no longer needed. ──
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getDatabase, ref, push, set, remove, get, onValue, onChildAdded, onDisconnect }
   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
@@ -973,9 +943,9 @@ const SECRET   = "10222211";
 const HOLD_MS  = 5500;
 const TACO_URL = "https://ahmads-onkel.github.io/ahmads-onkel.github.io/Its%20Raining%20Tacos!.mp3";
 
-/* ── state ── */
-let adminName  = localStorage.getItem('admin_name')||'';
-let playerName = localStorage.getItem('player_name')||'';
+/* ── state — NO localStorage for player data; everything resets on refresh ── */
+let adminName  = '';   // was: localStorage.getItem('admin_name')||''
+let playerName = '';   // was: localStorage.getItem('player_name')||''
 let isAdmin    = false, panelOpen = false;
 let drawMode   = false, isPointing = false;
 let drawColor  = '#111111', brushSize = 6, drawTool = 'pen';
@@ -985,17 +955,17 @@ let glitchDur  = 1500;
 let btColor    = '#ffffff', btDur = 1200;
 let msgSound   = 'none';
 let selBg      = '#ffffff';
+let currentBg  = '#ffffff';
 let myVotes    = {};
-// BUG FIX 5: Track dismissed poll IDs so re-renders from votes don't re-open
 let dismissedPolls = {};
 let keyBuf     = '';
 let partyAudio = null, partyInterval = null, rainInterval = null;
 let spotlightOn = false, trailOn = false, trailH = null;
-let myBalance  = parseFloat(localStorage.getItem('my_balance')||'0');
+let myBalance  = 0;    // was: parseFloat(localStorage.getItem('my_balance')||'0')
 let myUserId   = null;
 let myPresRef  = null;
-// BUG FIX 2: Flag so startup cleanup only runs once, and only for admin
 let adminCleanupDone = false;
+let isKicked   = false;
 
 /* ── firebase ── */
 const app        = initializeApp(FB);
@@ -1016,9 +986,8 @@ const currencyRef= ref(db,'currency');
 const numguessRef = ref(db,'numguess');
 const shopRef     = ref(db,'shop');
 const purchasesRef= ref(db,'purchases');
+const kicksRef    = ref(db,'kicks');
 
-// BUG FIX 2: Moved startup DB cleanup out of global scope.
-// Now called only once when admin first opens the panel.
 function doAdminStartupCleanup(){
   if(adminCleanupDone) return;
   adminCleanupDone = true;
@@ -1026,7 +995,7 @@ function doAdminStartupCleanup(){
     remove(msgsRef), remove(pollRef), remove(strokesRef),
     remove(shakeRef), remove(jumpRef), remove(partyRef),
     remove(glitchRef), remove(bigtextRef), remove(rainRef), remove(fxRef),
-    remove(numguessRef),
+    remove(numguessRef), remove(kicksRef),
     set(bgRef,'#ffffff')
   ]).catch(console.error);
 }
@@ -1054,9 +1023,11 @@ function dismissJoinOverlay(){
   setTimeout(()=>{ joinOverlay.style.display='none'; }, 520);
 }
 
-// BUG FIX 3: Replaced dynamic import() with top-level `get`, `set`, `onValue`
+let balanceListenerActive = false;
 function initBalance(){
   if(!myUserId || !playerName) return;
+  if(balanceListenerActive) return;
+  balanceListenerActive = true;
   const myBalRef = ref(db,`currency/${myUserId}`);
   get(myBalRef).then(snap=>{
     if(snap.exists()){ myBalance = snap.val().balance || 0; }
@@ -1069,35 +1040,69 @@ function initBalance(){
 function registerPlayer(name){
   if(!name) return;
   playerName = name;
-  localStorage.setItem('player_name', name);
+  // ── NO localStorage save — intentional, resets on refresh ──
   dismissJoinOverlay();
   initBalance();
-  setTimeout(pushPresence, 400); // push cosmetics after myPresRef is ready
+  setTimeout(pushPresence, 400);
+  // Start watching for kicks once we have a uid and name
+  if(myUserId) watchForKick();
 }
 
-if(playerName){
-  dismissJoinOverlay();
-} else {
-  joinInput.focus();
-}
+// Always show join overlay on load (no localStorage restore)
+joinInput.focus();
 
 joinInput.addEventListener('keydown',e=>{
   if(e.key==='Enter'){ const v=joinInput.value.trim(); if(v) registerPlayer(v); }
 });
+$('join-btn').addEventListener('click',()=>{ const v=joinInput.value.trim(); if(v) registerPlayer(v); });
+
+/* ── KICK LISTENER ── */
+let kickWatchStarted = false;
+function watchForKick(){
+  if(kickWatchStarted || !myUserId || isAdmin) return;
+  kickWatchStarted = true;
+  const myKickRef = ref(db,`kicks/${myUserId}`);
+  onValue(myKickRef, snap=>{
+    if(snap.exists() && !isAdmin){
+      isKicked = true;
+      // Remove from presence so viewer count drops
+      if(myPresRef) remove(myPresRef).catch(()=>{});
+      // Wipe the kick entry so it doesn't trigger again
+      remove(myKickRef).catch(()=>{});
+      // Show kick screen — takes over everything
+      $('kick-overlay').classList.add('show');
+      // Freeze all interaction
+      document.body.style.pointerEvents = 'none';
+      $('kick-overlay').style.pointerEvents = 'all';
+    }
+  });
+}
 
 signInAnonymously(getAuth(app)).then(({user})=>{
   myUserId  = user.uid;
   myPresRef = ref(db,`presence/${user.uid}`);
-  const name = playerName || 'viewer';
-  set(myPresRef,{name, isAdmin, t:Date.now()});
-  // BUG FIX 3: Use top-level onDisconnect instead of dynamic import
   onDisconnect(myPresRef).remove().catch(()=>{});
+  pushPresence();
   if(playerName) initBalance();
+  // Start kick watcher once we have a uid (if already named)
+  if(playerName && !isAdmin) watchForKick();
+  if((myPurchases.ownedIds||[]).length > 0){
+    set(ref(db,`purchases/${myUserId}`),{
+      name: playerName||adminName||'viewer',
+      ownedIds:      myPurchases.ownedIds      || [],
+      equippedBadge: myPurchases.equippedBadge || null,
+      equippedColor: myPurchases.equippedColor || null,
+    });
+  }
 }).catch(console.error);
 
 /* ── PRESENCE / PLAYER LIST ── */
+// Track uid→name+isAdmin for kick tab
+let presenceData = {};
+
 onValue(presRef,snap=>{
   const data = snap.exists() ? snap.val() : {};
+  presenceData = data;
   const players = Object.values(data);
   $('viewer-count').textContent = players.length || 1;
   const list = $('players-list');
@@ -1114,9 +1119,51 @@ onValue(presRef,snap=>{
     return `<div class="player-row">
       <span class="pr-crown">${icon}</span>
       <span class="pr-name" style="${bold}color:${color}">${esc(p.name||'viewer')}</span>
+      ${!p.isAdmin?`<button class="pr-kick" data-uid="${p.uid||''}" data-name="${esc(p.name||'viewer')}">kick</button>`:''}
     </div>`;
   }).join('') || '<div class="player-row" style="color:#ccc;font-size:13px">nobody here</div>';
+
+  // Wire kick buttons in player pill
+  list.querySelectorAll('.pr-kick').forEach(btn=>{
+    btn.addEventListener('click',()=>{ if(isAdmin) kickPlayer(btn.dataset.uid, btn.dataset.name); });
+  });
+
+  // Rebuild kick tab list
+  rebuildKickTab(data);
 });
+
+function rebuildKickTab(data){
+  const list = $('kick-players-list'); if(!list) return;
+  const entries = Object.entries(data).filter(([uid,p])=>!p.isAdmin);
+  if(!entries.length){
+    list.innerHTML='<div style="color:#ccc;font-size:13px;font-family:\'Patrick Hand\',cursive;padding:8px 0">nobody to kick right now</div>';
+    return;
+  }
+  list.innerHTML = entries.map(([uid,p])=>`
+    <div style="display:flex;align-items:center;justify-content:space-between;background:#fafafa;border:1px solid #f0f0f0;border-radius:8px;padding:10px 12px">
+      <div style="display:flex;align-items:center;gap:8px">
+        <span style="font-size:18px">${p.badge||'👤'}</span>
+        <span style="font-family:'Patrick Hand',cursive;font-size:14px;color:${p.nameColor||'#111'}">${esc(p.name||'viewer')}</span>
+      </div>
+      <button class="admin-btn red" style="width:auto;padding:6px 14px;margin:0;font-size:13px" data-uid="${uid}" data-name="${esc(p.name||'viewer')}">👢 kick</button>
+    </div>`).join('');
+  list.querySelectorAll('[data-uid]').forEach(btn=>{
+    btn.addEventListener('click',()=>{ kickPlayer(btn.dataset.uid, btn.dataset.name); });
+  });
+}
+
+function kickPlayer(uid, name){
+  if(!uid){ showToast('no uid — player may have already left'); return; }
+  if(!confirm(`Kick "${name}"?`)) return;
+  // Write kick signal — the client watches this path
+  set(ref(db,`kicks/${uid}`), {by: adminName, ts: Date.now()})
+    .then(()=>{
+      // Remove their presence entry immediately
+      remove(ref(db,`presence/${uid}`)).catch(()=>{});
+      showToast(`👢 kicked ${name}`);
+    })
+    .catch(()=>showToast('firebase error'));
+}
 
 $('viewer-pill').addEventListener('click',()=>{
   $('players-panel').classList.toggle('show');
@@ -1151,18 +1198,21 @@ onChildAdded(msgsRef,snap=>{
 });
 setTimeout(()=>{ msgInitDone=true; },1000);
 
-onValue(bgRef,snap=>{ if(snap.val()) $('main').style.background=snap.val(); });
+onValue(bgRef,snap=>{
+  if(snap.val()){
+    currentBg = snap.val();
+    $('main').style.background = currentBg;
+    selBg = currentBg;
+  }
+});
 
-// BUG FIX 5: Guard against re-showing a poll the user already dismissed
 onValue(pollRef,snap=>{
   if(!snap.exists()||!snap.val()?.question){
     $('poll-widget').classList.remove('show');
     return;
   }
   const data=snap.val();
-  // Build a stable poll identity from question+option labels
   const pollId = data.question + Object.values(data.options||{}).map(o=>o.label).join('|');
-  // If user dismissed this exact poll (and hasn't voted), don't re-show it
   if(dismissedPolls[pollId] && !myVotes[pollId]) return;
   renderPoll(data, pollId);
 });
@@ -1180,11 +1230,11 @@ function openPanel(){
   $('admin-panel').classList.add('open');
   $('panel-backdrop').classList.add('show');
   isAdmin=true;
+  document.body.classList.add('is-admin');
   $('admin-name-display').textContent=adminName;
   $('code-box').style.display='none';
   $('admin-fab').style.display='flex';
-  if(myPresRef) set(myPresRef,{name:adminName||playerName,isAdmin:true,t:Date.now()});
-  // BUG FIX 2: Run DB cleanup only once, only for admin
+  pushPresence();
   doAdminStartupCleanup();
 }
 function closePanel(){
@@ -1210,7 +1260,6 @@ document.addEventListener('keydown',e=>{
   }
 });
 
-/* ── code box ── */
 function checkCode(){
   const v=$('code-input').value.trim();
   if(v===SECRET){ $('code-input').value=''; unlockAdmin(); }
@@ -1219,7 +1268,6 @@ function checkCode(){
 $('code-btn').addEventListener('click',checkCode);
 $('code-input').addEventListener('keydown',e=>{ if(e.key==='Enter') checkCode(); });
 
-/* ── unlock / name ── */
 function unlockAdmin(){
   if(!adminName){ $('name-overlay').classList.add('show'); $('name-input').focus(); }
   else openPanel();
@@ -1228,12 +1276,12 @@ $('name-confirm').addEventListener('click',saveName);
 $('name-input').addEventListener('keydown',e=>{ if(e.key==='Enter') saveName(); });
 function saveName(){
   const v=$('name-input').value.trim(); if(!v) return;
-  adminName=v; localStorage.setItem('admin_name',adminName);
-  if(!playerName){ playerName=v; localStorage.setItem('player_name',v); dismissJoinOverlay(); }
+  adminName=v;
+  // ── NO localStorage save ──
+  if(!playerName){ playerName=v; dismissJoinOverlay(); }
   $('name-overlay').classList.remove('show'); openPanel();
 }
 
-/* ── tabs ── */
 document.querySelectorAll('.admin-tab').forEach(btn=>{
   btn.addEventListener('click',()=>{
     document.querySelectorAll('.admin-tab').forEach(t=>t.classList.remove('active'));
@@ -1242,8 +1290,6 @@ document.querySelectorAll('.admin-tab').forEach(btn=>{
     $('tab-'+btn.dataset.tab).classList.add('active');
   });
 });
-
-// Mousewheel scrolls the tab bar left/right
 document.querySelector('.admin-tabs').addEventListener('wheel',e=>{
   e.preventDefault();
   document.querySelector('.admin-tabs').scrollLeft += e.deltaY || e.deltaX;
@@ -1259,28 +1305,32 @@ function doGlitch(dur){ document.body.classList.add('glitching'); setTimeout(()=
 $('glitch-btn').addEventListener('click',()=>{ set(glitchRef,{dur:glitchDur,ts:Date.now()}); doGlitch(glitchDur); showToast('⚡ glitching'); });
 
 function doBlackout(dur){
-  const m=$('main'), old=m.style.background;
+  const m=$('main');
   m.style.transition='background .1s'; m.style.background='#000';
-  setTimeout(()=>{ m.style.background=old; },dur);
+  setTimeout(()=>{ m.style.background=currentBg; },dur);
 }
 $('blackout-btn').addEventListener('click',()=>{ set(fxRef,{type:'blackout',dur:1200,ts:Date.now()}); doBlackout(1200); showToast('🌑 blackout'); });
 
 let strobeTimer=null;
 function doStrobe(dur){
-  let i=0; const m=$('main'), orig=m.style.background;
-  strobeTimer=setInterval(()=>{ m.style.background=i%2?orig:'#fff'; i++; },80);
-  setTimeout(()=>{ clearInterval(strobeTimer); m.style.background=orig; },dur);
+  clearInterval(strobeTimer);
+  let i=0; const m=$('main');
+  strobeTimer=setInterval(()=>{ m.style.background=i%2?currentBg:'#fff'; i++; },80);
+  setTimeout(()=>{ clearInterval(strobeTimer); strobeTimer=null; m.style.background=currentBg; },dur);
 }
 $('strobe-btn').addEventListener('click',()=>{ set(fxRef,{type:'strobe',dur:2000,ts:Date.now()}); doStrobe(2000); showToast('💡 strobe'); });
 
-function doFlip(dur){ $('main').style.transform='scaleY(-1)'; setTimeout(()=>$('main').style.transform='',dur); }
+let flipTimer=null;
+function doFlip(dur){ clearTimeout(flipTimer); $('main').style.transform='scaleY(-1)'; flipTimer=setTimeout(()=>{ $('main').style.transform=''; flipTimer=null; },dur); }
 $('flip-btn').addEventListener('click',()=>{ set(fxRef,{type:'flip',dur:3000,ts:Date.now()}); doFlip(3000); showToast('🙃 flipped'); });
 
+let spinTimer=null;
 function doSpin(dur){
+  clearTimeout(spinTimer);
   const m=$('main');
   m.style.transition=`transform ${dur}ms linear`;
   m.style.transform='rotate(360deg)';
-  setTimeout(()=>{ m.style.transition=''; m.style.transform=''; },dur+50);
+  spinTimer=setTimeout(()=>{ m.style.transition=''; m.style.transform=''; spinTimer=null; },dur+50);
 }
 $('spin-btn').addEventListener('click',()=>{ set(fxRef,{type:'spin',dur:2000,ts:Date.now()}); doSpin(2000); showToast('🌀 spinning'); });
 
@@ -1322,7 +1372,6 @@ function doPartyStart(){
   partyAudio=new Audio(TACO_URL);
   partyAudio.loop=true; partyAudio.volume=0.6;
   partyAudio.play().catch(e=>console.warn('audio blocked:',e));
-  // BUG FIX 6: Update wallet UI here instead of a duplicate onValue listener
   updateWalletUI();
 }
 function doPartyStop(){
@@ -1330,7 +1379,6 @@ function doPartyStop(){
   if(partyAudio){ partyAudio.pause(); partyAudio.currentTime=0; partyAudio=null; }
   if(partyInterval){ clearInterval(partyInterval); partyInterval=null; }
   $('taco-container').innerHTML='';
-  // BUG FIX 6: Update wallet UI here instead of a duplicate onValue listener
   updateWalletUI();
 }
 function spawnTacos(){
@@ -1521,7 +1569,6 @@ $('send-poll-btn').addEventListener('click',()=>{
   const opts=Array.from($('poll-builder').querySelectorAll('input')).map(i=>i.value.trim()).filter(Boolean);
   if(opts.length<2){ showToast('Need 2+ options!'); return; }
   const optObj={}; opts.forEach((o,i)=>{ optObj[i]={label:o,votes:0}; });
-  // Reset dismissals when a new poll is launched
   dismissedPolls={};
   set(pollRef,{question:q,options:optObj,ts:Date.now()}); showToast('📊 poll launched');
 });
@@ -1543,14 +1590,9 @@ function renderPoll(data, pollId){
   $('poll-widget').classList.add('show');
 }
 
-// BUG FIX 5: Dismiss stores the pollId so re-renders from new votes don't re-open
 $('poll-close').addEventListener('click',()=>{
   const q=$('poll-question').textContent;
-  // Mark current poll as dismissed using its question text as key
-  // (full pollId isn't directly accessible here, so we use question)
-  Object.keys(dismissedPolls); // already scoped
   $('poll-widget').classList.remove('show');
-  // Reconstruct pollId from current DOM state to mark as dismissed
   const opts=Array.from($('poll-options-display').querySelectorAll('.poll-bar-label span:first-child')).map(s=>s.textContent);
   const pid=q+opts.join('|');
   dismissedPolls[pid]=true;
@@ -1576,7 +1618,8 @@ $('send-bg-btn').addEventListener('click',()=>{ set(bgRef,selBg); showToast('�
 function updateWalletUI(){
   $('wallet-amount').textContent = myBalance.toFixed(2)+'€';
   if($('admin-balance-display')) $('admin-balance-display').textContent = myBalance.toFixed(2)+'€';
-  localStorage.setItem('my_balance', myBalance.toFixed(2));
+  if($('shop-bal')) $('shop-bal').textContent = myBalance.toFixed(2)+'€';
+  // ── NO localStorage save ──
   const boosted = document.body.classList.contains('party-mode');
   $('wallet-pill').classList.toggle('boosted', boosted);
   $('coin-btn-label').textContent = boosted ? '+2€ 🌮' : '+1€';
@@ -1605,10 +1648,6 @@ function earnCoin(){
 
 $('coin-btn').addEventListener('click', earnCoin);
 
-// BUG FIX 6: Removed duplicate onValue(partyRef) listener for wallet update.
-// updateWalletUI() is now called directly inside doPartyStart() and doPartyStop().
-
-/* ── ADMIN: currency leaderboard ── */
 onValue(currencyRef, snap=>{
   const lb=$('currency-leaderboard');
   if(!lb) return;
@@ -1630,7 +1669,6 @@ onValue(currencyRef, snap=>{
   });
 });
 
-// BUG FIX 3: Replaced dynamic import() in giveCurrency with top-level `get` and `set`
 function giveCurrency(name, amount){
   if(!name||!amount||amount<=0){ showToast('enter name + amount'); return; }
   get(currencyRef).then(snap=>{
@@ -1649,7 +1687,6 @@ function giveCurrency(name, amount){
 $('give-currency-btn').addEventListener('click',()=>{
   giveCurrency($('give-name-input').value.trim(), parseFloat($('give-amount-input').value)||0);
 });
-
 document.querySelectorAll('[data-quick]').forEach(btn=>{
   btn.addEventListener('click',()=>{
     const name=$('give-name-input').value.trim();
@@ -1660,17 +1697,16 @@ document.querySelectorAll('[data-quick]').forEach(btn=>{
 
 $('reset-currency-btn').addEventListener('click',()=>{
   if(!confirm('Reset ALL balances to 0?')) return;
-  remove(currencyRef); myBalance=0; localStorage.setItem('my_balance','0'); updateWalletUI(); showToast('🗑 balances reset');
+  remove(currencyRef); myBalance=0; updateWalletUI(); showToast('🗑 balances reset');
 });
 
 /* ════════════════════════════════════
-   HELPER: push presence with cosmetics
+   PRESENCE with cosmetics
 ════════════════════════════════════ */
 function pushPresence(){
   if(!myPresRef) return;
-  const myItems   = JSON.parse(localStorage.getItem('my_purchases')||'{}');
-  const badge     = myItems.equippedBadge  || null;
-  const nameColor = myItems.equippedColor  || null;
+  const badge     = myPurchases.equippedBadge  || null;
+  const nameColor = myPurchases.equippedColor  || null;
   const payload   = { name:playerName||adminName||'viewer', isAdmin, t:Date.now() };
   if(badge)     payload.badge     = badge;
   if(nameColor) payload.nameColor = nameColor;
@@ -1680,35 +1716,35 @@ function pushPresence(){
 /* ════════════════════════════════════
    NUMBER GUESS
 ════════════════════════════════════ */
-let ngActive  = false;
-let ngMyGuess = null;
+let ngActive    = false;
+let ngMyGuess   = null;
+let ngLastGameTs = 0;
 
-// Viewer: react to game state changes
 onValue(numguessRef, snap=>{
   const w = $('guess-widget');
-  if(!snap.exists()){ w.classList.remove('show'); ngActive=false; ngMyGuess=null; return; }
+  if(!snap.exists()){ w.classList.remove('show'); ngActive=false; ngMyGuess=null; ngLastGameTs=0; return; }
   const d = snap.val();
-
-  // Reset reveal-specific DOM state
   $('guess-input-field').style.display = '';
   $('guess-submit-btn').style.display  = '';
-
-  if(d.reveal){
-    // Show result
+  if(d.reveal && !d.active){
     ngActive = false;
-    w.classList.add('show');
-    $('guess-title').textContent    = 'die antwort war…';
-    $('guess-subtitle').textContent = String(d.reveal.answer);
-    $('guess-input-field').style.display = 'none';
-    $('guess-submit-btn').style.display  = 'none';
-    const st = $('guess-status');
-    st.className = 'winner';
-    st.textContent = d.reveal.winner
-      ? `${d.reveal.winner.name} gewinnt ${d.reveal.prize}€! (tip: ${d.reveal.winner.guess})`
-      : 'kein gewinner';
-    setTimeout(()=>w.classList.remove('show'), 9000);
+    if(!isAdmin){
+      w.classList.add('show');
+      $('guess-title').textContent    = 'die antwort war…';
+      $('guess-subtitle').textContent = String(d.reveal.answer);
+      $('guess-input-field').style.display = 'none';
+      $('guess-submit-btn').style.display  = 'none';
+      const st = $('guess-status');
+      st.className = 'winner';
+      st.textContent = d.reveal.winner
+        ? `${d.reveal.winner.name} gewinnt ${d.reveal.prize}€! (tip: ${d.reveal.winner.guess})`
+        : 'kein gewinner';
+      setTimeout(()=>w.classList.remove('show'), 9000);
+    }
   } else if(d.active){
+    if(d.ts && d.ts !== ngLastGameTs){ ngMyGuess=null; ngLastGameTs=d.ts; }
     ngActive = true;
+    if(isAdmin){ w.classList.remove('show'); return; }
     w.classList.add('show');
     $('guess-title').textContent    = 'zahl erraten!';
     $('guess-subtitle').textContent = `${d.min} – ${d.max} · preis: ${d.prize}€`;
@@ -1727,7 +1763,6 @@ onValue(numguessRef, snap=>{
   }
 });
 
-// Viewer: submit guess
 $('guess-submit-btn').addEventListener('click',()=>{
   if(!ngActive||ngMyGuess!==null||!myUserId) return;
   const v = parseInt($('guess-input-field').value);
@@ -1745,7 +1780,6 @@ $('guess-submit-btn').addEventListener('click',()=>{
   }).catch(()=>showToast('fehler'));
 });
 
-// Admin: live guess list
 const guessesListRef = ref(db,'numguess/guesses');
 onValue(guessesListRef,snap=>{
   const cnt=$('guess-count'), list=$('guess-live-list');
@@ -1758,7 +1792,6 @@ onValue(guessesListRef,snap=>{
   const secret  = parseInt($('guess-secret').value);
   const guesses = Object.values(snap.val()).sort((a,b)=>a.ts-b.ts);
   cnt.textContent = guesses.length;
-  // If secret is set, sort by closeness for display
   const sorted = !isNaN(secret)
     ? [...guesses].sort((a,b)=>Math.abs(a.guess-secret)-Math.abs(b.guess-secret))
     : guesses;
@@ -1771,7 +1804,6 @@ onValue(guessesListRef,snap=>{
     </div>`).join('');
 });
 
-// Admin: start
 $('guess-start-btn').addEventListener('click',()=>{
   const min=parseInt($('guess-min').value)||1, max=parseInt($('guess-max').value)||100;
   const secret=parseInt($('guess-secret').value), prize=parseInt($('guess-prize').value)||50;
@@ -1781,15 +1813,13 @@ $('guess-start-btn').addEventListener('click',()=>{
   showToast('spiel gestartet!');
 });
 
-// Admin: stop
 $('guess-stop-btn').addEventListener('click',()=>{ remove(numguessRef); showToast('spiel beendet'); });
 
-// Admin: reveal + award
 $('guess-reveal-btn').addEventListener('click', async ()=>{
   const secret = parseInt($('guess-secret').value);
   if(isNaN(secret)){ showToast('geheimzahl eingeben!'); return; }
   const [gameSnap,guessSnap] = await Promise.all([get(numguessRef),get(guessesListRef)]);
-  if(!gameSnap.exists()){ showToast('kein aktives spiel'); return; }
+  if(!gameSnap.exists()||gameSnap.val().active!==true){ showToast('kein aktives spiel'); return; }
   const prize = gameSnap.val().prize||50;
   let winner=null;
   if(guessSnap.exists()){
@@ -1835,11 +1865,11 @@ const SHOP_ITEMS = [
   {id:'color_purple', label:'lila', icon:'🟣',price:25,type:'color',value:'#7b2d8b'},
 ];
 
-let myPurchases = JSON.parse(localStorage.getItem('my_purchases')||'{}');
-// shape: { ownedIds:[], equippedBadge: '🔥'|null, equippedColor: '#hex'|null }
+// No localStorage for purchases — resets on refresh
+let myPurchases = { ownedIds:[], equippedBadge:null, equippedColor:null };
 
 function savePurchases(){
-  localStorage.setItem('my_purchases', JSON.stringify(myPurchases));
+  // ── NO localStorage save — session only ──
   if(myUserId){
     set(ref(db,`purchases/${myUserId}`),{
       name: playerName||adminName||'viewer',
@@ -1848,22 +1878,19 @@ function savePurchases(){
       equippedColor:  myPurchases.equippedColor  || null,
     });
   }
-  pushPresence(); // show badge/color in player list immediately
+  pushPresence();
 }
 
-// Load saved prices from firebase
 get(ref(db,'shop/prices')).then(snap=>{
   if(!snap.exists()) return;
   const p=snap.val();
   SHOP_ITEMS.forEach(i=>{ if(p[i.id]) i.price=p[i.id]; });
-  // Refresh price inputs if admin cfg is visible
   document.querySelectorAll('#shop-cfg-list [data-item-id]').forEach(inp=>{
     const item=SHOP_ITEMS.find(i=>i.id===inp.dataset.itemId);
     if(item) inp.value=item.price;
   });
 }).catch(()=>{});
 
-// Build editable price list for admin
 (function buildShopCfg(){
   const list=$('shop-cfg-list'); if(!list) return;
   list.innerHTML=SHOP_ITEMS.map(item=>`
@@ -1891,22 +1918,21 @@ $('save-shop-prices-btn').addEventListener('click',()=>{
   showToast('preise gespeichert!');
 });
 
-// Admin: shop open/close toggle
 let shopIsOpen=false;
 onValue(shopRef,snap=>{
   shopIsOpen=!!(snap.exists()&&snap.val()?.open);
   const btn=$('shop-toggle-btn');
   if(btn){ btn.textContent=shopIsOpen?'shop schließen':'shop öffnen'; btn.classList.toggle('on',shopIsOpen); }
   const sb=$('shop-btn');
-  if(sb){ sb.classList.toggle('closed',!shopIsOpen); sb.querySelector('.shop-label').textContent=shopIsOpen?'shop':'shop'; }
+  if(sb){ sb.classList.toggle('closed',!shopIsOpen); }
   const grid=$('shop-items-grid'), msg=$('shop-closed-msg');
   if(grid&&msg){ grid.style.display=shopIsOpen?'grid':'none'; msg.classList.toggle('show',!shopIsOpen); }
+  if($('shop-overlay').classList.contains('show')) renderShopGrid();
 });
 $('shop-toggle-btn').addEventListener('click',()=>{
   set(shopRef, shopIsOpen?null:{open:true,ts:Date.now()});
 });
 
-// Admin: watch purchases log
 onValue(purchasesRef,snap=>{
   const log=$('shop-purchase-log'); if(!log) return;
   if(!snap.exists()){ log.textContent='noch keine käufe'; log.style.color='#ccc'; return; }
@@ -1921,13 +1947,11 @@ onValue(purchasesRef,snap=>{
   log.innerHTML=lines.map(l=>`<div>${l}</div>`).join('');
 });
 
-// Viewer: render shop items
 function renderShopGrid(){
   const grid=$('shop-items-grid'); if(!grid) return;
   const owned   = myPurchases.ownedIds      || [];
   const eqBadge = myPurchases.equippedBadge || null;
   const eqColor = myPurchases.equippedColor || null;
-
   grid.innerHTML=SHOP_ITEMS.map(item=>{
     const isOwned    = owned.includes(item.id);
     const isEquipped = (item.type==='badge'&&eqBadge===item.icon)||(item.type==='color'&&eqColor===item.value);
@@ -1940,7 +1964,6 @@ function renderShopGrid(){
       <button class="si-buy"${(!shopIsOpen&&!isOwned)?' disabled':''}>${label}</button>
     </div>`;
   }).join('');
-
   grid.querySelectorAll('.shop-item').forEach(el=>{
     el.querySelector('.si-buy').addEventListener('click',()=>{
       const item=SHOP_ITEMS.find(i=>i.id===el.dataset.id); if(!item) return;
@@ -1953,7 +1976,6 @@ function renderShopGrid(){
         myPurchases.ownedIds=[...(myPurchases.ownedIds||[]),item.id];
         showToast(`${item.icon} ${item.label} gekauft!`);
       }
-      // Toggle equip
       if(item.type==='badge') myPurchases.equippedBadge=(myPurchases.equippedBadge===item.icon)?null:item.icon;
       else                    myPurchases.equippedColor=(myPurchases.equippedColor===item.value)?null:item.value;
       savePurchases();
@@ -1966,9 +1988,6 @@ function renderShopGrid(){
 $('shop-btn').addEventListener('click',()=>{ renderShopGrid(); $('shop-overlay').classList.add('show'); });
 $('shop-close-btn').addEventListener('click',()=>$('shop-overlay').classList.remove('show'));
 $('shop-overlay').addEventListener('click',e=>{ if(e.target===$('shop-overlay')) $('shop-overlay').classList.remove('show'); });
-
-// On page load: push existing cosmetics to presence once player name is set
-if(playerName) setTimeout(pushPresence, 800);
 
 updateWalletUI();
 </script>
