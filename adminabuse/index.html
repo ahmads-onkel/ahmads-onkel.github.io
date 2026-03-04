@@ -1,784 +1,577 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Broadcast</title>
-  <link href="https://fonts.googleapis.com/css2?family=Patrick+Hand&display=swap" rel="stylesheet"/>
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+<title>Broadcast</title>
+<link href="https://fonts.googleapis.com/css2?family=Patrick+Hand&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--panel-w:360px;--panel-radius:16px;--accent:#111;--border:#e8e8e8}
+html,body{height:100%;overflow:hidden;font-family:'Patrick Hand',cursive;background:#fff;color:#111;touch-action:manipulation}
 
-    body {
-      font-family: 'Patrick Hand', cursive;
-      background: #fff;
-      color: #111;
-      height: 100vh;
-      overflow: hidden;
-    }
+/* ═══════════════════════════════════════
+   EFFECTS
+═══════════════════════════════════════ */
+@keyframes shake{
+  0%,100%{transform:translate(0,0) rotate(0)}
+  10%{transform:translate(-8px,-6px) rotate(-1.5deg)}
+  20%{transform:translate(8px,6px) rotate(1.5deg)}
+  30%{transform:translate(-10px,4px) rotate(-1deg)}
+  40%{transform:translate(10px,-4px) rotate(1deg)}
+  50%{transform:translate(-6px,8px) rotate(-2deg)}
+  60%{transform:translate(6px,-8px) rotate(2deg)}
+  70%{transform:translate(-9px,3px) rotate(-1deg)}
+  80%{transform:translate(9px,-3px) rotate(1deg)}
+  90%{transform:translate(-4px,5px) rotate(-.5deg)}
+}
+body.shaking{animation:shake .6s ease}
 
-    #app { display: flex; height: 100vh; width: 100vw; }
+@keyframes partyBg{
+  0%{background:#ff4d6d}14%{background:#ff9e00}28%{background:#ffe135}
+  42%{background:#06d6a0}57%{background:#4cc9f0}71%{background:#7b2d8b}
+  85%{background:#f72585}100%{background:#ff4d6d}
+}
+body.party-mode #main{animation:partyBg 1.2s linear infinite}
 
-    /* ── SHAKE ── */
-    @keyframes shake {
-      0%,100% { transform: translate(0,0) rotate(0deg); }
-      10% { transform: translate(-8px,-6px) rotate(-1.5deg); }
-      20% { transform: translate(8px,6px) rotate(1.5deg); }
-      30% { transform: translate(-10px,4px) rotate(-1deg); }
-      40% { transform: translate(10px,-4px) rotate(1deg); }
-      50% { transform: translate(-6px,8px) rotate(-2deg); }
-      60% { transform: translate(6px,-8px) rotate(2deg); }
-      70% { transform: translate(-9px,3px) rotate(-1deg); }
-      80% { transform: translate(9px,-3px) rotate(1deg); }
-      90% { transform: translate(-4px,5px) rotate(-.5deg); }
-    }
-    body.shaking { animation: shake 0.6s ease; }
+/* tacos */
+#taco-container{position:fixed;inset:0;z-index:1500;pointer-events:none;overflow:hidden;display:none}
+body.party-mode #taco-container{display:block}
+.taco{position:absolute;top:-60px;font-size:32px;animation:tacoFall linear forwards;user-select:none}
+@keyframes tacoFall{0%{transform:translateY(0) rotate(0);opacity:1}90%{opacity:1}100%{transform:translateY(110vh) rotate(720deg);opacity:0}}
 
-    /* ── PARTY MODE ── */
-    @keyframes partyBg {
-      0%   { background: #ff4d6d; }
-      14%  { background: #ff9e00; }
-      28%  { background: #ffe135; }
-      42%  { background: #06d6a0; }
-      57%  { background: #4cc9f0; }
-      71%  { background: #7b2d8b; }
-      85%  { background: #f72585; }
-      100% { background: #ff4d6d; }
-    }
-    body.party-mode #main { animation: partyBg 1.2s linear infinite; }
+/* glitch */
+body.glitching #main{animation:glitchMain .12s steps(1) infinite}
+body.glitching #main::before{content:'';position:absolute;inset:0;z-index:9999;background:rgba(255,0,60,.18);pointer-events:none;animation:glitchA .1s steps(1) infinite}
+body.glitching #main::after{content:'';position:absolute;inset:0;z-index:9998;background:rgba(0,200,255,.15);pointer-events:none;animation:glitchMain .13s steps(1) .04s infinite}
+@keyframes glitchMain{0%,100%{clip-path:inset(0 0 95% 0);transform:translate(-4px,0)}20%{clip-path:inset(30% 0 50% 0);transform:translate(4px,0)}40%{clip-path:inset(60% 0 20% 0);transform:translate(-2px,0)}60%{clip-path:inset(80% 0 5% 0);transform:translate(2px,0)}80%{clip-path:inset(10% 0 70% 0);transform:translate(-4px,0)}}
+@keyframes glitchA{0%,100%{clip-path:inset(5% 0 80% 0);transform:translate(4px,0) skewX(2deg)}25%{clip-path:inset(50% 0 30% 0);transform:translate(-4px,0) skewX(-2deg)}50%{clip-path:inset(20% 0 60% 0);transform:translate(3px,0) skewX(1deg)}75%{clip-path:inset(70% 0 10% 0);transform:translate(-3px,0) skewX(-1deg)}}
 
-    #taco-container {
-      position: fixed; inset: 0; z-index: 1500;
-      pointer-events: none; overflow: hidden;
-      display: none;
-    }
-    body.party-mode #taco-container { display: block; }
+/* rain */
+#rain-container{position:fixed;inset:0;z-index:800;pointer-events:none;overflow:hidden;display:none}
+#rain-container.show{display:block}
+.raindrop{position:absolute;top:-20px;width:2px;background:linear-gradient(to bottom,transparent,rgba(120,180,255,.7));animation:rainFall linear infinite;border-radius:0 0 2px 2px}
+@keyframes rainFall{0%{transform:translateY(0);opacity:.7}100%{transform:translateY(110vh);opacity:.2}}
 
-    .taco {
-      position: absolute;
-      top: -60px;
-      font-size: 32px;
-      animation: tacoFall linear forwards;
-      user-select: none;
-    }
-    @keyframes tacoFall {
-      0%   { transform: translateY(0) rotate(0deg); opacity: 1; }
-      90%  { opacity: 1; }
-      100% { transform: translateY(110vh) rotate(720deg); opacity: 0; }
-    }
+/* spotlight */
+#spotlight-overlay{display:none;position:fixed;inset:0;z-index:900;pointer-events:none;background:rgba(0,0,0,.85);-webkit-mask-image:radial-gradient(circle 160px at 50% 50%,transparent 100%,black 100%);mask-image:radial-gradient(circle 160px at 50% 50%,transparent 100%,black 100%)}
+#spotlight-overlay.show{display:block}
 
-    /* ── SPOTLIGHT ── */
-    #spotlight-overlay {
-      display: none;
-      position: fixed; inset: 0; z-index: 900;
-      pointer-events: none;
-      background: rgba(0,0,0,0.82);
-      /* radial hole updated via JS */
-      -webkit-mask-image: radial-gradient(circle 160px at 50% 50%, transparent 100%, black 100%);
-      mask-image: radial-gradient(circle 160px at 50% 50%, transparent 100%, black 100%);
-    }
-    #spotlight-overlay.show { display: block; }
+/* cursor trail */
+.cursor-spark{position:fixed;pointer-events:none;z-index:9000;border-radius:50%;transform:translate(-50%,-50%);animation:sparkFade .6s ease-out forwards}
+@keyframes sparkFade{0%{opacity:1;transform:translate(-50%,-50%) scale(1)}100%{opacity:0;transform:translate(-50%,-50%) scale(.1)}}
 
-    /* ── GLITCH ── */
-    @keyframes glitch1 {
-      0%,100% { clip-path: inset(0 0 95% 0); transform: translate(-4px, 0); }
-      20%      { clip-path: inset(30% 0 50% 0); transform: translate(4px, 0); }
-      40%      { clip-path: inset(60% 0 20% 0); transform: translate(-2px, 0); }
-      60%      { clip-path: inset(80% 0 5% 0);  transform: translate(2px, 0); }
-      80%      { clip-path: inset(10% 0 70% 0); transform: translate(-4px, 0); }
-    }
-    @keyframes glitch2 {
-      0%,100% { clip-path: inset(5% 0 80% 0);  transform: translate(4px, 0) skewX(2deg); }
-      25%      { clip-path: inset(50% 0 30% 0); transform: translate(-4px, 0) skewX(-2deg); }
-      50%      { clip-path: inset(20% 0 60% 0); transform: translate(3px, 0) skewX(1deg); }
-      75%      { clip-path: inset(70% 0 10% 0); transform: translate(-3px, 0) skewX(-1deg); }
-    }
-    #glitch-overlay {
-      display: none;
-      position: fixed; inset: 0; z-index: 2500;
-      pointer-events: none;
-    }
-    #glitch-overlay.show { display: block; }
-    #glitch-overlay .gl1,
-    #glitch-overlay .gl2 {
-      position: absolute; inset: 0;
-      background: inherit;
-    }
-    body.glitching #main {
-      animation: glitch1 0.12s steps(1) infinite;
-    }
-    body.glitching #main::before {
-      content: '';
-      position: absolute; inset: 0; z-index: 9999;
-      background: rgba(255,0,60,0.18);
-      pointer-events: none;
-      animation: glitch2 0.1s steps(1) infinite;
-    }
-    body.glitching #main::after {
-      content: '';
-      position: absolute; inset: 0; z-index: 9998;
-      background: rgba(0,200,255,0.15);
-      pointer-events: none;
-      animation: glitch1 0.13s steps(1) 0.04s infinite;
-    }
+/* jumpscare */
+#jumpscare-overlay{display:none;position:fixed;inset:0;z-index:4000;background:#000;align-items:center;justify-content:center;pointer-events:none}
+#jumpscare-overlay.show{display:flex;animation:jsFlash .08s steps(1) infinite}
+#jumpscare-img{max-width:90vw;max-height:90vh;object-fit:contain;animation:jsPop .15s ease-out forwards}
+@keyframes jsPop{0%{transform:scale(.4);opacity:0}60%{transform:scale(1.08);opacity:1}100%{transform:scale(1);opacity:1}}
+@keyframes jsFlash{0%{outline:8px solid red}50%{outline:8px solid #ff0}100%{outline:8px solid red}}
 
-    /* ── RAIN ── */
-    #rain-container {
-      position: fixed; inset: 0; z-index: 800;
-      pointer-events: none; overflow: hidden;
-      display: none;
-    }
-    #rain-container.show { display: block; }
-    .raindrop {
-      position: absolute;
-      top: -20px;
-      width: 2px;
-      background: linear-gradient(to bottom, transparent, rgba(120,180,255,0.7));
-      animation: rainFall linear infinite;
-      border-radius: 0 0 2px 2px;
-    }
-    @keyframes rainFall {
-      0%   { transform: translateY(0); opacity: 0.7; }
-      100% { transform: translateY(110vh); opacity: 0.2; }
-    }
+/* big text */
+#bigtext-overlay{display:none;position:fixed;inset:0;z-index:3500;pointer-events:none;align-items:center;justify-content:center}
+#bigtext-overlay.show{display:flex}
+#bigtext-content{font-size:clamp(48px,12vw,140px);font-weight:bold;text-align:center;padding:0 20px;line-height:1.1;opacity:0;transform:scale(.3);text-shadow:4px 4px 0 rgba(0,0,0,.15)}
+#bigtext-overlay.show #bigtext-content{animation:bigPop .5s cubic-bezier(.22,.68,0,1.3) forwards}
+@keyframes bigPop{0%{opacity:0;transform:scale(.3) rotate(-5deg)}70%{opacity:1;transform:scale(1.06) rotate(1deg)}100%{opacity:1;transform:scale(1) rotate(0)}}
 
-    /* ── MAIN ── */
-    #main {
-      flex: 1;
-      position: relative;
-      overflow: hidden;
-      transition: background 1.2s ease;
-      background: #fff;
-    }
+/* ═══════════════════════════════════════
+   MAIN STAGE
+═══════════════════════════════════════ */
+#main{position:fixed;inset:0;overflow:hidden;transition:background 1.2s ease;background:#fff}
 
-    /* ── CANVAS ── */
-    #draw-canvas {
-      position: absolute; inset: 0; z-index: 10;
-      display: none; touch-action: none;
-    }
-    #draw-canvas.active    { display: block; cursor: crosshair; }
-    #draw-canvas.view-only { display: block; pointer-events: none; }
+#draw-canvas{position:absolute;inset:0;z-index:10;display:none;touch-action:none}
+#draw-canvas.active{display:block;cursor:crosshair}
+#draw-canvas.view-only{display:block;pointer-events:none}
 
-    /* ── BANNERS ── */
-    #banner-stack {
-      position: absolute;
-      top: 18px; left: 50%;
-      transform: translateX(-50%);
-      display: flex; flex-direction: column; align-items: center; gap: 8px;
-      z-index: 100; pointer-events: none;
-      width: 90%; max-width: 540px;
-    }
-    .banner {
-      background: #111; color: #fff;
-      padding: 11px 22px;
-      font-family: 'Patrick Hand', cursive;
-      font-size: 16px;
-      text-align: center; width: 100%;
-      box-shadow: 0 3px 14px rgba(0,0,0,0.13);
-      opacity: 0; transform: translateY(-12px) scale(.97);
-      transition: transform .34s cubic-bezier(.22,.68,0,1.2), opacity .34s ease;
-    }
-    .banner.visible { opacity: 1; transform: translateY(0) scale(1); }
-    .banner.fading  { opacity: 0; transform: translateY(-8px); transition: opacity 1.4s ease, transform 1.4s ease; }
-    .banner-name    { font-weight: bold; }
+#banner-stack{position:absolute;top:18px;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:8px;z-index:200;pointer-events:none;width:90%;max-width:540px}
+.banner{background:#111;color:#fff;padding:11px 22px;font-family:'Patrick Hand',cursive;font-size:16px;text-align:center;width:100%;box-shadow:0 3px 14px rgba(0,0,0,.13);opacity:0;transform:translateY(-12px) scale(.97);transition:transform .34s cubic-bezier(.22,.68,0,1.2),opacity .34s ease}
+.banner.visible{opacity:1;transform:translateY(0) scale(1)}
+.banner.fading{opacity:0;transform:translateY(-8px);transition:opacity 1.4s ease,transform 1.4s ease}
+.banner-name{font-weight:bold}
 
-    /* ── JUMPSCARE OVERLAY ── */
-    #jumpscare-overlay {
-      display: none;
-      position: fixed; inset: 0; z-index: 2000;
-      background: #000;
-      align-items: center; justify-content: center;
-      pointer-events: none;
-    }
-    #jumpscare-overlay.show { display: flex; }
-    #jumpscare-img {
-      max-width: 90vw; max-height: 90vh;
-      object-fit: contain;
-      animation: jsPop .15s ease-out forwards;
-    }
-    @keyframes jsPop {
-      0%   { transform: scale(0.4); opacity: 0; }
-      60%  { transform: scale(1.08); opacity: 1; }
-      100% { transform: scale(1); opacity: 1; }
-    }
-    #jumpscare-overlay.show { animation: jsFlash 0.08s steps(1) infinite; }
-    @keyframes jsFlash {
-      0%   { outline: 8px solid red; }
-      50%  { outline: 8px solid #ff0; }
-      100% { outline: 8px solid red; }
-    }
+#poll-widget{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) scale(.92);background:#fff;border:1.5px solid #111;padding:22px 24px;width:88%;max-width:380px;box-shadow:0 4px 24px rgba(0,0,0,.1);z-index:300;opacity:0;pointer-events:none;transition:opacity .28s,transform .28s}
+#poll-widget.show{opacity:1;pointer-events:all;transform:translate(-50%,-50%) scale(1)}
+#poll-question{font-size:17px;margin-bottom:14px;color:#111;line-height:1.4}
+.poll-option{margin-bottom:8px}
+.poll-bar-wrap{background:#f3f3f3;height:36px;position:relative;overflow:hidden;border:1px solid #e0e0e0;cursor:pointer}
+.poll-option.voted .poll-bar-wrap{cursor:default}
+.poll-bar-fill{background:#111;height:100%;width:0%;transition:width .5s ease}
+.poll-bar-label{position:absolute;inset:0;display:flex;align-items:center;justify-content:space-between;padding:0 11px;font-size:14px;color:#111;pointer-events:none}
+#poll-close{margin-top:12px;font-family:'Patrick Hand',cursive;font-size:13px;background:none;border:1px solid #ccc;padding:6px 14px;cursor:pointer;color:#888;width:100%;transition:border-color .2s,color .2s}
+#poll-close:hover{border-color:#111;color:#111}
 
-    /* ── BIG TEXT OVERLAY ── */
-    #bigtext-overlay {
-      display: none;
-      position: fixed; inset: 0; z-index: 1800;
-      pointer-events: none;
-      align-items: center; justify-content: center;
-    }
-    #bigtext-overlay.show { display: flex; }
-    #bigtext-content {
-      font-family: 'Patrick Hand', cursive;
-      font-size: clamp(48px, 12vw, 140px);
-      font-weight: bold;
-      text-align: center;
-      padding: 0 20px;
-      line-height: 1.1;
-      opacity: 0;
-      transform: scale(0.3);
-      text-shadow: 4px 4px 0 rgba(0,0,0,0.15);
-    }
-    #bigtext-overlay.show #bigtext-content {
-      animation: bigTextPop 0.5s cubic-bezier(.22,.68,0,1.3) forwards;
-    }
-    @keyframes bigTextPop {
-      0%   { opacity: 0; transform: scale(0.3) rotate(-5deg); }
-      70%  { opacity: 1; transform: scale(1.06) rotate(1deg); }
-      100% { opacity: 1; transform: scale(1) rotate(0deg); }
-    }
+/* ═══════════════════════════════════════
+   TOAST
+═══════════════════════════════════════ */
+#toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:#111;color:#fff;font-family:'Patrick Hand',cursive;font-size:14px;padding:8px 20px;border-radius:4px;opacity:0;pointer-events:none;transition:opacity .25s,transform .25s;z-index:9999;white-space:nowrap}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 
-    /* ── POLL ── */
-    #poll-widget {
-      position: absolute; top: 50%; left: 50%;
-      transform: translate(-50%, -50%) scale(.92);
-      background: #fff; border: 1.5px solid #111;
-      padding: 22px 24px; width: 88%; max-width: 380px;
-      box-shadow: 0 4px 24px rgba(0,0,0,0.10);
-      z-index: 80; opacity: 0; pointer-events: none;
-      transition: opacity .28s ease, transform .28s ease;
-    }
-    #poll-widget.show { opacity: 1; pointer-events: all; transform: translate(-50%, -50%) scale(1); }
-    #poll-question { font-size: 17px; margin-bottom: 14px; color: #111; line-height: 1.4; }
-    .poll-option   { margin-bottom: 8px; cursor: pointer; }
-    .poll-option.poll-voted { cursor: default; }
-    .poll-bar-wrap { background: #f3f3f3; height: 36px; position: relative; overflow: hidden; border: 1px solid #e0e0e0; }
-    .poll-bar-fill { background: #111; height: 100%; width: 0%; transition: width .5s ease; }
-    .poll-bar-label { position: absolute; inset: 0; display: flex; align-items: center; justify-content: space-between; padding: 0 11px; font-size: 14px; color: #111; pointer-events: none; }
-    #poll-close { margin-top: 12px; font-family: 'Patrick Hand', cursive; font-size: 13px; background: none; border: 1px solid #ccc; padding: 6px 14px; cursor: pointer; color: #888; width: 100%; transition: border-color .2s, color .2s; }
-    #poll-close:hover { border-color: #111; color: #111; }
+/* ═══════════════════════════════════════
+   ADMIN PANEL — FLOATING CENTER (desktop)
+═══════════════════════════════════════ */
+#panel-backdrop{display:none;position:fixed;inset:0;z-index:4999;background:rgba(0,0,0,.35);backdrop-filter:blur(2px)}
+#panel-backdrop.show{display:block}
 
-    /* ── VIEWER PILL ── */
-    #viewer-pill {
-      position: absolute; bottom: 14px; left: 14px;
-      background: rgba(255,255,255,0.9); border: 1px solid #e0e0e0;
-      padding: 4px 12px; font-size: 12px; color: #888;
-      z-index: 50; pointer-events: none;
-    }
-    #viewer-pill b { color: #111; }
+#admin-panel{
+  display:none;
+  position:fixed;
+  top:50%;left:50%;
+  transform:translate(-50%,-50%) scale(.96);
+  width:min(480px,94vw);
+  max-height:min(640px,90vh);
+  background:#fff;
+  border-radius:var(--panel-radius);
+  box-shadow:0 24px 80px rgba(0,0,0,.28),0 0 0 1px rgba(0,0,0,.06);
+  z-index:5000;
+  flex-direction:column;
+  overflow:hidden;
+  transition:transform .22s cubic-bezier(.22,.68,0,1.2),opacity .22s;
+  opacity:0;
+}
+#admin-panel.open{display:flex;transform:translate(-50%,-50%) scale(1);opacity:1}
 
-    /* ── CURSOR TRAIL ── */
-    .cursor-spark {
-      position: fixed;
-      pointer-events: none;
-      z-index: 9000;
-      border-radius: 50%;
-      transform: translate(-50%, -50%);
-      animation: sparkFade 0.6s ease-out forwards;
-    }
-    @keyframes sparkFade {
-      0%   { opacity: 1; transform: translate(-50%,-50%) scale(1); }
-      100% { opacity: 0; transform: translate(-50%,-50%) scale(0.1); }
-    }
+/* header */
+#panel-header{
+  background:#111;
+  padding:14px 18px 12px;
+  flex-shrink:0;
+  display:flex;align-items:center;justify-content:space-between;
+  border-radius:var(--panel-radius) var(--panel-radius) 0 0;
+}
+#panel-header-left h1{font-size:15px;color:#fff;font-weight:normal}
+#panel-header-left p{font-size:10px;color:rgba(255,255,255,.45);margin-top:2px}
+#panel-close-btn{background:none;border:none;color:rgba(255,255,255,.6);font-size:20px;cursor:pointer;line-height:1;padding:2px 4px}
+#panel-close-btn:hover{color:#fff}
 
-    /* ── MOBILE CODE BOX ── */
-    #mobile-code-box {
-      position: fixed;
-      bottom: 0; left: 0; right: 0;
-      z-index: 999;
-      background: #fff;
-      border-top: 1.5px solid #e8e8e8;
-      padding: 10px 16px 16px;
-      text-align: center;
-    }
-    @media (min-width: 601px) {
-      #mobile-code-box {
-        left: auto; right: 16px;
-        bottom: 16px;
-        border: 1px solid #e8e8e8;
-        padding: 8px 12px 10px;
-        width: auto;
-        box-shadow: 0 2px 12px rgba(0,0,0,0.07);
-      }
-      #mobile-code-input { font-size: 14px; width: 160px; padding: 5px 8px; letter-spacing: 2px; }
-      #mobile-code-btn   { font-size: 13px; padding: 6px 12px; }
-      #mobile-code-label { font-size: 10px; }
-    }
-    #mobile-code-label { font-size: 11px; color: #aaa; margin-bottom: 6px; letter-spacing: .5px; }
-    #mobile-code-row   { display: flex; gap: 8px; align-items: center; justify-content: center; }
-    #mobile-code-input {
-      font-family: 'Patrick Hand', cursive;
-      font-size: 18px; width: 180px;
-      border: 1.5px solid #ccc; padding: 8px 10px;
-      outline: none; color: #111; background: #fff;
-      letter-spacing: 2px; text-align: center;
-      -webkit-appearance: none;
-    }
-    #mobile-code-input:focus { border-color: #111; }
-    #mobile-code-btn {
-      font-family: 'Patrick Hand', cursive;
-      font-size: 16px; background: #111; color: #fff;
-      border: none; padding: 8px 18px; cursor: pointer;
-      -webkit-tap-highlight-color: transparent;
-    }
-    #mobile-code-btn:active { opacity: .75; }
+/* tabs — horizontal scroll */
+.admin-tabs{display:flex;background:#fafafa;border-bottom:1.5px solid #e8e8e8;flex-shrink:0;overflow-x:auto;scrollbar-width:none}
+.admin-tabs::-webkit-scrollbar{display:none}
+.admin-tab{flex:none;padding:10px 14px;font-family:'Patrick Hand',cursive;font-size:12px;background:none;border:none;cursor:pointer;color:#aaa;border-bottom:2px solid transparent;margin-bottom:-1.5px;transition:color .15s;white-space:nowrap}
+.admin-tab.active{color:#111;border-bottom-color:#111}
+.admin-tab:hover:not(.active){color:#555}
 
-    /* ── ADMIN PANEL TOGGLE BUTTON (mobile only) ── */
-    #admin-toggle-btn {
-      display: none;
-      position: fixed;
-      bottom: 16px; right: 16px;
-      z-index: 600;
-      width: 48px; height: 48px;
-      background: #111; color: #fff;
-      border: none; border-radius: 50%;
-      font-size: 22px; cursor: pointer;
-      align-items: center; justify-content: center;
-      box-shadow: 0 3px 12px rgba(0,0,0,0.25);
-      -webkit-tap-highlight-color: transparent;
-    }
-    @media (max-width: 600px) {
-      #admin-toggle-btn { display: flex; }
-      body.admin-open #admin-toggle-btn { bottom: calc(70dvh + 12px); }
-    }
+/* panel body */
+#panel-content{flex:1;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+#panel-content::-webkit-scrollbar{width:3px}
+#panel-content::-webkit-scrollbar-thumb{background:#e0e0e0}
 
-    /* ── ADMIN SIDEBAR — desktop ── */
-    #admin-panel {
-      width: 0; min-width: 0; overflow: hidden;
-      background: #fff; border-left: 1.5px solid #e8e8e8;
-      display: flex; flex-direction: column;
-      transition: width .32s cubic-bezier(.22,.68,0,1.1), min-width .32s;
-      z-index: 200; flex-shrink: 0;
-    }
-    #admin-panel.open { width: 260px; min-width: 260px; }
-    #panel-inner { width: 260px; height: 100%; display: flex; flex-direction: column; overflow: hidden; }
+.tab-panel{display:none;padding:16px}
+.tab-panel.active{display:block}
 
-    #panel-header { background: #111; padding: 11px 14px 10px; flex-shrink: 0; }
-    #panel-header h1 { font-size: 15px; color: #fff; font-weight: normal; }
-    #panel-header p  { font-size: 10px; color: rgba(255,255,255,.5); margin-top: 2px; }
+/* hint bar */
+#panel-hint{text-align:center;font-size:10px;color:#bbb;padding:6px 0;border-top:1px solid #f0f0f0;flex-shrink:0}
 
-    .admin-tabs {
-      display: flex; background: #fafafa; border-bottom: 1.5px solid #e8e8e8; flex-shrink: 0;
-      overflow-x: auto; scrollbar-width: none;
-    }
-    .admin-tabs::-webkit-scrollbar { display: none; }
-    .admin-tab {
-      flex: 1; min-width: 40px; padding: 8px 3px;
-      font-family: 'Patrick Hand', cursive; font-size: 11px;
-      background: none; border: none; cursor: pointer; color: #bbb;
-      border-bottom: 2px solid transparent; margin-bottom: -1.5px;
-      transition: color .15s; white-space: nowrap;
-    }
-    .admin-tab.active             { color: #111; border-bottom-color: #111; }
-    .admin-tab:hover:not(.active) { color: #555; }
+/* ═══════════════════════════════════════
+   MOBILE SHEET
+═══════════════════════════════════════ */
+@media(max-width:600px){
+  #admin-panel{
+    top:auto;left:0;right:0;bottom:0;
+    transform:translateY(100%);
+    width:100%;max-height:80dvh;
+    border-radius:16px 16px 0 0;
+    opacity:1;
+  }
+  #admin-panel.open{transform:translateY(0)}
+  #panel-header{border-radius:16px 16px 0 0}
+  #panel-header::before{content:'';display:block;width:36px;height:4px;background:rgba(255,255,255,.3);border-radius:2px;position:absolute;top:8px;left:50%;transform:translateX(-50%)}
+  #panel-header{position:relative;padding-top:20px}
+  .admin-tab{padding:12px 12px;font-size:11px}
+  .tab-panel{padding:14px}
+}
 
-    #panel-content { flex: 1; overflow-y: auto; overflow-x: hidden; }
-    #panel-content::-webkit-scrollbar       { width: 3px; }
-    #panel-content::-webkit-scrollbar-thumb { background: #e0e0e0; }
+/* ═══════════════════════════════════════
+   FAB — floating action button
+═══════════════════════════════════════ */
+#admin-fab{
+  position:fixed;bottom:20px;right:20px;z-index:4998;
+  width:52px;height:52px;
+  background:#111;color:#fff;border:none;border-radius:50%;
+  font-size:22px;cursor:pointer;
+  display:none;align-items:center;justify-content:center;
+  box-shadow:0 4px 16px rgba(0,0,0,.3);
+  transition:transform .15s;
+  -webkit-tap-highlight-color:transparent;
+}
+#admin-fab:active{transform:scale(.9)}
+@media(max-width:600px){#admin-fab{display:flex}}
 
-    /* ── MOBILE SHEET ── */
-    @media (max-width: 600px) {
-      #app { display: block; }
-      #main { width: 100vw; height: 100vh; }
-      #admin-panel {
-        position: fixed;
-        bottom: 0; left: 0; right: 0;
-        width: 100% !important; min-width: 0 !important;
-        height: 0; border-left: none;
-        border-top: 1.5px solid #e8e8e8;
-        transition: height .32s cubic-bezier(.22,.68,0,1.1);
-        z-index: 500;
-      }
-      #admin-panel.open { height: 70vh; height: 70dvh; }
-      #panel-inner { width: 100% !important; height: 70vh; height: 70dvh; }
-      #panel-header { display: flex; flex-direction: column; align-items: center; padding-top: 8px; }
-      #panel-header::before {
-        content: ''; display: block;
-        width: 36px; height: 4px;
-        background: rgba(255,255,255,.35);
-        border-radius: 2px; margin-bottom: 8px;
-      }
-      body.admin-open #mobile-code-box { display: none !important; }
-      .admin-tab { font-size: 12px; padding: 10px 4px; }
-      .tab-panel { padding: 12px 14px; }
-    }
+/* ═══════════════════════════════════════
+   CODE BOX (non-admin view)
+═══════════════════════════════════════ */
+#code-box{
+  position:fixed;bottom:0;left:0;right:0;
+  z-index:4990;background:#fff;border-top:1.5px solid #e8e8e8;
+  padding:12px 16px 20px;text-align:center;
+}
+@media(min-width:601px){
+  #code-box{left:auto;right:20px;bottom:20px;border:1px solid #e8e8e8;padding:10px 14px 12px;border-radius:8px;box-shadow:0 2px 12px rgba(0,0,0,.07)}
+}
+#code-label{font-size:11px;color:#aaa;margin-bottom:6px;letter-spacing:.5px}
+#code-row{display:flex;gap:8px;align-items:center;justify-content:center}
+#code-input{font-family:'Patrick Hand',cursive;font-size:18px;width:160px;border:1.5px solid #ccc;padding:8px 10px;outline:none;color:#111;letter-spacing:2px;text-align:center;border-radius:4px;-webkit-appearance:none}
+#code-input:focus{border-color:#111}
+#code-btn{font-family:'Patrick Hand',cursive;font-size:16px;background:#111;color:#fff;border:none;padding:9px 18px;cursor:pointer;border-radius:4px}
 
-    .tab-panel        { display: none; padding: 13px; }
-    .tab-panel.active { display: block; }
-    .panel-label { font-size: 11px; color: #bbb; margin-bottom: 6px; letter-spacing: .5px; text-transform: uppercase; }
+/* ═══════════════════════════════════════
+   COMPONENT STYLES
+═══════════════════════════════════════ */
+.panel-label{font-size:10px;color:#bbb;margin-bottom:6px;letter-spacing:.5px;text-transform:uppercase}
+.divider{height:1px;background:#f0f0f0;margin:12px 0}
 
-    .admin-input {
-      width: 100%; font-family: 'Patrick Hand', cursive; font-size: 15px;
-      border: 1px solid #e0e0e0; padding: 8px 10px;
-      outline: none; color: #111; background: #fafafa; margin-bottom: 8px;
-      resize: none; transition: border-color .18s;
-    }
-    .admin-input:focus        { border-color: #111; background: #fff; }
-    .admin-input::placeholder { color: #bbb; }
+.admin-input{width:100%;font-family:'Patrick Hand',cursive;font-size:15px;border:1px solid #e0e0e0;padding:9px 11px;outline:none;color:#111;background:#fafafa;margin-bottom:8px;resize:none;transition:border-color .18s;border-radius:4px}
+.admin-input:focus{border-color:#111;background:#fff}
+.admin-input::placeholder{color:#ccc}
 
-    .admin-btn {
-      width: 100%; font-family: 'Patrick Hand', cursive; font-size: 15px;
-      background: #111; color: #fff;
-      border: none; padding: 9px; cursor: pointer;
-      transition: opacity .15s; margin-top: 2px;
-    }
-    .admin-btn:hover  { opacity: .85; }
-    .admin-btn:active { opacity: .7; }
-    .admin-btn.ghost  { background: #fff; color: #888; border: 1px solid #e0e0e0; }
-    .admin-btn.ghost:hover { border-color: #111; color: #111; }
-    .admin-btn.red    { background: #e63946; }
-    .admin-btn.red:hover { background: #c1121f; opacity: 1; }
-    .admin-btn.blue   { background: #4cc9f0; color: #000; }
-    .admin-btn.blue:hover { background: #38b0d8; opacity: 1; }
-    .admin-btn.purple { background: #7b2d8b; }
-    .admin-btn.purple:hover { background: #5a1f68; opacity: 1; }
-    .admin-btn.green  { background: #06d6a0; color: #000; }
-    .admin-btn.green:hover { background: #05b88a; opacity: 1; }
-    .admin-btn.orange { background: #ff9e00; color: #000; }
-    .admin-btn.orange:hover { background: #e08c00; opacity: 1; }
+.admin-btn{width:100%;font-family:'Patrick Hand',cursive;font-size:15px;background:#111;color:#fff;border:none;padding:10px;cursor:pointer;transition:opacity .15s;margin-top:2px;border-radius:6px}
+.admin-btn:hover{opacity:.85}
+.admin-btn:active{opacity:.7}
+.admin-btn.ghost{background:#fff;color:#888;border:1px solid #e0e0e0}
+.admin-btn.ghost:hover{border-color:#111;color:#111}
+.admin-btn.red{background:#e63946}
+.admin-btn.blue{background:#4cc9f0;color:#000}
+.admin-btn.purple{background:#7b2d8b}
+.admin-btn.green{background:#06d6a0;color:#000}
+.admin-btn.orange{background:#ff9e00;color:#000}
+.admin-btn.pink{background:#f72585}
 
-    .divider { height: 1px; background: #eee; margin: 11px 0; }
+/* button grid */
+.btn-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:4px}
+.btn-grid .admin-btn{margin-top:0}
 
-    /* Poll builder */
-    .poll-option-input-wrap { display: flex; gap: 5px; margin-bottom: 6px; align-items: center; }
-    .poll-option-input-wrap input {
-      flex: 1; font-family: 'Patrick Hand', cursive; font-size: 14px;
-      border: 1px solid #e0e0e0; padding: 6px 8px;
-      outline: none; background: #fafafa; color: #111; transition: border-color .18s;
-    }
-    .poll-option-input-wrap input:focus       { border-color: #111; }
-    .poll-option-input-wrap input::placeholder { color: #bbb; }
-    .remove-option {
-      background: none; border: 1px solid #e0e0e0;
-      font-size: 15px; color: #bbb; cursor: pointer; padding: 3px 7px;
-      transition: border-color .15s, color .15s;
-    }
-    .remove-option:hover { border-color: #111; color: #111; }
-    #add-option-btn {
-      font-family: 'Patrick Hand', cursive; font-size: 13px;
-      background: #fafafa; border: 1px dashed #ccc;
-      padding: 6px 12px; cursor: pointer; color: #aaa; margin-bottom: 8px; width: 100%;
-      transition: border-color .18s, color .18s;
-    }
-    #add-option-btn:hover { border-color: #111; color: #111; }
+/* icon big buttons */
+.icon-btn-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:8px}
+.icon-btn{font-family:'Patrick Hand',cursive;font-size:12px;background:#fafafa;border:1.5px solid #e8e8e8;padding:10px 6px;cursor:pointer;color:#111;text-align:center;line-height:1.4;border-radius:8px;transition:all .15s}
+.icon-btn:hover{border-color:#111;background:#f0f0f0}
+.icon-btn:active{background:#111;color:#fff}
+.icon-btn .ib-icon{font-size:20px;display:block;margin-bottom:2px}
 
-    /* BG color picker */
-    .color-presets { display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px; margin-bottom: 10px; }
-    .color-swatch  { aspect-ratio: 1; cursor: pointer; border: 2px solid transparent; transition: transform .15s; }
-    .color-swatch:hover    { transform: scale(1.1); }
-    .color-swatch.selected { border-color: #111; }
-    .color-custom-row { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; }
-    #custom-color { width: 38px; height: 28px; border: 1px solid #e0e0e0; padding: 2px; cursor: pointer; background: #fafafa; }
-    #custom-color-label { font-size: 13px; color: #aaa; }
+/* swatches */
+.swatch-row{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:8px}
+.swatch{width:26px;height:26px;border-radius:50%;cursor:pointer;border:2px solid transparent;transition:transform .15s,border-color .15s;flex-shrink:0}
+.swatch:hover{transform:scale(1.15)}
+.swatch.sel{border-color:#111;box-shadow:0 0 0 1px #fff inset}
+.swatch.square{border-radius:4px}
+.swatch.square.sel{border-color:#111}
 
-    /* Draw tab */
-    .draw-tool-row { display: flex; gap: 5px; margin-bottom: 8px; }
-    .tool-btn {
-      flex: 1; font-family: 'Patrick Hand', cursive; font-size: 13px;
-      background: #fafafa; border: 1px solid #e0e0e0;
-      padding: 7px 4px; cursor: pointer; color: #888;
-      transition: all .15s; text-align: center;
-    }
-    .tool-btn:hover  { border-color: #111; color: #111; }
-    .tool-btn.active { background: #111; border-color: #111; color: #fff; }
+/* tool toggles */
+.tool-row{display:flex;gap:5px;margin-bottom:8px}
+.tool-btn{flex:1;font-family:'Patrick Hand',cursive;font-size:13px;background:#fafafa;border:1px solid #e0e0e0;padding:7px 4px;cursor:pointer;color:#888;transition:all .15s;text-align:center;border-radius:4px}
+.tool-btn:hover{border-color:#111;color:#111}
+.tool-btn.active{background:#111;border-color:#111;color:#fff}
 
-    .draw-colors { display: flex; gap: 5px; margin-bottom: 8px; flex-wrap: wrap; }
-    .draw-color-swatch {
-      width: 24px; height: 24px; border-radius: 50%; cursor: pointer;
-      border: 2px solid transparent; transition: transform .15s, border-color .15s; flex-shrink: 0;
-    }
-    .draw-color-swatch:hover    { transform: scale(1.18); }
-    .draw-color-swatch.selected { border-color: #111; box-shadow: 0 0 0 1px #fff inset; }
+/* size row */
+.size-row{display:flex;gap:6px;margin-bottom:8px;align-items:center}
+.size-row label{font-size:11px;color:#bbb;text-transform:uppercase;white-space:nowrap}
+.size-row input[type=range]{flex:1;accent-color:#111;cursor:pointer}
+.size-row span{font-size:13px;color:#111;min-width:18px;text-align:right}
 
-    .size-row { display: flex; gap: 6px; margin-bottom: 8px; align-items: center; }
-    .size-row label { font-size: 11px; color: #bbb; text-transform: uppercase; white-space: nowrap; }
-    #brush-size     { flex: 1; accent-color: #111; cursor: pointer; }
-    #brush-size-val { font-size: 13px; color: #111; min-width: 18px; text-align: right; }
+/* poll builder */
+.poll-opt-wrap{display:flex;gap:5px;margin-bottom:6px;align-items:center}
+.poll-opt-wrap input{flex:1;font-family:'Patrick Hand',cursive;font-size:14px;border:1px solid #e0e0e0;padding:7px 8px;outline:none;background:#fafafa;color:#111;transition:border-color .18s;border-radius:4px}
+.poll-opt-wrap input:focus{border-color:#111}
+.poll-opt-wrap input::placeholder{color:#ccc}
+.rm-opt{background:none;border:1px solid #e0e0e0;font-size:15px;color:#bbb;cursor:pointer;padding:4px 8px;transition:border-color .15s,color .15s;border-radius:4px}
+.rm-opt:hover{border-color:#111;color:#111}
+#add-opt-btn{font-family:'Patrick Hand',cursive;font-size:13px;background:#fafafa;border:1px dashed #ccc;padding:7px 12px;cursor:pointer;color:#aaa;margin-bottom:8px;width:100%;border-radius:4px;transition:border-color .18s,color .18s}
+#add-opt-btn:hover{border-color:#111;color:#111}
 
-    #draw-toggle-btn {
-      width: 100%; font-family: 'Patrick Hand', cursive; font-size: 15px;
-      background: #fff; border: 1.5px solid #111;
-      padding: 8px; cursor: pointer; color: #111;
-      transition: all .15s; margin-bottom: 8px;
-    }
-    #draw-toggle-btn:hover   { background: #f5f5f5; }
-    #draw-toggle-btn.drawing { background: #111; color: #fff; }
+/* js presets */
+.js-presets{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}
+.js-preset{width:54px;height:54px;cursor:pointer;object-fit:cover;border:2px solid transparent;border-radius:6px;transition:border-color .15s,transform .15s;background:#f0f0f0}
+.js-preset:hover{border-color:#111;transform:scale(1.05)}
+.js-preset.sel{border-color:#e63946}
 
-    /* Abuse tab */
-    .abuse-big-btn {
-      font-family: 'Patrick Hand', cursive; font-size: 14px;
-      background: #fff; border: 1.5px solid #e0e0e0;
-      padding: 12px 6px; cursor: pointer; color: #111;
-      text-align: center; line-height: 1.3; width: 100%;
-      transition: all .15s; margin-bottom: 6px;
-    }
-    .abuse-big-btn:hover  { border-color: #111; background: #f5f5f5; }
-    .abuse-big-btn:active { background: #111; color: #fff; }
-    .abuse-big-btn .abuse-icon { font-size: 22px; display: block; margin-bottom: 3px; }
+/* toggle button */
+.toggle-btn{width:100%;font-family:'Patrick Hand',cursive;font-size:15px;background:#fff;border:1.5px solid #111;padding:9px;cursor:pointer;color:#111;transition:all .15s;margin-bottom:8px;border-radius:6px}
+.toggle-btn:hover{background:#f5f5f5}
+.toggle-btn.on{background:#111;color:#fff}
 
-    .js-presets { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 8px; }
-    .js-preset {
-      width: 56px; height: 56px; cursor: pointer; object-fit: cover;
-      border: 2px solid transparent; transition: border-color .15s, transform .15s;
-      background: #f0f0f0;
-    }
-    .js-preset:hover    { border-color: #111; transform: scale(1.05); }
-    .js-preset.selected { border-color: #e63946; }
+/* ═══════════════════════════════════════
+   JOIN SCREEN — blurred background, name entry
+═══════════════════════════════════════ */
+#join-overlay{
+  position:fixed;inset:0;z-index:9500;
+  backdrop-filter:blur(20px);
+  -webkit-backdrop-filter:blur(20px);
+  background:rgba(255,255,255,.5);
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  gap:22px;
+  transition:opacity .5s ease;
+}
+#join-overlay.gone{
+  opacity:0;pointer-events:none;
+  transition:opacity .5s ease;
+}
+#join-title{
+  font-size:clamp(24px,5vw,34px);color:#111;
+  font-weight:normal;font-family:'Patrick Hand',cursive;
+  text-align:center;
+}
+#join-sub{
+  font-size:14px;color:#777;font-family:'Patrick Hand',cursive;
+  text-align:center;margin-top:-12px;
+}
+/* exact input style from spec */
+#join-name-input{
+  border:none;outline:none;border-radius:15px;padding:1em;
+  background-color:#ccc;
+  box-shadow:inset 2px 5px 10px rgba(0,0,0,0.3);
+  transition:300ms ease-in-out;
+  font-family:'Patrick Hand',cursive;font-size:18px;
+  text-align:center;width:min(280px,78vw);color:#111;
+}
+#join-name-input:focus{
+  background-color:white;transform:scale(1.05);
+  box-shadow:13px 13px 100px #969696,-13px -13px 100px #ffffff;
+}
+#join-name-input::placeholder{color:#aaa}
+#join-hint{font-size:12px;color:#aaa;font-family:'Patrick Hand',cursive;margin-top:-8px}
 
-    /* Big text tab */
-    .bigtext-color-row { display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 8px; }
-    .bt-color {
-      width: 22px; height: 22px; border-radius: 50%; cursor: pointer;
-      border: 2px solid transparent; transition: transform .15s;
-    }
-    .bt-color:hover    { transform: scale(1.15); }
-    .bt-color.selected { border-color: #111; }
+/* name-overlay (admin) stays for admin flow */
+#name-overlay{display:none;position:fixed;inset:0;background:rgba(255,255,255,.97);z-index:10000;align-items:center;justify-content:center;flex-direction:column;gap:14px}
+#name-overlay.show{display:flex}
+#name-overlay h2{font-size:22px;color:#111;font-weight:normal}
+#name-overlay p{font-size:13px;color:#aaa}
+#name-input{font-family:'Patrick Hand',cursive;font-size:20px;border:none;border-bottom:2px solid #111;padding:6px 2px;outline:none;text-align:center;width:220px;background:transparent;color:#111}
+#name-confirm{font-family:'Patrick Hand',cursive;font-size:16px;background:#111;color:#fff;border:none;padding:10px 36px;cursor:pointer;border-radius:4px}
+#name-confirm:hover{opacity:.85}
 
-    /* ── NAME OVERLAY ── */
-    #name-overlay {
-      display: none; position: fixed; inset: 0;
-      background: rgba(255,255,255,.97); z-index: 10000;
-      align-items: center; justify-content: center; flex-direction: column; gap: 14px;
-    }
-    #name-overlay.show { display: flex; }
-    #name-overlay h2   { font-size: 22px; color: #111; font-weight: normal; }
-    #name-overlay p    { font-size: 13px; color: #aaa; }
-    #name-input {
-      font-family: 'Patrick Hand', cursive; font-size: 20px;
-      border: none; border-bottom: 2px solid #111;
-      padding: 6px 2px; outline: none; text-align: center;
-      width: 200px; background: transparent; color: #111;
-    }
-    #name-confirm {
-      font-family: 'Patrick Hand', cursive; font-size: 16px;
-      background: #111; color: #fff;
-      border: none; padding: 10px 36px; cursor: pointer;
-    }
-    #name-confirm:hover { opacity: .85; }
+/* ═══════════════════════════════════════
+   PLAYERS LIST panel (click viewer pill)
+═══════════════════════════════════════ */
+#players-panel{
+  position:fixed;bottom:50px;left:14px;
+  z-index:550;
+  background:#fff;
+  border:1.5px solid #e8e8e8;
+  border-radius:14px;
+  min-width:200px;max-width:260px;
+  max-height:260px;overflow-y:auto;
+  box-shadow:0 8px 32px rgba(0,0,0,.14);
+  display:none;
+  font-family:'Patrick Hand',cursive;
+  padding:8px 0;
+}
+#players-panel.show{display:block}
+#players-panel-title{
+  font-size:10px;color:#bbb;letter-spacing:.5px;
+  text-transform:uppercase;padding:0 14px 8px;
+  border-bottom:1px solid #f0f0f0;margin-bottom:4px;
+}
+.player-row{
+  display:flex;align-items:center;gap:8px;
+  padding:7px 14px;font-size:14px;color:#111;
+}
+.player-row .pr-crown{font-size:15px;flex-shrink:0}
+.player-row .pr-name{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.player-row .pr-bal{font-size:12px;color:#ff5a78;font-weight:bold;flex-shrink:0}
 
-    /* ── TOAST ── */
-    #toast {
-      position: fixed; bottom: 20px; left: 50%;
-      transform: translateX(-50%) translateY(20px);
-      background: #111; color: #fff;
-      font-family: 'Patrick Hand', cursive; font-size: 13px;
-      padding: 7px 16px;
-      opacity: 0; pointer-events: none;
-      transition: opacity .25s, transform .25s;
-      z-index: 9999;
-    }
-    #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
-  </style>
+/* ═══════════════════════════════════════
+   VIEWER PILL — clickable
+═══════════════════════════════════════ */
+#viewer-pill{
+  position:absolute;bottom:14px;left:14px;
+  background:rgba(255,255,255,.92);border:1px solid #e0e0e0;
+  padding:5px 14px;font-size:12px;color:#888;
+  z-index:50;border-radius:999px;
+  cursor:pointer;pointer-events:all;
+  user-select:none;
+  transition:background .15s,border-color .15s,box-shadow .15s;
+  box-shadow:0 1px 6px rgba(0,0,0,.06);
+}
+#viewer-pill:hover{background:#fff;border-color:#aaa;box-shadow:0 2px 10px rgba(0,0,0,.1)}
+#viewer-pill b{color:#111}
+
+/* color grid for BG */
+.color-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin-bottom:10px}
+.color-grid .swatch{width:auto;height:0;padding-bottom:100%;border-radius:6px}
+
+/* ═══════════════════════════════════════
+   CURRENCY — WALLET PILL
+═══════════════════════════════════════ */
+#wallet-pill{
+  position:fixed;top:16px;right:16px;z-index:600;
+  background:rgba(255,255,255,.95);
+  border:1.5px solid #e8e8e8;border-radius:999px;
+  padding:7px 16px 7px 10px;
+  display:flex;align-items:center;gap:8px;
+  box-shadow:0 2px 12px rgba(0,0,0,.09);
+  font-size:15px;font-family:'Patrick Hand',cursive;
+  pointer-events:none;transition:all .25s;
+}
+#wallet-pill .coin-icon{font-size:18px;line-height:1}
+#wallet-amount{font-weight:bold;color:#111;min-width:44px}
+#wallet-pill.boosted{border-color:#ff9e00;background:rgba(255,250,215,.97)}
+#wallet-pill .boost-badge{
+  background:#ff9e00;color:#000;font-size:10px;font-weight:bold;
+  padding:2px 7px;border-radius:99px;display:none;
+}
+#wallet-pill.boosted .boost-badge{display:inline}
+
+/* ═══════════════════════════════════════
+   CURRENCY — CLICKER BUTTON
+   Centered horizontally, above bottom edge.
+   Works on both mobile and desktop.
+═══════════════════════════════════════ */
+#coin-btn-wrap{
+  position:fixed;
+  bottom:28px;
+  left:50%;
+  transform:translateX(-50%);
+  z-index:600;
+  display:flex;flex-direction:column;align-items:center;gap:7px;
+}
+.coin-btn{
+  --primary:255,90,120;
+  --secondary:150,50,60;
+  width:68px;height:58px;
+  border:none;
+  outline:10px solid rgb(var(--primary),.4);
+  cursor:pointer;
+  user-select:none;touch-action:manipulation;
+  border-radius:100%;
+  position:relative;
+  transition:.3s;
+  background:transparent;
+  -webkit-tap-highlight-color:transparent;
+  flex-shrink:0;
+}
+.coin-btn .back{
+  background:rgb(var(--secondary));
+  border-radius:100%;
+  position:absolute;left:0;top:0;width:100%;height:100%;
+}
+.coin-btn .front{
+  background:linear-gradient(0deg,rgba(var(--primary),.6) 20%,rgba(var(--primary)) 50%);
+  box-shadow:0 .5em 1em -.2em rgba(var(--secondary),.5);
+  border-radius:100%;
+  position:absolute;
+  border:1px solid rgb(var(--secondary));
+  left:0;top:0;width:100%;height:100%;
+  display:flex;justify-content:center;align-items:center;
+  font-size:1.5rem;
+  transform:translateY(-15%);
+  transition:.15s;
+}
+.coin-btn:active .front{transform:translateY(0%);box-shadow:0 0}
+#coin-btn-label{
+  font-size:11px;color:#999;font-family:'Patrick Hand',cursive;
+  text-align:center;line-height:1.4;white-space:pre;
+}
+
+/* coin float */
+.coin-float{
+  position:fixed;z-index:700;pointer-events:none;
+  font-family:'Patrick Hand',cursive;font-weight:bold;
+  font-size:20px;color:#ff5a78;
+  text-shadow:0 1px 4px rgba(0,0,0,.15);
+  animation:coinFloat 1s ease-out forwards;
+}
+@keyframes coinFloat{
+  0%{opacity:1;transform:translateY(0) scale(1)}
+  100%{opacity:0;transform:translateY(-80px) scale(.6)}
+}
+
+/* ═══════════════════════════════════════
+   TACO TUESDAY BADGE
+═══════════════════════════════════════ */
+#taco-badge{
+  position:absolute;bottom:14px;left:130px;
+  display:none;cursor:default;z-index:51;
+}
+body.party-mode #taco-badge{display:block}
+#taco-badge-inner{
+  background:rgba(255,255,255,.95);border:1.5px solid #ff9e00;border-radius:999px;
+  padding:4px 10px;font-size:13px;font-family:'Patrick Hand',cursive;
+  display:flex;align-items:center;gap:5px;
+  box-shadow:0 2px 8px rgba(255,158,0,.2);position:relative;
+}
+#taco-badge-inner .taco-tooltip{
+  display:none;position:absolute;bottom:calc(100% + 8px);left:50%;transform:translateX(-50%);
+  background:#fff;border:1.5px solid #ff9e00;border-radius:10px;
+  padding:10px 14px;min-width:160px;
+  box-shadow:0 6px 24px rgba(0,0,0,.12);pointer-events:none;white-space:nowrap;
+}
+#taco-badge-inner:hover .taco-tooltip{display:block}
+.taco-tooltip h4{font-size:13px;color:#111;font-weight:bold;font-family:'Patrick Hand',cursive;margin-bottom:4px}
+.taco-tooltip p{font-size:12px;color:#888;font-family:'Patrick Hand',cursive;line-height:1.4}
+.taco-tooltip::after{content:'';position:absolute;top:100%;left:50%;transform:translateX(-50%);border:6px solid transparent;border-top-color:#ff9e00}
+
+/* ═══════════════════════════════════════
+   ADMIN — CURRENCY TAB
+═══════════════════════════════════════ */
+.currency-leaderboard{border:1px solid #f0f0f0;border-radius:8px;overflow:hidden;margin-bottom:10px}
+.currency-row{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;font-size:14px;font-family:'Patrick Hand',cursive;border-bottom:1px solid #f8f8f8}
+.currency-row:last-child{border-bottom:none}
+.currency-row .cr-name{color:#111;flex:1}
+.currency-row .cr-amt{color:#ff5a78;font-weight:bold;margin-right:8px}
+.currency-row .cr-give{background:#111;color:#fff;border:none;font-family:'Patrick Hand',cursive;font-size:12px;padding:3px 10px;border-radius:4px;cursor:pointer}
+.currency-row .cr-give:hover{opacity:.8}
+.give-custom-row{display:flex;gap:6px;align-items:center;margin-bottom:8px}
+.give-custom-row input{flex:1;font-family:'Patrick Hand',cursive;font-size:15px;border:1px solid #e0e0e0;padding:8px 10px;outline:none;color:#111;background:#fafafa;border-radius:6px}
 </head>
 <body>
 
-<!-- EFFECTS LAYERS -->
+<!-- EFFECTS -->
 <div id="taco-container"></div>
 <div id="rain-container"></div>
 <div id="spotlight-overlay"></div>
 
-<!-- JUMPSCARE -->
-<div id="jumpscare-overlay">
-  <img id="jumpscare-img" src="" alt=""/>
-</div>
-
-<!-- BIG TEXT -->
-<div id="bigtext-overlay">
-  <div id="bigtext-content"></div>
-</div>
-
-<!-- TOAST -->
+<!-- OVERLAYS -->
+<div id="jumpscare-overlay"><img id="jumpscare-img" src="" alt=""/></div>
+<div id="bigtext-overlay"><div id="bigtext-content"></div></div>
 <div id="toast"></div>
 
-<div id="app">
-  <!-- MAIN -->
-  <div id="main">
-    <canvas id="draw-canvas"></canvas>
-    <div id="banner-stack"></div>
-    <div id="poll-widget">
-      <div id="poll-question"></div>
-      <div id="poll-options"></div>
-      <button id="poll-close">dismiss</button>
-    </div>
-    <div id="viewer-pill">👁 <b id="viewer-count">1</b> viewing</div>
+<!-- JOIN OVERLAY (everyone must enter name first) -->
+<div id="join-overlay">
+  <div id="join-title">👋 welcome!</div>
+  <div id="join-sub">enter your name to join</div>
+  <input id="join-name-input" type="text" maxlength="28" placeholder="your name…" autocomplete="off" autocorrect="off" spellcheck="false"/>
+  <div id="join-hint">press Enter ↵ to join</div>
+</div>
+
+<!-- PLAYERS LIST panel -->
+<div id="players-panel">
+  <div id="players-panel-title">active players</div>
+  <div id="players-list"></div>
+</div>
+
+<!-- WALLET PILL -->
+<div id="wallet-pill">
+  <span class="coin-icon">💶</span>
+  <div id="wallet-amount">0.00€</div>
+  <span class="boost-badge">x2</span>
+</div>
+
+<!-- COIN CLICKER BUTTON -->
+<div id="coin-btn-wrap">
+  <button class="coin-btn" id="coin-btn">
+    <div class="back"></div>
+    <div class="front">💶</div>
+  </button>
+  <div id="coin-btn-label">+1€</div>
+</div>
+
+<!-- MAIN STAGE -->
+<div id="main">
+  <canvas id="draw-canvas"></canvas>
+  <div id="banner-stack"></div>
+  <div id="poll-widget">
+    <div id="poll-question"></div>
+    <div id="poll-options-display"></div>
+    <button id="poll-close">dismiss</button>
   </div>
-
-  <!-- ADMIN SIDEBAR -->
-  <div id="admin-panel">
-    <div id="panel-inner">
-      <div id="panel-header">
-        <h1>🛠 admin panel</h1>
-        <p id="admin-name-display">not logged in</p>
-      </div>
-      <div class="admin-tabs">
-        <button class="admin-tab active" data-tab="msg">💬</button>
-        <button class="admin-tab" data-tab="abuse">💥</button>
-        <button class="admin-tab" data-tab="party">🎉</button>
-        <button class="admin-tab" data-tab="fx">✨</button>
-        <button class="admin-tab" data-tab="draw">🖌</button>
-        <button class="admin-tab" data-tab="poll">📊</button>
-        <button class="admin-tab" data-tab="bg">🎨</button>
-      </div>
-      <div id="panel-content">
-
-        <!-- MSG -->
-        <div class="tab-panel active" id="tab-msg">
-          <div class="panel-label">message everyone</div>
-          <textarea class="admin-input" id="msg-input" rows="3" maxlength="200" placeholder="say something…"></textarea>
-          <button class="admin-btn" id="send-msg-btn">send to all</button>
-          <div class="divider"></div>
-          <div class="panel-label">sound alert with message</div>
-          <div style="display:flex;gap:5px;margin-bottom:8px;flex-wrap:wrap">
-            <button class="tool-btn" data-sound="ding">🔔 ding</button>
-            <button class="tool-btn" data-sound="horn">📯 horn</button>
-            <button class="tool-btn" data-sound="none" style="background:#111;color:#fff;border-color:#111">🔇 none</button>
-          </div>
-        </div>
-
-        <!-- ABUSE -->
-        <div class="tab-panel" id="tab-abuse">
-          <div class="panel-label">screen shake</div>
-          <button class="abuse-big-btn" id="shake-sm-btn">
-            <span class="abuse-icon">📳</span>shake
-          </button>
-          <div class="divider"></div>
-          <div class="panel-label">jumpscare</div>
-          <div class="panel-label" style="margin-top:4px">presets</div>
-          <div class="js-presets" id="js-presets"></div>
-          <div class="panel-label">or custom image url</div>
-          <input class="admin-input" id="js-custom-url" type="url" placeholder="https://…" style="margin-bottom:6px"/>
-          <div class="panel-label">duration</div>
-          <div style="display:flex;gap:5px;margin-bottom:8px">
-            <button class="tool-btn active" data-dur="800">short</button>
-            <button class="tool-btn" data-dur="1800">mid</button>
-            <button class="tool-btn" data-dur="3500">long</button>
-          </div>
-          <button class="admin-btn red" id="fire-jumpscare-btn">🔴 fire jumpscare</button>
-          <div class="divider"></div>
-          <div class="panel-label">glitch attack</div>
-          <div style="display:flex;gap:5px;margin-bottom:8px">
-            <button class="tool-btn active" data-gdur="1500">1.5s</button>
-            <button class="tool-btn" data-gdur="3000">3s</button>
-            <button class="tool-btn" data-gdur="6000">6s</button>
-          </div>
-          <button class="admin-btn red" id="fire-glitch-btn">⚡ glitch everyone</button>
-        </div>
-
-        <!-- PARTY -->
-        <div class="tab-panel" id="tab-party">
-          <div class="panel-label">party mode</div>
-          <p style="font-size:12px;color:#aaa;margin-bottom:10px;line-height:1.5">
-            Rainbow background + raining tacos + It's Raining Tacos plays for everyone 🌮
-          </p>
-          <button class="admin-btn purple" id="party-start-btn">🎉 start party</button>
-          <button class="admin-btn ghost" id="party-stop-btn" style="margin-top:6px">⏹ stop party</button>
-          <div class="divider"></div>
-          <div class="panel-label">rain effect</div>
-          <p style="font-size:12px;color:#aaa;margin-bottom:8px;line-height:1.5">Moody rain falls over the screen 🌧</p>
-          <button class="admin-btn blue" id="rain-start-btn">🌧 start rain</button>
-          <button class="admin-btn ghost" id="rain-stop-btn" style="margin-top:6px">☀️ stop rain</button>
-        </div>
-
-        <!-- FX -->
-        <div class="tab-panel" id="tab-fx">
-          <div class="panel-label">big text flash</div>
-          <input class="admin-input" id="bigtext-input" type="text" maxlength="30" placeholder="e.g. YOOOO 👀"/>
-          <div class="panel-label">color</div>
-          <div class="bigtext-color-row">
-            <div class="bt-color selected" style="background:#ffffff;outline:1px solid #ccc" data-btcolor="#ffffff"></div>
-            <div class="bt-color" style="background:#ffe135" data-btcolor="#ffe135"></div>
-            <div class="bt-color" style="background:#ff4d6d" data-btcolor="#ff4d6d"></div>
-            <div class="bt-color" style="background:#4cc9f0" data-btcolor="#4cc9f0"></div>
-            <div class="bt-color" style="background:#06d6a0" data-btcolor="#06d6a0"></div>
-            <div class="bt-color" style="background:#f72585" data-btcolor="#f72585"></div>
-            <div class="bt-color" style="background:#111111;outline:1px solid #ccc" data-btcolor="#111111"></div>
-          </div>
-          <div class="panel-label">duration</div>
-          <div style="display:flex;gap:5px;margin-bottom:8px">
-            <button class="tool-btn active" data-btdur="1200">fast</button>
-            <button class="tool-btn" data-btdur="2500">mid</button>
-            <button class="tool-btn" data-btdur="4000">slow</button>
-          </div>
-          <button class="admin-btn orange" id="send-bigtext-btn">💥 flash text</button>
-          <div class="divider"></div>
-          <div class="panel-label">spotlight mode</div>
-          <p style="font-size:12px;color:#aaa;margin-bottom:8px;line-height:1.5">Follows your mouse — dims everything except a glowing circle 🔦</p>
-          <button class="admin-btn" id="spotlight-toggle-btn">🔦 start spotlight</button>
-          <div class="divider"></div>
-          <div class="panel-label">cursor trail</div>
-          <p style="font-size:12px;color:#aaa;margin-bottom:8px;line-height:1.5">Leaves a sparkly trail on your cursor ✨</p>
-          <button class="admin-btn ghost" id="trail-toggle-btn">✨ enable trail</button>
-        </div>
-
-        <!-- DRAW -->
-        <div class="tab-panel" id="tab-draw">
-          <button id="draw-toggle-btn">✏️ start drawing</button>
-          <div class="panel-label">tool</div>
-          <div class="draw-tool-row">
-            <button class="tool-btn active" data-tool="pen">✏️ pen</button>
-            <button class="tool-btn" data-tool="eraser">🧹 erase</button>
-          </div>
-          <div class="panel-label">color</div>
-          <div class="draw-colors">
-            <div class="draw-color-swatch selected" style="background:#111111" data-color="#111111"></div>
-            <div class="draw-color-swatch" style="background:#ffffff;border-color:#ccc" data-color="#ffffff"></div>
-            <div class="draw-color-swatch" style="background:#e94560" data-color="#e94560"></div>
-            <div class="draw-color-swatch" style="background:#ffe135" data-color="#ffe135"></div>
-            <div class="draw-color-swatch" style="background:#0bce83" data-color="#0bce83"></div>
-            <div class="draw-color-swatch" style="background:#3fa9f5" data-color="#3fa9f5"></div>
-            <div class="draw-color-swatch" style="background:#f5a623" data-color="#f5a623"></div>
-            <div class="draw-color-swatch" style="background:#b44fff" data-color="#b44fff"></div>
-            <div class="draw-color-swatch" style="background:#ff6b35" data-color="#ff6b35"></div>
-          </div>
-          <div class="size-row">
-            <label>size</label>
-            <input type="range" id="brush-size" min="2" max="40" value="6"/>
-            <span id="brush-size-val">6</span>
-          </div>
-          <div class="divider"></div>
-          <button class="admin-btn ghost" id="clear-canvas-btn">🗑 clear canvas</button>
-        </div>
-
-        <!-- POLL -->
-        <div class="tab-panel" id="tab-poll">
-          <div class="panel-label">question</div>
-          <input class="admin-input" id="poll-q-input" type="text" maxlength="120" placeholder="ask something…"/>
-          <div class="panel-label">options</div>
-          <div id="poll-options-builder">
-            <div class="poll-option-input-wrap">
-              <input type="text" placeholder="Option 1" maxlength="60"/>
-              <button class="remove-option" type="button">×</button>
-            </div>
-            <div class="poll-option-input-wrap">
-              <input type="text" placeholder="Option 2" maxlength="60"/>
-              <button class="remove-option" type="button">×</button>
-            </div>
-          </div>
-          <button id="add-option-btn">+ add option</button>
-          <button class="admin-btn" id="send-poll-btn">launch poll</button>
-          <div class="divider"></div>
-          <button class="admin-btn ghost" id="close-poll-btn">✕ close poll</button>
-        </div>
-
-        <!-- BG -->
-        <div class="tab-panel" id="tab-bg">
-          <div class="panel-label">background color</div>
-          <div class="color-presets">
-            <div class="color-swatch selected" style="background:#ffffff;border-color:#ccc" data-color="#ffffff"></div>
-            <div class="color-swatch" style="background:#111111" data-color="#111111"></div>
-            <div class="color-swatch" style="background:#f9f3e8" data-color="#f9f3e8"></div>
-            <div class="color-swatch" style="background:#e8f4f9" data-color="#e8f4f9"></div>
-            <div class="color-swatch" style="background:#edf9e8" data-color="#edf9e8"></div>
-            <div class="color-swatch" style="background:#f9e8e8" data-color="#f9e8e8"></div>
-            <div class="color-swatch" style="background:#ffe135" data-color="#ffe135"></div>
-            <div class="color-swatch" style="background:#0d1b2a" data-color="#0d1b2a"></div>
-            <div class="color-swatch" style="background:#e94560" data-color="#e94560"></div>
-            <div class="color-swatch" style="background:#0f3460" data-color="#0f3460"></div>
-          </div>
-          <div class="color-custom-row">
-            <input type="color" id="custom-color" value="#ffffff"/>
-            <span id="custom-color-label">custom</span>
-          </div>
-          <button class="admin-btn" id="send-bg-btn">apply to everyone</button>
-        </div>
-
+  <div id="viewer-pill">👁 <b id="viewer-count">1</b> viewing</div>
+  <!-- TACO TUESDAY BADGE -->
+  <div id="taco-badge">
+    <div id="taco-badge-inner">
+      🌮 <span style="font-size:11px;color:#ff9e00;font-weight:bold">x2</span>
+      <div class="taco-tooltip">
+        <h4>🌮 Taco Rain</h4>
+        <p>Gain 2× / €1 per click<br/>while party mode is on!</p>
       </div>
     </div>
   </div>
@@ -792,742 +585,886 @@
   <button id="name-confirm">enter</button>
 </div>
 
-<!-- MOBILE CODE BOX -->
-<div id="mobile-code-box">
-  <div id="mobile-code-label">enter code</div>
-  <div id="mobile-code-row">
-    <input id="mobile-code-input" type="tel" maxlength="32" placeholder="enter code" autocomplete="off"/>
-    <button id="mobile-code-btn">→</button>
+<!-- CODE BOX (non-admin) -->
+<div id="code-box">
+  <div id="code-label">ENTER CODE</div>
+  <div id="code-row">
+    <input id="code-input" type="tel" maxlength="32" placeholder="••••••••" autocomplete="off"/>
+    <button id="code-btn">→</button>
   </div>
 </div>
 
-<!-- MOBILE PANEL TOGGLE -->
-<button id="admin-toggle-btn" title="toggle admin panel">🛠</button>
+<!-- PANEL BACKDROP -->
+<div id="panel-backdrop"></div>
+
+<!-- ADMIN PANEL -->
+<div id="admin-panel">
+  <div id="panel-header">
+    <div id="panel-header-left">
+      <h1>🛠 admin panel</h1>
+      <p id="admin-name-display">not logged in</p>
+    </div>
+    <button id="panel-close-btn">✕</button>
+  </div>
+
+  <div class="admin-tabs">
+    <button class="admin-tab active" data-tab="msg">💬 msg</button>
+    <button class="admin-tab" data-tab="abuse">💥 abuse</button>
+    <button class="admin-tab" data-tab="party">🎉 party</button>
+    <button class="admin-tab" data-tab="fx">✨ fx</button>
+    <button class="admin-tab" data-tab="draw">🖌 draw</button>
+    <button class="admin-tab" data-tab="poll">📊 poll</button>
+    <button class="admin-tab" data-tab="bg">🎨 bg</button>
+    <button class="admin-tab" data-tab="currency">💶 €€€</button>
+  </div>
+
+  <div id="panel-content">
+
+    <!-- ── MSG ── -->
+    <div class="tab-panel active" id="tab-msg">
+      <div class="panel-label">message everyone</div>
+      <textarea class="admin-input" id="msg-input" rows="3" maxlength="200" placeholder="say something… (Enter to send)"></textarea>
+      <div class="panel-label">alert sound</div>
+      <div class="tool-row" style="margin-bottom:12px">
+        <button class="tool-btn active" data-sound="none">🔇 none</button>
+        <button class="tool-btn" data-sound="ding">🔔 ding</button>
+        <button class="tool-btn" data-sound="horn">📯 horn</button>
+      </div>
+      <button class="admin-btn" id="send-msg-btn">📨 send to everyone</button>
+    </div>
+
+    <!-- ── ABUSE ── -->
+    <div class="tab-panel" id="tab-abuse">
+      <div class="icon-btn-grid">
+        <button class="icon-btn" id="shake-btn"><span class="ib-icon">📳</span>shake</button>
+        <button class="icon-btn" id="glitch-btn"><span class="ib-icon">⚡</span>glitch</button>
+        <button class="icon-btn" id="blackout-btn"><span class="ib-icon">🌑</span>blackout</button>
+        <button class="icon-btn" id="strobe-btn"><span class="ib-icon">💡</span>strobe</button>
+        <button class="icon-btn" id="flip-btn"><span class="ib-icon">🙃</span>flip</button>
+        <button class="icon-btn" id="spin-btn"><span class="ib-icon">🌀</span>spin</button>
+      </div>
+      <div class="divider"></div>
+      <div class="panel-label">jumpscare</div>
+      <div class="js-presets" id="js-presets"></div>
+      <div class="panel-label">custom image url</div>
+      <input class="admin-input" id="js-url" type="url" placeholder="https://…"/>
+      <div class="panel-label">duration</div>
+      <div class="tool-row" style="margin-bottom:10px">
+        <button class="tool-btn active" data-dur="800">short</button>
+        <button class="tool-btn" data-dur="1800">mid</button>
+        <button class="tool-btn" data-dur="3500">long</button>
+      </div>
+      <button class="admin-btn red" id="fire-js-btn">🔴 fire jumpscare</button>
+    </div>
+
+    <!-- ── PARTY ── -->
+    <div class="tab-panel" id="tab-party">
+      <div class="panel-label">🌮 party mode</div>
+      <p style="font-size:12px;color:#aaa;margin-bottom:10px;line-height:1.5">Rainbow bg + taco rain + It's Raining Tacos! 🌮</p>
+      <div class="btn-grid">
+        <button class="admin-btn purple" id="party-start-btn">🎉 start</button>
+        <button class="admin-btn ghost" id="party-stop-btn">⏹ stop</button>
+      </div>
+      <div class="divider"></div>
+      <div class="panel-label">🌧 rain</div>
+      <div class="btn-grid">
+        <button class="admin-btn blue" id="rain-start-btn">🌧 start</button>
+        <button class="admin-btn ghost" id="rain-stop-btn">☀️ stop</button>
+      </div>
+    </div>
+
+    <!-- ── FX ── -->
+    <div class="tab-panel" id="tab-fx">
+      <div class="panel-label">💥 big text flash</div>
+      <input class="admin-input" id="bigtext-input" type="text" maxlength="30" placeholder="YOOOO 👀"/>
+      <div class="panel-label">text color</div>
+      <div class="swatch-row" id="bt-colors"></div>
+      <div class="tool-row" style="margin-bottom:10px">
+        <button class="tool-btn active" data-btdur="1200">fast</button>
+        <button class="tool-btn" data-btdur="2500">mid</button>
+        <button class="tool-btn" data-btdur="4000">slow</button>
+      </div>
+      <button class="admin-btn orange" id="send-bigtext-btn">💥 flash text</button>
+      <div class="divider"></div>
+      <div class="panel-label">🔦 spotlight</div>
+      <button class="toggle-btn" id="spotlight-btn">🔦 start spotlight</button>
+      <div class="panel-label">✨ cursor trail</div>
+      <button class="toggle-btn" id="trail-btn">✨ enable trail</button>
+    </div>
+
+    <!-- ── DRAW ── -->
+    <div class="tab-panel" id="tab-draw">
+      <button class="toggle-btn" id="draw-toggle-btn">✏️ start drawing</button>
+      <div class="panel-label">tool</div>
+      <div class="tool-row">
+        <button class="tool-btn active" data-tool="pen">✏️ pen</button>
+        <button class="tool-btn" data-tool="eraser">🧹 eraser</button>
+      </div>
+      <div class="panel-label">color</div>
+      <div class="swatch-row" id="draw-colors"></div>
+      <div class="size-row">
+        <label>size</label>
+        <input type="range" id="brush-size" min="2" max="40" value="6"/>
+        <span id="brush-size-val">6</span>
+      </div>
+      <div class="divider"></div>
+      <button class="admin-btn ghost" id="clear-canvas-btn">🗑 clear canvas</button>
+    </div>
+
+    <!-- ── POLL ── -->
+    <div class="tab-panel" id="tab-poll">
+      <div class="panel-label">question</div>
+      <input class="admin-input" id="poll-q" type="text" maxlength="120" placeholder="ask something…"/>
+      <div class="panel-label">options</div>
+      <div id="poll-builder"></div>
+      <button id="add-opt-btn">+ add option</button>
+      <button class="admin-btn" id="send-poll-btn" style="margin-top:8px">📊 launch poll</button>
+      <div class="divider"></div>
+      <button class="admin-btn ghost" id="close-poll-btn">✕ close poll</button>
+    </div>
+
+    <!-- ── BG ── -->
+    <div class="tab-panel" id="tab-bg">
+      <div class="panel-label">background color</div>
+      <div class="color-grid" id="bg-swatches"></div>
+      <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px">
+        <input type="color" id="custom-color" value="#ffffff" style="width:38px;height:32px;border:1px solid #e0e0e0;padding:2px;cursor:pointer;background:#fafafa;border-radius:4px"/>
+        <span style="font-size:13px;color:#aaa">custom colour</span>
+      </div>
+      <button class="admin-btn" id="send-bg-btn">🎨 apply to everyone</button>
+    </div>
+
+    <!-- ── CURRENCY ── -->
+    <div class="tab-panel" id="tab-currency">
+      <div class="panel-label">💶 your balance</div>
+      <div style="background:#fafafa;border:1px solid #f0f0f0;border-radius:8px;padding:12px 14px;margin-bottom:12px;display:flex;align-items:center;gap:10px">
+        <span style="font-size:28px">💶</span>
+        <div>
+          <div id="admin-balance-display" style="font-size:22px;font-weight:bold;color:#111;font-family:'Patrick Hand',cursive">0.00€</div>
+          <div style="font-size:11px;color:#aaa;font-family:'Patrick Hand',cursive">click the € button on screen to earn</div>
+        </div>
+      </div>
+      <div class="panel-label">give currency to a viewer</div>
+      <input class="admin-input" id="give-name-input" type="text" placeholder="viewer name…" maxlength="30"/>
+      <div style="display:flex;gap:6px;margin-bottom:8px;align-items:center">
+        <input type="number" id="give-amount-input" placeholder="amount" min="1" max="99999" style="flex:1;font-family:'Patrick Hand',cursive;font-size:15px;border:1px solid #e0e0e0;padding:9px 10px;outline:none;color:#111;background:#fafafa;border-radius:6px"/>
+        <button class="admin-btn" id="give-currency-btn" style="width:auto;padding:9px 16px;margin-top:0">💸 give</button>
+      </div>
+      <div class="panel-label">quick presets</div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:12px">
+        <button class="admin-btn ghost" style="margin-top:0;font-size:13px;padding:7px 4px" data-quick="1">+1€</button>
+        <button class="admin-btn ghost" style="margin-top:0;font-size:13px;padding:7px 4px" data-quick="5">+5€</button>
+        <button class="admin-btn ghost" style="margin-top:0;font-size:13px;padding:7px 4px" data-quick="10">+10€</button>
+        <button class="admin-btn ghost" style="margin-top:0;font-size:13px;padding:7px 4px" data-quick="50">+50€</button>
+      </div>
+      <div class="panel-label">leaderboard</div>
+      <div class="currency-leaderboard" id="currency-leaderboard">
+        <div class="currency-row" style="color:#ccc;font-size:13px;justify-content:center">no balances yet</div>
+      </div>
+      <button class="admin-btn ghost" id="reset-currency-btn" style="font-size:12px;margin-top:8px;border-color:#e63946;color:#e63946">🗑 reset all balances</button>
+    </div>
+
+  </div><!-- /panel-content -->
+
+  <div id="panel-hint">Ctrl / ⌘ — toggle panel &nbsp;·&nbsp; tap outside to close</div>
+</div><!-- /admin-panel -->
+
+<!-- FAB (mobile) -->
+<button id="admin-fab">🛠</button>
 
 <script type="module">
-  import { initializeApp }
-    from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-  import { getDatabase, ref, push, set, remove, onValue, onChildAdded }
-    from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
-  import { getAuth, signInAnonymously }
-    from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getDatabase, ref, push, set, remove, onValue, onChildAdded }
+                           from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+import { getAuth, signInAnonymously }
+                           from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
-  const firebaseConfig = {
-    apiKey:            "AIzaSyC2umvpkas9QCC1PHrWXjk6g67i7Wyr11A",
-    authDomain:        "website-9f859.firebaseapp.com",
-    databaseURL:       "https://website-9f859-default-rtdb.europe-west1.firebasedatabase.app",
-    projectId:         "website-9f859",
-    storageBucket:     "website-9f859.firebasestorage.app",
-    messagingSenderId: "756244892931",
-    appId:             "1:756244892931:web:18d3975a67547ab3936d36"
-  };
+const FB = {
+  apiKey:"AIzaSyC2umvpkas9QCC1PHrWXjk6g67i7Wyr11A",
+  authDomain:"website-9f859.firebaseapp.com",
+  databaseURL:"https://website-9f859-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId:"website-9f859",
+  storageBucket:"website-9f859.firebasestorage.app",
+  messagingSenderId:"756244892931",
+  appId:"1:756244892931:web:18d3975a67547ab3936d36"
+};
+const SECRET   = "10222211";
+const HOLD_MS  = 5500;
+const TACO_URL = "https://ahmads-onkel.github.io/ahmads-onkel.github.io/Its%20Raining%20Tacos!.mp3";
 
-  const SECRET  = "10222211";
-  const HOLD_MS = 5500;
+/* ── state ── */
+let adminName  = localStorage.getItem('admin_name')||'';
+let playerName = localStorage.getItem('player_name')||''; // all users have this
+let isAdmin    = false, panelOpen = false;
+let drawMode   = false, isPointing = false;
+let drawColor  = '#111111', brushSize = 6, drawTool = 'pen';
+let strokeId   = null, lastPt = null, strokeCache = null;
+let jsUrl      = '', jsDur = 800;
+let glitchDur  = 1500;
+let btColor    = '#ffffff', btDur = 1200;
+let msgSound   = 'none';
+let selBg      = '#ffffff';
+let myVotes    = {};
+let keyBuf     = '';
+let partyAudio = null, partyInterval = null, rainInterval = null;
+let spotlightOn = false, trailOn = false, trailH = null;
+let strokesRef2;
+let myBalance = parseFloat(localStorage.getItem('my_balance')||'0');
+let myUserId = null;
+let myPresRef = null;
 
-  let adminName  = localStorage.getItem('admin_name') || '';
-  let myVotes    = {};
-  let keyBuffer  = '';
-  let isAdmin    = false;
-  let drawMode   = false;
-  let isPointing = false;
-  let drawColor  = '#111111';
-  let brushSize  = 6;
-  let drawTool   = 'pen';
-  let strokeId   = null;
-  let lastPt     = null;
-  let jsSelectedUrl = '';
-  let jsDuration    = 800;
-  let glitchDuration = 1500;
-  let partyInterval = null;
-  let partyAudio    = null;
-  let rainInterval  = null;
-  let spotlightActive = false;
-  let trailActive     = false;
-  let btColor  = '#ffffff';
-  let btDur    = 1200;
-  let msgSound = 'none';
+/* ── firebase ── */
+const app       = initializeApp(FB);
+const db        = getDatabase(app);
+const msgsRef   = ref(db,'messages');
+const pollRef   = ref(db,'poll');
+const bgRef     = ref(db,'bgcolor');
+const strokesRef= ref(db,'strokes');
+const presRef   = ref(db,'presence');
+const shakeRef  = ref(db,'shake');
+const jumpRef   = ref(db,'jumpscare');
+const partyRef  = ref(db,'party');
+const glitchRef = ref(db,'glitch');
+const bigtextRef= ref(db,'bigtext');
+const rainRef   = ref(db,'rain');
+const fxRef     = ref(db,'fx');
+const currencyRef = ref(db,'currency'); // { uid: { name, balance } }
 
-  // ── Toast ─────────────────────────────────────────
-  function showToast(msg, duration = 1800) {
-    const t = document.getElementById('toast');
-    t.textContent = msg;
-    t.classList.add('show');
-    setTimeout(() => t.classList.remove('show'), duration);
+strokesRef2 = strokesRef;
+
+Promise.all([
+  remove(msgsRef),remove(pollRef),remove(strokesRef),
+  remove(shakeRef),remove(jumpRef),remove(partyRef),
+  remove(glitchRef),remove(bigtextRef),remove(rainRef),remove(fxRef),
+  set(bgRef,'#ffffff')
+]).catch(console.error);
+
+// ── JOIN OVERLAY ──
+// Show blur overlay until player enters their name
+const joinOverlay = document.getElementById('join-overlay');
+const joinInput   = document.getElementById('join-name-input');
+
+function dismissJoinOverlay(){
+  joinOverlay.classList.add('gone');
+  setTimeout(()=>{ joinOverlay.style.display='none'; }, 520);
+}
+
+function registerPlayer(name){
+  if(!name) return;
+  playerName = name;
+  localStorage.setItem('player_name', name);
+  dismissJoinOverlay();
+  // write presence with name
+  if(myPresRef){
+    set(myPresRef,{name: playerName, isAdmin: isAdmin, t: Date.now()});
   }
-
-  // ── Beep / sound helpers ──────────────────────────
-  function playBeep(type) {
-    try {
-      const ctx = new (window.AudioContext || window.webkitAudioContext)();
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.connect(gain); gain.connect(ctx.destination);
-      if (type === 'ding') {
-        osc.type = 'sine'; osc.frequency.setValueAtTime(880, ctx.currentTime);
-        gain.gain.setValueAtTime(0.4, ctx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.6);
-        osc.start(); osc.stop(ctx.currentTime + 0.6);
-      } else if (type === 'horn') {
-        osc.type = 'sawtooth'; osc.frequency.setValueAtTime(220, ctx.currentTime);
-        gain.gain.setValueAtTime(0.3, ctx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.4);
-        osc.start(); osc.stop(ctx.currentTime + 0.4);
-      }
-    } catch(e) {}
+  // init currency
+  if(myUserId){
+    const myBalRef = ref(db,`currency/${myUserId}`);
+    import("https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js").then(m=>{
+      m.get(myBalRef).then(snap=>{
+        if(snap.exists()){ myBalance=snap.val().balance||0; }
+        else { m.set(myBalRef,{name:playerName,balance:myBalance}); }
+        updateWalletUI();
+        m.onValue(myBalRef,s=>{ if(s.exists()){ myBalance=s.val().balance||0; updateWalletUI(); } });
+      });
+    }).catch(()=>{});
   }
+}
 
-  // ── Jumpscare presets ─────────────────────────────
-  const JS_PRESETS = [
-    { url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/3a/Cat03.jpg/481px-Cat03.jpg' },
-    { url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/4d/Cat_November_2010-1a.jpg/1200px-Cat_November_2010-1a.jpg' },
-    { url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/bb/Kittyply_edit1.jpg/1200px-Kittyply_edit1.jpg' },
-  ];
-  const presetsEl = document.getElementById('js-presets');
-  JS_PRESETS.forEach((p, i) => {
-    const img = document.createElement('img');
-    img.className = 'js-preset';
-    img.src = p.url;
-    img.addEventListener('click', () => {
-      document.querySelectorAll('.js-preset').forEach(el => el.classList.remove('selected'));
-      img.classList.add('selected');
-      jsSelectedUrl = p.url;
-      document.getElementById('js-custom-url').value = '';
+// If they already have a saved name, skip overlay
+if(playerName){
+  dismissJoinOverlay();
+} else {
+  joinInput.focus();
+}
+
+joinInput.addEventListener('keydown',e=>{
+  if(e.key==='Enter'){ const v=joinInput.value.trim(); if(v) registerPlayer(v); }
+});
+
+signInAnonymously(getAuth(app)).then(({user})=>{
+  myUserId = user.uid;
+  myPresRef = ref(db,`presence/${user.uid}`);
+  const name = playerName || 'viewer';
+  set(myPresRef,{name, isAdmin, t:Date.now()});
+  import("https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js")
+    .then(m=>{ m.onDisconnect(myPresRef).remove().catch(()=>{}); })
+    .catch(()=>{});
+  // if already have name, init balance right away
+  if(playerName){
+    const myBalRef = ref(db,`currency/${user.uid}`);
+    import("https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js").then(m=>{
+      m.get(myBalRef).then(snap=>{
+        if(snap.exists()){ myBalance=snap.val().balance||0; }
+        else { m.set(myBalRef,{name:playerName,balance:myBalance}); }
+        updateWalletUI();
+        m.onValue(myBalRef,s=>{ if(s.exists()){ myBalance=s.val().balance||0; updateWalletUI(); } });
+      });
+    }).catch(()=>{});
+  }
+}).catch(console.error);
+
+// ── PRESENCE / PLAYER LIST ──
+onValue(presRef,snap=>{
+  const data = snap.exists() ? snap.val() : {};
+  const players = Object.values(data);
+  $('viewer-count').textContent = players.length || 1;
+  // render player list
+  const list = $('players-list');
+  if(!list) return;
+  // admins first, then sort by name
+  const sorted = players.slice().sort((a,b)=>{
+    if(a.isAdmin && !b.isAdmin) return -1;
+    if(!a.isAdmin && b.isAdmin) return 1;
+    return (a.name||'').localeCompare(b.name||'');
+  });
+  list.innerHTML = sorted.map(p=>`
+    <div class="player-row">
+      <span class="pr-crown">${p.isAdmin?'👑':''}</span>
+      <span class="pr-name" style="${p.isAdmin?'font-weight:bold;color:#111':'color:#555'}">${esc(p.name||'viewer')}</span>
+    </div>`).join('') || '<div class="player-row" style="color:#ccc;font-size:13px">nobody here</div>';
+});
+
+// viewer pill click toggles players panel
+$('viewer-pill').addEventListener('click',()=>{
+  $('players-panel').classList.toggle('show');
+});
+// close if clicking outside
+document.addEventListener('click',e=>{
+  if(!$('players-panel').contains(e.target)&&!$('viewer-pill').contains(e.target)){
+    $('players-panel').classList.remove('show');
+  }
+});
+
+/* ── firebase listeners ── */
+onValue(shakeRef,snap=>{ if(snap.exists()) doShake(); });
+onValue(jumpRef,snap=>{ if(!snap.exists()) return; const d=snap.val(); if(d?.url) doJumpscare(d.url,d.duration||800); });
+onValue(partyRef,snap=>{ snap.exists()&&snap.val() ? doPartyStart() : doPartyStop(); });
+onValue(glitchRef,snap=>{ if(!snap.exists()) return; doGlitch(snap.val().dur||1500); });
+onValue(bigtextRef,snap=>{ if(!snap.exists()) return; const d=snap.val(); if(d?.text) doBigText(d.text,d.color||'#fff',d.dur||1200); });
+onValue(rainRef,snap=>{ snap.exists()&&snap.val() ? doRainStart() : doRainStop(); });
+onValue(fxRef,snap=>{
+  if(!snap.exists()) return;
+  const d=snap.val();
+  if(d?.type==='blackout') doBlackout(d.dur||1000);
+  if(d?.type==='strobe')   doStrobe(d.dur||2000);
+  if(d?.type==='flip')     doFlip(d.dur||3000);
+  if(d?.type==='spin')     doSpin(d.dur||2000);
+});
+
+let msgInitDone=false;
+onChildAdded(msgsRef,snap=>{
+  if(!msgInitDone) return;
+  const d=snap.val();
+  if(d?.name&&d?.text){ showBanner(d.name,d.text); if(d.sound&&d.sound!=='none') playBeep(d.sound); }
+});
+setTimeout(()=>{ msgInitDone=true; },1000);
+
+onValue(bgRef,snap=>{ if(snap.val()) $('main').style.background=snap.val(); });
+onValue(pollRef,snap=>{ if(!snap.exists()||!snap.val()?.question){ $('poll-widget').classList.remove('show'); return; } renderPoll(snap.val(),snap.key); });
+onValue(strokesRef,snap=>{
+  if(!snap.exists()){ strokeCache=null; ctx.clearRect(0,0,canvas.width,canvas.height); if(!drawMode) canvas.classList.remove('view-only'); return; }
+  strokeCache=snap.val(); replayCanvas(); if(!drawMode) canvas.classList.toggle('view-only',!!strokeCache);
+});
+
+/* ── helpers ── */
+const $ = id => document.getElementById(id);
+function showToast(msg,ms=1800){ const t=$('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),ms); }
+function playBeep(type){
+  try{
+    const ctx2=new(window.AudioContext||window.webkitAudioContext)();
+    const osc=ctx2.createOscillator(), g=ctx2.createGain();
+    osc.connect(g); g.connect(ctx2.destination);
+    if(type==='ding'){ osc.type='sine'; osc.frequency.setValueAtTime(880,ctx2.currentTime); g.gain.setValueAtTime(.4,ctx2.currentTime); g.gain.exponentialRampToValueAtTime(.001,ctx2.currentTime+.6); osc.start(); osc.stop(ctx2.currentTime+.6); }
+    else if(type==='horn'){ osc.type='sawtooth'; osc.frequency.setValueAtTime(220,ctx2.currentTime); g.gain.setValueAtTime(.3,ctx2.currentTime); g.gain.exponentialRampToValueAtTime(.001,ctx2.currentTime+.4); osc.start(); osc.stop(ctx2.currentTime+.4); }
+  }catch(e){}
+}
+function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+/* ── panel toggle ── */
+function openPanel(){
+  panelOpen=true;
+  $('admin-panel').classList.add('open');
+  $('panel-backdrop').classList.add('show');
+  isAdmin=true;
+  $('admin-name-display').textContent=adminName;
+  $('code-box').style.display='none';
+  $('admin-fab').style.display='flex';
+  // mark presence as admin
+  if(myPresRef) set(myPresRef,{name:adminName||playerName,isAdmin:true,t:Date.now()});
+}
+function closePanel(){
+  panelOpen=false;
+  $('admin-panel').classList.remove('open');
+  $('panel-backdrop').classList.remove('show');
+}
+function togglePanel(){ panelOpen ? closePanel() : openPanel(); }
+
+$('panel-close-btn').addEventListener('click', closePanel);
+$('panel-backdrop').addEventListener('click', closePanel);
+$('admin-fab').addEventListener('click', togglePanel);
+
+document.addEventListener('keydown',e=>{
+  if(e.key==='Control'||e.key==='Meta'){
+    if(isAdmin){ togglePanel(); return; }
+  }
+  if(e.target.tagName==='INPUT'||e.target.tagName==='TEXTAREA') return;
+  if(/^\d$/.test(e.key)){
+    keyBuf+=e.key;
+    if(keyBuf.length>SECRET.length) keyBuf=keyBuf.slice(-SECRET.length);
+    if(keyBuf===SECRET){ keyBuf=''; unlockAdmin(); }
+  }
+});
+
+/* ── code box ── */
+function checkCode(){
+  const v=$('code-input').value.trim();
+  if(v===SECRET){ $('code-input').value=''; unlockAdmin(); }
+  else{ const i=$('code-input'); i.style.borderColor='#e63946'; setTimeout(()=>i.style.borderColor='',900); }
+}
+$('code-btn').addEventListener('click',checkCode);
+$('code-input').addEventListener('keydown',e=>{ if(e.key==='Enter') checkCode(); });
+
+/* ── unlock / name ── */
+function unlockAdmin(){
+  if(!adminName){ $('name-overlay').classList.add('show'); $('name-input').focus(); }
+  else openPanel();
+}
+$('name-confirm').addEventListener('click',saveName);
+$('name-input').addEventListener('keydown',e=>{ if(e.key==='Enter') saveName(); });
+function saveName(){
+  const v=$('name-input').value.trim(); if(!v) return;
+  adminName=v; localStorage.setItem('admin_name',adminName);
+  // also set as player name if not set
+  if(!playerName){ playerName=v; localStorage.setItem('player_name',v); dismissJoinOverlay(); }
+  $('name-overlay').classList.remove('show'); openPanel();
+}
+
+/* ── tabs ── */
+document.querySelectorAll('.admin-tab').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    document.querySelectorAll('.admin-tab').forEach(t=>t.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+    btn.classList.add('active');
+    $('tab-'+btn.dataset.tab).classList.add('active');
+  });
+});
+
+/* ════════════════════════════════════
+   EFFECTS
+════════════════════════════════════ */
+/* shake */
+function doShake(){ document.body.classList.remove('shaking'); void document.body.offsetWidth; document.body.classList.add('shaking'); setTimeout(()=>document.body.classList.remove('shaking'),660); }
+$('shake-btn').addEventListener('click',()=>{ set(shakeRef,{ts:Date.now()}); doShake(); showToast('📳 shaking'); });
+
+/* glitch */
+function doGlitch(dur){ document.body.classList.add('glitching'); setTimeout(()=>document.body.classList.remove('glitching'),dur); }
+$('glitch-btn').addEventListener('click',()=>{ set(glitchRef,{dur:glitchDur,ts:Date.now()}); doGlitch(glitchDur); showToast('⚡ glitching'); });
+
+/* blackout */
+function doBlackout(dur){
+  const m=$('main'), old=m.style.background;
+  m.style.transition='background .1s'; m.style.background='#000';
+  setTimeout(()=>{ m.style.background=old; },dur);
+}
+$('blackout-btn').addEventListener('click',()=>{ set(fxRef,{type:'blackout',dur:1200,ts:Date.now()}); doBlackout(1200); showToast('🌑 blackout'); });
+
+/* strobe */
+let strobeTimer=null;
+function doStrobe(dur){
+  let i=0; const m=$('main'), orig=m.style.background;
+  strobeTimer=setInterval(()=>{ m.style.background=i%2?orig:'#fff'; i++; },80);
+  setTimeout(()=>{ clearInterval(strobeTimer); m.style.background=orig; },dur);
+}
+$('strobe-btn').addEventListener('click',()=>{ set(fxRef,{type:'strobe',dur:2000,ts:Date.now()}); doStrobe(2000); showToast('💡 strobe'); });
+
+/* flip */
+function doFlip(dur){ $('main').style.transform='scaleY(-1)'; setTimeout(()=>$('main').style.transform='',dur); }
+$('flip-btn').addEventListener('click',()=>{ set(fxRef,{type:'flip',dur:3000,ts:Date.now()}); doFlip(3000); showToast('🙃 flipped'); });
+
+/* spin */
+function doSpin(dur){
+  const m=$('main');
+  m.style.transition=`transform ${dur}ms linear`;
+  m.style.transform='rotate(360deg)';
+  setTimeout(()=>{ m.style.transition=''; m.style.transform=''; },dur+50);
+}
+$('spin-btn').addEventListener('click',()=>{ set(fxRef,{type:'spin',dur:2000,ts:Date.now()}); doSpin(2000); showToast('🌀 spinning'); });
+
+/* jumpscare */
+const JS_PRESETS=[
+  'https://upload.wikimedia.org/wikipedia/commons/thumb/3/3a/Cat03.jpg/481px-Cat03.jpg',
+  'https://upload.wikimedia.org/wikipedia/commons/thumb/4/4d/Cat_November_2010-1a.jpg/1200px-Cat_November_2010-1a.jpg',
+  'https://upload.wikimedia.org/wikipedia/commons/thumb/b/bb/Kittyply_edit1.jpg/1200px-Kittyply_edit1.jpg',
+];
+const presEl=$('js-presets');
+JS_PRESETS.forEach((u,i)=>{
+  const img=document.createElement('img');
+  img.className='js-preset'; img.src=u;
+  img.addEventListener('click',()=>{ document.querySelectorAll('.js-preset').forEach(e=>e.classList.remove('sel')); img.classList.add('sel'); jsUrl=u; $('js-url').value=''; });
+  presEl.appendChild(img);
+  if(i===0){ img.classList.add('sel'); jsUrl=u; }
+});
+$('js-url').addEventListener('input',e=>{ if(e.target.value.trim()){ jsUrl=e.target.value.trim(); document.querySelectorAll('.js-preset').forEach(el=>el.classList.remove('sel')); } });
+document.querySelectorAll('[data-dur]').forEach(btn=>{
+  btn.addEventListener('click',()=>{ document.querySelectorAll('[data-dur]').forEach(b=>b.classList.remove('active')); btn.classList.add('active'); jsDur=parseInt(btn.dataset.dur); });
+});
+function doJumpscare(url,dur){
+  const ov=$('jumpscare-overlay'), img=$('jumpscare-img');
+  img.src=url; ov.classList.add('show'); doShake();
+  setTimeout(()=>{ ov.classList.remove('show'); img.src=''; },dur);
+}
+$('fire-js-btn').addEventListener('click',()=>{
+  const url=$('js-url').value.trim()||jsUrl;
+  if(!url){ showToast('Pick an image!'); return; }
+  set(jumpRef,{url,duration:jsDur,ts:Date.now()}); doJumpscare(url,jsDur);
+});
+
+/* party */
+function doPartyStart(){
+  if(document.body.classList.contains('party-mode')) return;
+  document.body.classList.add('party-mode');
+  spawnTacos();
+  // Re-create audio each time to bypass autoplay restrictions
+  if(partyAudio){ partyAudio.pause(); partyAudio=null; }
+  partyAudio=new Audio(TACO_URL);
+  partyAudio.loop=true; partyAudio.volume=0.6;
+  partyAudio.play().catch(e=>console.warn('audio blocked:',e));
+}
+function doPartyStop(){
+  document.body.classList.remove('party-mode');
+  if(partyAudio){ partyAudio.pause(); partyAudio.currentTime=0; partyAudio=null; }
+  if(partyInterval){ clearInterval(partyInterval); partyInterval=null; }
+  $('taco-container').innerHTML='';
+}
+function spawnTacos(){
+  if(partyInterval) clearInterval(partyInterval);
+  partyInterval=setInterval(()=>{
+    if(!document.body.classList.contains('party-mode')) return;
+    const t=document.createElement('div'); t.className='taco'; t.textContent='🌮';
+    t.style.left=Math.random()*100+'vw';
+    const dur=2.5+Math.random()*2.5;
+    t.style.animationDuration=dur+'s'; t.style.fontSize=(24+Math.random()*24)+'px';
+    $('taco-container').appendChild(t); setTimeout(()=>t.remove(),dur*1000+200);
+  },120);
+}
+$('party-start-btn').addEventListener('click',()=>{ set(partyRef,true); doPartyStart(); showToast('🌮 party started!'); });
+$('party-stop-btn').addEventListener('click',()=>{ remove(partyRef); doPartyStop(); showToast('⏹ party stopped'); });
+
+/* rain */
+function doRainStart(){
+  const c=$('rain-container');
+  if(c.classList.contains('show')) return;
+  c.classList.add('show'); c.innerHTML='';
+  rainInterval=setInterval(()=>{
+    if(!c.classList.contains('show')) return;
+    const d=document.createElement('div'); d.className='raindrop';
+    d.style.left=Math.random()*100+'vw';
+    d.style.height=(40+Math.random()*60)+'px';
+    const dur=.6+Math.random()*.8;
+    d.style.animationDuration=dur+'s'; d.style.animationDelay=(Math.random()*.5)+'s'; d.style.opacity=.4+Math.random()*.4;
+    c.appendChild(d); setTimeout(()=>d.remove(),(dur+.5)*1000);
+  },30);
+}
+function doRainStop(){ const c=$('rain-container'); c.classList.remove('show'); if(rainInterval){ clearInterval(rainInterval); rainInterval=null; } c.innerHTML=''; }
+$('rain-start-btn').addEventListener('click',()=>{ set(rainRef,true); doRainStart(); showToast('🌧 rain started'); });
+$('rain-stop-btn').addEventListener('click',()=>{ remove(rainRef); doRainStop(); showToast('☀️ rain stopped'); });
+
+/* big text */
+const BT_COLORS=['#ffffff','#ffe135','#ff4d6d','#4cc9f0','#06d6a0','#f72585','#111111'];
+const btColRow=$('bt-colors');
+BT_COLORS.forEach((c,i)=>{
+  const s=document.createElement('div'); s.className='swatch'+(i===0?' sel':'');
+  s.style.background=c; if(c==='#ffffff'||c==='#111111') s.style.outline='1px solid #ccc';
+  s.dataset.btc=c;
+  s.addEventListener('click',()=>{ document.querySelectorAll('#bt-colors .swatch').forEach(x=>x.classList.remove('sel')); s.classList.add('sel'); btColor=c; });
+  btColRow.appendChild(s);
+});
+document.querySelectorAll('[data-btdur]').forEach(btn=>{
+  btn.addEventListener('click',()=>{ document.querySelectorAll('[data-btdur]').forEach(b=>b.classList.remove('active')); btn.classList.add('active'); btDur=parseInt(btn.dataset.btdur); });
+});
+function doBigText(text,color,dur){
+  const ov=$('bigtext-overlay'), ct=$('bigtext-content');
+  ct.textContent=text; ct.style.color=color;
+  ov.classList.remove('show'); void ov.offsetWidth; ov.classList.add('show');
+  setTimeout(()=>ov.classList.remove('show'),dur);
+}
+$('send-bigtext-btn').addEventListener('click',()=>{
+  const t=$('bigtext-input').value.trim(); if(!t){ showToast('Type something!'); return; }
+  set(bigtextRef,{text:t,color:btColor,dur:btDur,ts:Date.now()}); doBigText(t,btColor,btDur); showToast('💥 text sent');
+});
+
+/* spotlight */
+const spotEl=$('spotlight-overlay');
+function updateSpotlight(e){
+  const r=160;
+  spotEl.style.webkitMaskImage=`radial-gradient(circle ${r}px at ${e.clientX}px ${e.clientY}px,transparent 100%,black 100%)`;
+  spotEl.style.maskImage=`radial-gradient(circle ${r}px at ${e.clientX}px ${e.clientY}px,transparent 100%,black 100%)`;
+}
+$('spotlight-btn').addEventListener('click',()=>{
+  spotlightOn=!spotlightOn;
+  if(spotlightOn){ spotEl.classList.add('show'); document.addEventListener('mousemove',updateSpotlight); $('spotlight-btn').classList.add('on'); $('spotlight-btn').textContent='🔦 stop spotlight'; }
+  else{ spotEl.classList.remove('show'); document.removeEventListener('mousemove',updateSpotlight); $('spotlight-btn').classList.remove('on'); $('spotlight-btn').textContent='🔦 start spotlight'; }
+});
+
+/* cursor trail */
+const TRAIL_COLORS=['#ff4d6d','#ffe135','#4cc9f0','#0bce83','#f72585','#ff9e00','#b44fff'];
+$('trail-btn').addEventListener('click',()=>{
+  trailOn=!trailOn;
+  if(trailOn){ trailH=e=>{ const s=document.createElement('div'); s.className='cursor-spark'; const sz=6+Math.random()*8; s.style.cssText=`width:${sz}px;height:${sz}px;left:${e.clientX}px;top:${e.clientY}px;background:${TRAIL_COLORS[Math.floor(Math.random()*TRAIL_COLORS.length)]}`; document.body.appendChild(s); setTimeout(()=>s.remove(),600); }; document.addEventListener('mousemove',trailH); $('trail-btn').classList.add('on'); $('trail-btn').textContent='✨ disable trail'; }
+  else{ document.removeEventListener('mousemove',trailH); trailH=null; $('trail-btn').classList.remove('on'); $('trail-btn').textContent='✨ enable trail'; }
+});
+
+/* ════════════════════════════════════
+   CANVAS / DRAW
+════════════════════════════════════ */
+const canvas=$('draw-canvas');
+const ctx=canvas.getContext('2d');
+
+const DRAW_COLORS=['#111111','#ffffff','#e94560','#ffe135','#0bce83','#3fa9f5','#f5a623','#b44fff','#ff6b35'];
+const drawColRow=$('draw-colors');
+DRAW_COLORS.forEach((c,i)=>{
+  const s=document.createElement('div'); s.className='swatch'+(i===0?' sel':'');
+  s.style.background=c; if(c==='#ffffff') s.style.outline='1px solid #ccc';
+  s.dataset.c=c;
+  s.addEventListener('click',()=>{ document.querySelectorAll('#draw-colors .swatch').forEach(x=>x.classList.remove('sel')); s.classList.add('sel'); drawColor=c; });
+  drawColRow.appendChild(s);
+});
+
+function resizeCanvas(){
+  canvas.width=$('main').clientWidth; canvas.height=$('main').clientHeight; replayCanvas();
+}
+function replayCanvas(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  if(!strokeCache) return;
+  Object.values(strokeCache).forEach(stroke=>{ if(!stroke.segments) return; Object.values(stroke.segments).forEach(paintSeg); });
+}
+resizeCanvas();
+window.addEventListener('resize',resizeCanvas);
+
+function paintSeg(s){
+  ctx.save();
+  if(s.tool==='eraser'){ ctx.globalCompositeOperation='destination-out'; ctx.strokeStyle='rgba(0,0,0,1)'; }
+  else{ ctx.globalCompositeOperation='source-over'; ctx.strokeStyle=s.color||'#111'; }
+  ctx.lineWidth=s.size||6; ctx.lineCap='round'; ctx.lineJoin='round';
+  ctx.beginPath(); ctx.moveTo(s.x1,s.y1); ctx.lineTo(s.x2,s.y2); ctx.stroke(); ctx.restore();
+}
+
+document.querySelectorAll('[data-tool]').forEach(btn=>{
+  btn.addEventListener('click',()=>{ document.querySelectorAll('[data-tool]').forEach(b=>b.classList.remove('active')); btn.classList.add('active'); drawTool=btn.dataset.tool; });
+});
+$('brush-size').addEventListener('input',e=>{ brushSize=parseInt(e.target.value); $('brush-size-val').textContent=brushSize; });
+
+const dtBtn=$('draw-toggle-btn');
+dtBtn.addEventListener('click',()=>{
+  drawMode=!drawMode;
+  if(drawMode){ canvas.classList.add('active'); canvas.classList.remove('view-only'); dtBtn.textContent='⏹ stop drawing'; dtBtn.classList.add('on'); }
+  else{ canvas.classList.remove('active'); if(strokeCache) canvas.classList.add('view-only'); dtBtn.textContent='✏️ start drawing'; dtBtn.classList.remove('on'); strokeId=null; lastPt=null; isPointing=false; }
+});
+$('clear-canvas-btn').addEventListener('click',()=>{
+  if(!confirm('Clear canvas for everyone?')) return;
+  remove(strokesRef); ctx.clearRect(0,0,canvas.width,canvas.height); canvas.classList.remove('view-only'); strokeCache=null; showToast('🗑 cleared');
+});
+
+function getPos(e){ const r=canvas.getBoundingClientRect(), s=e.touches?e.touches[0]:e; return{x:s.clientX-r.left,y:s.clientY-r.top}; }
+canvas.addEventListener('pointerdown',e=>{
+  if(!drawMode||!isAdmin) return;
+  isPointing=true; lastPt=getPos(e); strokeId=push(strokesRef).key;
+  set(ref(db,`strokes/${strokeId}/ts`),Date.now()); canvas.setPointerCapture(e.pointerId);
+});
+canvas.addEventListener('pointermove',e=>{
+  if(!isPointing||!drawMode||!isAdmin) return;
+  const pt=getPos(e), seg={x1:lastPt.x,y1:lastPt.y,x2:pt.x,y2:pt.y,color:drawColor,size:brushSize,tool:drawTool};
+  paintSeg(seg); push(ref(db,`strokes/${strokeId}/segments`),seg); lastPt=pt;
+});
+const stopDraw=()=>{ isPointing=false; lastPt=null; };
+canvas.addEventListener('pointerup',stopDraw); canvas.addEventListener('pointercancel',stopDraw);
+canvas.addEventListener('touchstart',e=>{ if(drawMode) e.preventDefault(); },{passive:false});
+canvas.addEventListener('touchmove',e=>{ if(drawMode) e.preventDefault(); },{passive:false});
+
+/* ════════════════════════════════════
+   MSG
+════════════════════════════════════ */
+document.querySelectorAll('[data-sound]').forEach(btn=>{
+  btn.addEventListener('click',()=>{ document.querySelectorAll('[data-sound]').forEach(b=>b.classList.remove('active')); btn.classList.add('active'); msgSound=btn.dataset.sound; });
+});
+$('send-msg-btn').addEventListener('click',sendMsg);
+$('msg-input').addEventListener('keydown',e=>{ if(e.key==='Enter'&&!e.shiftKey){ e.preventDefault(); sendMsg(); } });
+function sendMsg(){
+  const text=$('msg-input').value.trim(); if(!text||!adminName) return;
+  push(msgsRef,{name:adminName,text,sound:msgSound,ts:Date.now()}); $('msg-input').value=''; showToast('💬 sent!');
+}
+function showBanner(name,text){
+  const el=document.createElement('div'); el.className='banner';
+  el.innerHTML=`<span class="banner-name">${esc(name)}</span>: ${esc(text)}`;
+  $('banner-stack').insertBefore(el,$('banner-stack').firstChild);
+  requestAnimationFrame(()=>requestAnimationFrame(()=>el.classList.add('visible')));
+  setTimeout(()=>{ el.classList.remove('visible'); el.classList.add('fading'); el.addEventListener('transitionend',()=>el.remove(),{once:true}); },HOLD_MS);
+}
+
+/* ════════════════════════════════════
+   POLL
+════════════════════════════════════ */
+// builder — seed 2 default options
+(function seedPoll(){
+  ['Option 1','Option 2'].forEach((pl,i)=>{
+    const wrap=document.createElement('div'); wrap.className='poll-opt-wrap';
+    wrap.innerHTML=`<input type="text" placeholder="${pl}" maxlength="60"/><button class="rm-opt" type="button">×</button>`;
+    $('poll-builder').appendChild(wrap);
+  });
+})();
+$('poll-builder').addEventListener('click',e=>{
+  if(e.target.classList.contains('rm-opt')){
+    const all=$('poll-builder').querySelectorAll('.poll-opt-wrap');
+    if(all.length>2) e.target.closest('.poll-opt-wrap').remove();
+  }
+});
+$('add-opt-btn').addEventListener('click',()=>{
+  const wrap=document.createElement('div'); wrap.className='poll-opt-wrap';
+  const n=$('poll-builder').querySelectorAll('input').length+1;
+  wrap.innerHTML=`<input type="text" placeholder="Option ${n}" maxlength="60"/><button class="rm-opt" type="button">×</button>`;
+  $('poll-builder').appendChild(wrap);
+});
+$('send-poll-btn').addEventListener('click',()=>{
+  const q=$('poll-q').value.trim(); if(!q) return;
+  const opts=Array.from($('poll-builder').querySelectorAll('input')).map(i=>i.value.trim()).filter(Boolean);
+  if(opts.length<2){ showToast('Need 2+ options!'); return; }
+  const optObj={}; opts.forEach((o,i)=>{ optObj[i]={label:o,votes:0}; });
+  set(pollRef,{question:q,options:optObj,ts:Date.now()}); showToast('📊 poll launched');
+});
+$('close-poll-btn').addEventListener('click',()=>{ remove(pollRef); showToast('Poll closed'); });
+
+function renderPoll(data,pollKey){
+  $('poll-question').textContent=data.question;
+  const container=$('poll-options-display'); container.innerHTML='';
+  const opts=data.options||{}, keys=Object.keys(opts);
+  const total=keys.reduce((s,k)=>s+(opts[k].votes||0),0);
+  const voted=myVotes[pollKey];
+  keys.forEach(k=>{
+    const opt=opts[k], pct=total>0?Math.round((opt.votes||0)/total*100):0;
+    const div=document.createElement('div'); div.className='poll-option'+(voted?' voted':'');
+    div.innerHTML=`<div class="poll-bar-wrap"><div class="poll-bar-fill" style="width:${voted?pct:0}%"></div><div class="poll-bar-label"><span>${esc(opt.label)}</span>${voted?`<span>${pct}%</span>`:''}</div></div>`;
+    if(!voted){ div.style.cursor='pointer'; div.addEventListener('click',()=>{ myVotes[pollKey]=k; set(ref(db,`poll/options/${k}/votes`),(opt.votes||0)+1); }); }
+    container.appendChild(div);
+  });
+  $('poll-widget').classList.add('show');
+}
+$('poll-close').addEventListener('click',()=>$('poll-widget').classList.remove('show'));
+
+/* ════════════════════════════════════
+   BACKGROUND
+════════════════════════════════════ */
+const BG_COLORS=['#ffffff','#111111','#f9f3e8','#e8f4f9','#edf9e8','#f9e8e8','#ffe135','#0d1b2a','#e94560','#0f3460','#4cc9f0','#06d6a0'];
+const bgGrid=$('bg-swatches');
+BG_COLORS.forEach((c,i)=>{
+  const s=document.createElement('div'); s.className='swatch square'+(i===0?' sel':'');
+  s.style.background=c; if(c==='#ffffff') s.style.outline='1px solid #ccc';
+  s.dataset.bg=c;
+  s.addEventListener('click',()=>{ document.querySelectorAll('#bg-swatches .swatch').forEach(x=>x.classList.remove('sel')); s.classList.add('sel'); selBg=c; $('custom-color').value=c; });
+  bgGrid.appendChild(s);
+});
+$('custom-color').addEventListener('input',e=>{ selBg=e.target.value; document.querySelectorAll('#bg-swatches .swatch').forEach(s=>s.classList.remove('sel')); });
+$('send-bg-btn').addEventListener('click',()=>{ set(bgRef,selBg); showToast('🎨 background updated'); });
+
+/* ════════════════════════════════════
+   CURRENCY SYSTEM
+════════════════════════════════════ */
+
+function updateWalletUI(){
+  $('wallet-amount').textContent = myBalance.toFixed(2)+'€';
+  if($('admin-balance-display')) $('admin-balance-display').textContent = myBalance.toFixed(2)+'€';
+  localStorage.setItem('my_balance', myBalance.toFixed(2));
+  const boosted = document.body.classList.contains('party-mode');
+  $('wallet-pill').classList.toggle('boosted', boosted);
+  $('coin-btn-label').textContent = boosted ? '+2€ 🌮' : '+1€';
+}
+
+function earnCoin(e){
+  const boosted = document.body.classList.contains('party-mode');
+  const earned  = boosted ? 2 : 1;
+  myBalance += earned;
+  updateWalletUI();
+  if(myUserId){
+    set(ref(db,`currency/${myUserId}`),{
+      name: playerName||adminName||'viewer',
+      balance: myBalance
     });
-    presetsEl.appendChild(img);
-    if (i === 0) { img.classList.add('selected'); jsSelectedUrl = p.url; }
-  });
-  document.getElementById('js-custom-url').addEventListener('input', e => {
-    if (e.target.value.trim()) {
-      jsSelectedUrl = e.target.value.trim();
-      document.querySelectorAll('.js-preset').forEach(el => el.classList.remove('selected'));
-    }
-  });
-  document.querySelectorAll('[data-dur]').forEach(btn => {
-    btn.addEventListener('click', () => {
-      document.querySelectorAll('[data-dur]').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      jsDuration = parseInt(btn.dataset.dur);
+  }
+  const fl = document.createElement('div');
+  fl.className='coin-float';
+  fl.textContent = boosted ? '+2€ 🌮' : '+1€';
+  // center above button
+  const wrap=$('coin-btn-wrap'), r=wrap.getBoundingClientRect();
+  fl.style.left = (r.left+r.width/2-20)+'px';
+  fl.style.top  = (r.top-10)+'px';
+  document.body.appendChild(fl);
+  setTimeout(()=>fl.remove(), 1000);
+}
+
+$('coin-btn').addEventListener('click', earnCoin);
+
+onValue(partyRef, snap=>{ setTimeout(updateWalletUI, 100); });
+
+// ── ADMIN: currency leaderboard ──
+onValue(currencyRef, snap=>{
+  const lb = $('currency-leaderboard');
+  if(!lb) return;
+  if(!snap.exists()){ lb.innerHTML='<div class="currency-row" style="color:#ccc;font-size:13px;justify-content:center">no balances yet</div>'; return; }
+  const entries = Object.entries(snap.val())
+    .map(([uid,v])=>({uid, name:v.name||'viewer', balance:v.balance||0}))
+    .sort((a,b)=>b.balance-a.balance);
+  lb.innerHTML = entries.map((e,i)=>`
+    <div class="currency-row">
+      <span class="cr-name">${i===0?'🥇':i===1?'🥈':i===2?'🥉':'  '} ${esc(e.name)}</span>
+      <span class="cr-amt">${e.balance.toFixed(2)}€</span>
+      <button class="cr-give" data-uid="${e.uid}" data-name="${esc(e.name)}">give</button>
+    </div>`).join('');
+  lb.querySelectorAll('.cr-give').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      $('give-name-input').value = btn.dataset.name;
+      $('give-amount-input').focus();
     });
   });
-  document.querySelectorAll('[data-gdur]').forEach(btn => {
-    btn.addEventListener('click', () => {
-      document.querySelectorAll('[data-gdur]').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      glitchDuration = parseInt(btn.dataset.gdur);
+});
+
+// give currency
+function giveCurrency(name, amount){
+  if(!name||!amount||amount<=0){ showToast('enter name + amount'); return; }
+  import("https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js").then(m=>{
+    m.get(currencyRef).then(snap=>{
+      if(!snap.exists()){ showToast('no players found'); return; }
+      const entries = Object.entries(snap.val());
+      const match = entries.find(([uid,v])=>(v.name||'').toLowerCase()===name.toLowerCase());
+      if(!match){ showToast(`"${name}" not found`); return; }
+      const [uid, v] = match;
+      const newBal = (v.balance||0) + amount;
+      m.set(ref(db,`currency/${uid}`),{name:v.name, balance:newBal});
+      showToast(`💸 gave ${amount}€ to ${v.name}!`);
+      if(uid===myUserId){ myBalance=newBal; updateWalletUI(); }
     });
+  }).catch(()=>showToast('firebase error'));
+}
+
+$('give-currency-btn').addEventListener('click',()=>{
+  giveCurrency($('give-name-input').value.trim(), parseFloat($('give-amount-input').value)||0);
+});
+
+document.querySelectorAll('[data-quick]').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    const name=$('give-name-input').value.trim();
+    if(!name){ showToast('enter a player name first'); return; }
+    giveCurrency(name, parseInt(btn.dataset.quick));
   });
-  document.querySelectorAll('[data-btdur]').forEach(btn => {
-    btn.addEventListener('click', () => {
-      document.querySelectorAll('[data-btdur]').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      btDur = parseInt(btn.dataset.btdur);
-    });
-  });
-  document.querySelectorAll('[data-sound]').forEach(btn => {
-    btn.addEventListener('click', () => {
-      document.querySelectorAll('[data-sound]').forEach(b => { b.classList.remove('active'); b.style.background=''; b.style.color=''; b.style.borderColor=''; });
-      btn.classList.add('active');
-      btn.style.background = '#111'; btn.style.color = '#fff'; btn.style.borderColor = '#111';
-      msgSound = btn.dataset.sound;
-    });
-  });
-  document.querySelectorAll('.bt-color').forEach(sw => {
-    sw.addEventListener('click', () => {
-      document.querySelectorAll('.bt-color').forEach(s => s.classList.remove('selected'));
-      sw.classList.add('selected');
-      btColor = sw.dataset.btcolor;
-    });
-  });
+});
 
-  // ── Firebase ──────────────────────────────────────
-  const app        = initializeApp(firebaseConfig);
-  const db         = getDatabase(app);
-  const msgsRef    = ref(db, 'messages');
-  const pollRef    = ref(db, 'poll');
-  const bgRef      = ref(db, 'bgcolor');
-  const strokesRef = ref(db, 'strokes');
-  const presRef    = ref(db, 'presence');
-  const shakeRef   = ref(db, 'shake');
-  const jumpRef    = ref(db, 'jumpscare');
-  const partyRef   = ref(db, 'party');
-  const glitchRef  = ref(db, 'glitch');
-  const bigtextRef = ref(db, 'bigtext');
-  const rainRef    = ref(db, 'rain');
+$('reset-currency-btn').addEventListener('click',()=>{
+  if(!confirm('Reset ALL balances to 0?')) return;
+  remove(currencyRef); myBalance=0; localStorage.setItem('my_balance','0'); updateWalletUI(); showToast('🗑 balances reset');
+});
 
-  // Clear everything on load
-  Promise.all([
-    remove(msgsRef), remove(pollRef), remove(strokesRef),
-    remove(shakeRef), remove(jumpRef), remove(partyRef),
-    remove(glitchRef), remove(bigtextRef), remove(rainRef),
-    set(bgRef, '#ffffff'),
-  ]).catch(console.error);
+updateWalletUI();
 
-  signInAnonymously(getAuth(app)).then(({ user }) => {
-    const myPres = ref(db, `presence/${user.uid}`);
-    set(myPres, { t: Date.now() });
-    import("https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js")
-      .then(m => m.onDisconnect(myPres).remove()).catch(() => {});
-  }).catch(console.error);
-
-  onValue(presRef, snap => {
-    document.getElementById('viewer-count').textContent =
-      snap.exists() ? Object.keys(snap.val()).length : 1;
-  });
-
-  // ── Listeners ─────────────────────────────────────
-  onValue(shakeRef, snap => { if (snap.exists()) triggerShake(); });
-
-  onValue(jumpRef, snap => {
-    if (!snap.exists()) return;
-    const d = snap.val();
-    if (d?.url) fireJumpscare(d.url, d.duration || 800);
-  });
-
-  onValue(partyRef, snap => {
-    if (!snap.exists() || !snap.val()) stopParty(); else startParty();
-  });
-
-  onValue(glitchRef, snap => {
-    if (!snap.exists()) return;
-    const d = snap.val();
-    if (d?.dur) triggerGlitch(d.dur);
-  });
-
-  onValue(bigtextRef, snap => {
-    if (!snap.exists()) return;
-    const d = snap.val();
-    if (d?.text) showBigText(d.text, d.color || '#fff', d.dur || 1200);
-  });
-
-  onValue(rainRef, snap => {
-    if (!snap.exists() || !snap.val()) stopRain(); else startRain();
-  });
-
-  // ── Shake ─────────────────────────────────────────
-  function triggerShake() {
-    document.body.classList.remove('shaking');
-    void document.body.offsetWidth;
-    document.body.classList.add('shaking');
-    setTimeout(() => document.body.classList.remove('shaking'), 660);
-  }
-  document.getElementById('shake-sm-btn').addEventListener('click', () => {
-    set(shakeRef, { ts: Date.now() });
-    triggerShake();
-  });
-
-  // ── Jumpscare ─────────────────────────────────────
-  function fireJumpscare(url, duration) {
-    const overlay = document.getElementById('jumpscare-overlay');
-    const img     = document.getElementById('jumpscare-img');
-    img.src = url;
-    overlay.classList.add('show');
-    triggerShake();
-    setTimeout(() => { overlay.classList.remove('show'); img.src = ''; }, duration);
-  }
-  document.getElementById('fire-jumpscare-btn').addEventListener('click', () => {
-    const url = document.getElementById('js-custom-url').value.trim() || jsSelectedUrl;
-    if (!url) { showToast('Pick an image or paste a URL!'); return; }
-    set(jumpRef, { url, duration: jsDuration, ts: Date.now() });
-    fireJumpscare(url, jsDuration);
-  });
-
-  // ── Glitch ────────────────────────────────────────
-  function triggerGlitch(dur) {
-    document.body.classList.add('glitching');
-    setTimeout(() => document.body.classList.remove('glitching'), dur);
-  }
-  document.getElementById('fire-glitch-btn').addEventListener('click', () => {
-    set(glitchRef, { dur: glitchDuration, ts: Date.now() });
-    triggerGlitch(glitchDuration);
-    showToast('⚡ glitching everyone');
-  });
-
-  // ── Big text ──────────────────────────────────────
-  function showBigText(text, color, dur) {
-    const overlay = document.getElementById('bigtext-overlay');
-    const content = document.getElementById('bigtext-content');
-    content.textContent = text;
-    content.style.color = color;
-    overlay.classList.remove('show');
-    void overlay.offsetWidth;
-    overlay.classList.add('show');
-    setTimeout(() => overlay.classList.remove('show'), dur);
-  }
-  document.getElementById('send-bigtext-btn').addEventListener('click', () => {
-    const text = document.getElementById('bigtext-input').value.trim();
-    if (!text) { showToast('Type something first!'); return; }
-    set(bigtextRef, { text, color: btColor, dur: btDur, ts: Date.now() });
-    showBigText(text, btColor, btDur);
-    showToast('💥 text sent');
-  });
-
-  // ── Party mode ────────────────────────────────────
-  function startParty() {
-    if (document.body.classList.contains('party-mode')) return;
-    document.body.classList.add('party-mode');
-    spawnTacos();
-    if (!partyAudio) {
-      partyAudio = new Audio('https://ahmads-onkel.github.io/ahmads-onkel.github.io/Its%20Raining%20Tacos!.mp3');
-    }
-    partyAudio.loop = true;
-    partyAudio.volume = 0.6;
-    partyAudio.play().catch(() => {});
-  }
-  function stopParty() {
-    document.body.classList.remove('party-mode');
-    if (partyAudio) { partyAudio.pause(); partyAudio.currentTime = 0; }
-    if (partyInterval) { clearInterval(partyInterval); partyInterval = null; }
-    document.getElementById('taco-container').innerHTML = '';
-  }
-  function spawnTacos() {
-    if (partyInterval) clearInterval(partyInterval);
-    partyInterval = setInterval(() => {
-      if (!document.body.classList.contains('party-mode')) return;
-      const taco = document.createElement('div');
-      taco.className = 'taco';
-      taco.textContent = '🌮';
-      taco.style.left = Math.random() * 100 + 'vw';
-      const dur = 2.5 + Math.random() * 2.5;
-      taco.style.animationDuration = dur + 's';
-      taco.style.fontSize = (24 + Math.random() * 24) + 'px';
-      document.getElementById('taco-container').appendChild(taco);
-      setTimeout(() => taco.remove(), dur * 1000 + 200);
-    }, 120);
-  }
-  document.getElementById('party-start-btn').addEventListener('click', () => { set(partyRef, true); startParty(); });
-  document.getElementById('party-stop-btn').addEventListener('click', () => { remove(partyRef); stopParty(); });
-
-  // ── Rain ──────────────────────────────────────────
-  function startRain() {
-    const container = document.getElementById('rain-container');
-    if (container.classList.contains('show')) return;
-    container.classList.add('show');
-    container.innerHTML = '';
-    rainInterval = setInterval(() => {
-      if (!container.classList.contains('show')) return;
-      const drop = document.createElement('div');
-      drop.className = 'raindrop';
-      drop.style.left = Math.random() * 100 + 'vw';
-      const h = 40 + Math.random() * 60;
-      drop.style.height = h + 'px';
-      const dur = 0.6 + Math.random() * 0.8;
-      drop.style.animationDuration = dur + 's';
-      drop.style.animationDelay = (Math.random() * 0.5) + 's';
-      drop.style.opacity = 0.4 + Math.random() * 0.4;
-      container.appendChild(drop);
-      setTimeout(() => drop.remove(), (dur + 0.5) * 1000);
-    }, 30);
-  }
-  function stopRain() {
-    const container = document.getElementById('rain-container');
-    container.classList.remove('show');
-    if (rainInterval) { clearInterval(rainInterval); rainInterval = null; }
-    container.innerHTML = '';
-  }
-  document.getElementById('rain-start-btn').addEventListener('click', () => { set(rainRef, true); startRain(); });
-  document.getElementById('rain-stop-btn').addEventListener('click', () => { remove(rainRef); stopRain(); });
-
-  // ── Spotlight ─────────────────────────────────────
-  const spotlightEl = document.getElementById('spotlight-overlay');
-  const spotlightBtn = document.getElementById('spotlight-toggle-btn');
-
-  function updateSpotlight(e) {
-    const x = e.clientX, y = e.clientY;
-    const r = 160;
-    spotlightEl.style.webkitMaskImage =
-      `radial-gradient(circle ${r}px at ${x}px ${y}px, transparent 100%, black 100%)`;
-    spotlightEl.style.maskImage =
-      `radial-gradient(circle ${r}px at ${x}px ${y}px, transparent 100%, black 100%)`;
-  }
-
-  spotlightBtn.addEventListener('click', () => {
-    spotlightActive = !spotlightActive;
-    if (spotlightActive) {
-      spotlightEl.classList.add('show');
-      document.addEventListener('mousemove', updateSpotlight);
-      spotlightBtn.textContent = '🔦 stop spotlight';
-      spotlightBtn.style.background = '#111'; spotlightBtn.style.color = '#fff';
-    } else {
-      spotlightEl.classList.remove('show');
-      document.removeEventListener('mousemove', updateSpotlight);
-      spotlightBtn.textContent = '🔦 start spotlight';
-      spotlightBtn.style.background = ''; spotlightBtn.style.color = '';
-    }
-  });
-
-  // ── Cursor trail ──────────────────────────────────
-  const trailBtn = document.getElementById('trail-toggle-btn');
-  const trailColors = ['#ff4d6d','#ffe135','#4cc9f0','#0bce83','#f72585','#ff9e00','#b44fff'];
-  let trailHandler = null;
-
-  function spawnSpark(x, y) {
-    const spark = document.createElement('div');
-    spark.className = 'cursor-spark';
-    const size = 6 + Math.random() * 8;
-    spark.style.width = size + 'px';
-    spark.style.height = size + 'px';
-    spark.style.left = x + 'px';
-    spark.style.top  = y + 'px';
-    spark.style.background = trailColors[Math.floor(Math.random() * trailColors.length)];
-    document.body.appendChild(spark);
-    setTimeout(() => spark.remove(), 600);
-  }
-
-  trailBtn.addEventListener('click', () => {
-    trailActive = !trailActive;
-    if (trailActive) {
-      trailHandler = e => spawnSpark(e.clientX, e.clientY);
-      document.addEventListener('mousemove', trailHandler);
-      trailBtn.textContent = '✨ disable trail';
-      trailBtn.style.background = '#111'; trailBtn.style.color = '#fff'; trailBtn.style.borderColor = '#111';
-    } else {
-      document.removeEventListener('mousemove', trailHandler);
-      trailHandler = null;
-      trailBtn.textContent = '✨ enable trail';
-      trailBtn.style.background = ''; trailBtn.style.color = ''; trailBtn.style.borderColor = '';
-    }
-  });
-
-  // ── Canvas ────────────────────────────────────────
-  const canvas = document.getElementById('draw-canvas');
-  const ctx    = canvas.getContext('2d');
-  let strokeCache = null;
-
-  function resizeCanvas() {
-    const main = document.getElementById('main');
-    const iw = canvas.width, ih = canvas.height;
-    canvas.width  = main.clientWidth;
-    canvas.height = main.clientHeight;
-    replayFromCache();
-  }
-  function replayFromCache() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    if (!strokeCache) return;
-    Object.values(strokeCache).forEach(stroke => {
-      if (!stroke.segments) return;
-      Object.values(stroke.segments).forEach(paintSeg);
-    });
-  }
-  resizeCanvas();
-  window.addEventListener('resize', resizeCanvas);
-
-  onValue(strokesRef, snap => {
-    if (!snap.exists()) {
-      strokeCache = null;
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      if (!drawMode) canvas.classList.remove('view-only');
-      return;
-    }
-    strokeCache = snap.val();
-    replayFromCache();
-    if (!drawMode) canvas.classList.toggle('view-only', !!strokeCache);
-  });
-
-  function paintSeg(s) {
-    ctx.save();
-    if (s.tool === 'eraser') {
-      ctx.globalCompositeOperation = 'destination-out';
-      ctx.strokeStyle = 'rgba(0,0,0,1)';
-    } else {
-      ctx.globalCompositeOperation = 'source-over';
-      ctx.strokeStyle = s.color || '#111';
-    }
-    ctx.lineWidth = s.size || 6;
-    ctx.lineCap   = 'round'; ctx.lineJoin = 'round';
-    ctx.beginPath();
-    ctx.moveTo(s.x1, s.y1); ctx.lineTo(s.x2, s.y2);
-    ctx.stroke(); ctx.restore();
-  }
-
-  // ── Messages ──────────────────────────────────────
-  let msgInitDone = false;
-  onChildAdded(msgsRef, snap => {
-    if (!msgInitDone) return;
-    const d = snap.val();
-    if (d?.name && d?.text) {
-      showBanner(d.name, d.text);
-      if (d.sound && d.sound !== 'none') playBeep(d.sound);
-    }
-  });
-  setTimeout(() => { msgInitDone = true; }, 1000);
-
-  // ── Background ────────────────────────────────────
-  onValue(bgRef, snap => {
-    if (snap.val()) document.getElementById('main').style.background = snap.val();
-  });
-
-  // ── Poll ──────────────────────────────────────────
-  onValue(pollRef, snap => {
-    if (!snap.exists() || !snap.val()?.question) {
-      document.getElementById('poll-widget').classList.remove('show');
-      return;
-    }
-    renderPoll(snap.val(), snap.key);
-  });
-
-  // ── Keyboard secret code ──────────────────────────
-  document.addEventListener('keydown', e => {
-    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
-    if (/^\d$/.test(e.key)) {
-      keyBuffer += e.key;
-      if (keyBuffer.length > SECRET.length) keyBuffer = keyBuffer.slice(-SECRET.length);
-      if (keyBuffer === SECRET) { keyBuffer = ''; unlockAdmin(); }
-    }
-  });
-
-  // ── Mobile code ───────────────────────────────────
-  function checkMobileCode() {
-    const val = document.getElementById('mobile-code-input').value.trim();
-    if (val === SECRET) {
-      document.getElementById('mobile-code-input').value = '';
-      unlockAdmin();
-    } else {
-      const inp = document.getElementById('mobile-code-input');
-      inp.style.borderColor = '#e63946';
-      setTimeout(() => inp.style.borderColor = '', 900);
-    }
-  }
-  document.getElementById('mobile-code-btn').addEventListener('click', checkMobileCode);
-  document.getElementById('mobile-code-input').addEventListener('keydown', e => {
-    if (e.key === 'Enter') checkMobileCode();
-  });
-
-  // ── Admin toggle (mobile) ─────────────────────────
-  document.getElementById('admin-toggle-btn').addEventListener('click', () => {
-    const panel = document.getElementById('admin-panel');
-    const isOpen = panel.classList.contains('open');
-    if (isOpen) {
-      panel.classList.remove('open');
-      document.body.classList.remove('admin-open');
-    } else {
-      panel.classList.add('open');
-      document.body.classList.add('admin-open');
-    }
-  });
-
-  // ── Unlock ────────────────────────────────────────
-  function unlockAdmin() {
-    if (!adminName) {
-      document.getElementById('name-overlay').classList.add('show');
-      document.getElementById('name-input').focus();
-    } else {
-      openPanel();
-    }
-  }
-
-  function openPanel() {
-    isAdmin = true;
-    document.getElementById('admin-panel').classList.add('open');
-    document.getElementById('admin-name-display').textContent = adminName;
-    document.getElementById('mobile-code-box').style.display = 'none';
-    document.getElementById('admin-toggle-btn').style.display = 'flex';
-    document.body.classList.add('admin-open');
-  }
-
-  // ── Name ──────────────────────────────────────────
-  document.getElementById('name-confirm').addEventListener('click', saveName);
-  document.getElementById('name-input').addEventListener('keydown', e => { if (e.key === 'Enter') saveName(); });
-  function saveName() {
-    const val = document.getElementById('name-input').value.trim();
-    if (!val) return;
-    adminName = val;
-    localStorage.setItem('admin_name', adminName);
-    document.getElementById('name-overlay').classList.remove('show');
-    openPanel();
-  }
-
-  // ── Tabs ──────────────────────────────────────────
-  document.querySelectorAll('.admin-tab').forEach(btn => {
-    btn.addEventListener('click', () => {
-      document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
-      document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-      btn.classList.add('active');
-      document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
-    });
-  });
-
-  // ── Send message ──────────────────────────────────
-  document.getElementById('send-msg-btn').addEventListener('click', sendMsg);
-  document.getElementById('msg-input').addEventListener('keydown', e => {
-    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMsg(); }
-  });
-  function sendMsg() {
-    const text = document.getElementById('msg-input').value.trim();
-    if (!text || !adminName) return;
-    push(msgsRef, { name: adminName, text, sound: msgSound, ts: Date.now() });
-    document.getElementById('msg-input').value = '';
-    showToast('💬 sent!');
-  }
-
-  // ── Poll ──────────────────────────────────────────
-  document.getElementById('send-poll-btn').addEventListener('click', () => {
-    const q = document.getElementById('poll-q-input').value.trim();
-    if (!q) return;
-    const inputs = document.querySelectorAll('#poll-options-builder input');
-    const opts = Array.from(inputs).map(i => i.value.trim()).filter(Boolean);
-    if (opts.length < 2) { showToast('Add at least 2 options!'); return; }
-    const optObj = {};
-    opts.forEach((o, i) => { optObj[i] = { label: o, votes: 0 }; });
-    set(pollRef, { question: q, options: optObj, ts: Date.now() });
-    showToast('📊 poll launched');
-  });
-  document.getElementById('close-poll-btn').addEventListener('click', () => { remove(pollRef); showToast('Poll closed'); });
-  document.getElementById('poll-options-builder').addEventListener('click', e => {
-    if (e.target.classList.contains('remove-option')) {
-      const all = document.querySelectorAll('#poll-options-builder .poll-option-input-wrap');
-      if (all.length > 2) e.target.closest('.poll-option-input-wrap').remove();
-    }
-  });
-  document.getElementById('add-option-btn').addEventListener('click', () => {
-    const wrap = document.createElement('div');
-    wrap.className = 'poll-option-input-wrap';
-    const n = document.querySelectorAll('#poll-options-builder input').length + 1;
-    wrap.innerHTML = `<input type="text" placeholder="Option ${n}" maxlength="60"/><button class="remove-option" type="button">×</button>`;
-    document.getElementById('poll-options-builder').appendChild(wrap);
-  });
-
-  // ── Background ────────────────────────────────────
-  let selBg = '#ffffff';
-  document.querySelectorAll('.color-swatch').forEach(sw => {
-    sw.addEventListener('click', () => {
-      document.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('selected'));
-      sw.classList.add('selected');
-      selBg = sw.dataset.color;
-      document.getElementById('custom-color').value = selBg;
-    });
-  });
-  document.getElementById('custom-color').addEventListener('input', e => {
-    selBg = e.target.value;
-    document.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('selected'));
-  });
-  document.getElementById('send-bg-btn').addEventListener('click', () => { set(bgRef, selBg); showToast('🎨 background updated'); });
-
-  // ── Draw ──────────────────────────────────────────
-  document.querySelectorAll('.tool-btn[data-tool]').forEach(btn => {
-    btn.addEventListener('click', () => {
-      document.querySelectorAll('.tool-btn[data-tool]').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      drawTool = btn.dataset.tool;
-    });
-  });
-  document.querySelectorAll('.draw-color-swatch').forEach(sw => {
-    sw.addEventListener('click', () => {
-      document.querySelectorAll('.draw-color-swatch').forEach(s => s.classList.remove('selected'));
-      sw.classList.add('selected');
-      drawColor = sw.dataset.color;
-    });
-  });
-  document.getElementById('brush-size').addEventListener('input', e => {
-    brushSize = parseInt(e.target.value);
-    document.getElementById('brush-size-val').textContent = brushSize;
-  });
-
-  const drawToggleBtn = document.getElementById('draw-toggle-btn');
-  drawToggleBtn.addEventListener('click', () => {
-    drawMode = !drawMode;
-    if (drawMode) {
-      canvas.classList.add('active'); canvas.classList.remove('view-only');
-      drawToggleBtn.textContent = '⏹ stop drawing';
-      drawToggleBtn.classList.add('drawing');
-    } else {
-      canvas.classList.remove('active');
-      if (strokeCache) canvas.classList.add('view-only');
-      drawToggleBtn.textContent = '✏️ start drawing';
-      drawToggleBtn.classList.remove('drawing');
-      strokeId = null; lastPt = null; isPointing = false;
-    }
-  });
-
-  document.getElementById('clear-canvas-btn').addEventListener('click', () => {
-    if (!confirm('Clear canvas for everyone?')) return;
-    remove(strokesRef);
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    canvas.classList.remove('view-only');
-    strokeCache = null;
-    showToast('🗑 canvas cleared');
-  });
-
-  function getPos(e) {
-    const r = canvas.getBoundingClientRect();
-    const s = e.touches ? e.touches[0] : e;
-    return { x: s.clientX - r.left, y: s.clientY - r.top };
-  }
-  canvas.addEventListener('pointerdown', e => {
-    if (!drawMode || !isAdmin) return;
-    isPointing = true; lastPt = getPos(e);
-    strokeId = push(strokesRef).key;
-    set(ref(db, `strokes/${strokeId}/ts`), Date.now());
-    canvas.setPointerCapture(e.pointerId);
-  });
-  canvas.addEventListener('pointermove', e => {
-    if (!isPointing || !drawMode || !isAdmin) return;
-    const pt  = getPos(e);
-    const seg = { x1: lastPt.x, y1: lastPt.y, x2: pt.x, y2: pt.y, color: drawColor, size: brushSize, tool: drawTool };
-    paintSeg(seg);
-    push(ref(db, `strokes/${strokeId}/segments`), seg);
-    lastPt = pt;
-  });
-  const stopDraw = () => { isPointing = false; lastPt = null; };
-  canvas.addEventListener('pointerup',     stopDraw);
-  canvas.addEventListener('pointercancel', stopDraw);
-  canvas.addEventListener('touchstart', e => { if (drawMode) e.preventDefault(); }, { passive: false });
-  canvas.addEventListener('touchmove',  e => { if (drawMode) e.preventDefault(); }, { passive: false });
-
-  // ── Poll renderer ─────────────────────────────────
-  function renderPoll(data, pollKey) {
-    document.getElementById('poll-question').textContent = data.question;
-    const container = document.getElementById('poll-options');
-    container.innerHTML = '';
-    const opts  = data.options || {};
-    const keys  = Object.keys(opts);
-    const total = keys.reduce((s, k) => s + (opts[k].votes || 0), 0);
-    const voted = myVotes[pollKey];
-    keys.forEach(k => {
-      const opt = opts[k];
-      const pct = total > 0 ? Math.round((opt.votes || 0) / total * 100) : 0;
-      const div = document.createElement('div');
-      div.className = 'poll-option' + (voted ? ' poll-voted' : '');
-      div.innerHTML = `
-        <div class="poll-bar-wrap">
-          <div class="poll-bar-fill" style="width:${voted ? pct : 0}%"></div>
-          <div class="poll-bar-label">
-            <span>${esc(opt.label)}</span>
-            ${voted ? `<span>${pct}%</span>` : ''}
-          </div>
-        </div>`;
-      if (!voted) {
-        div.style.cursor = 'pointer';
-        div.addEventListener('click', () => {
-          myVotes[pollKey] = k;
-          set(ref(db, `poll/options/${k}/votes`), (opt.votes || 0) + 1);
-        });
-      }
-      container.appendChild(div);
-    });
-    document.getElementById('poll-widget').classList.add('show');
-  }
-  document.getElementById('poll-close').addEventListener('click', () => {
-    document.getElementById('poll-widget').classList.remove('show');
-  });
-
-  // ── Banner ────────────────────────────────────────
-  const stackEl = document.getElementById('banner-stack');
-  function showBanner(name, text) {
-    const el = document.createElement('div');
-    el.className = 'banner';
-    el.innerHTML = `<span class="banner-name">${esc(name)}</span>: ${esc(text)}`;
-    stackEl.insertBefore(el, stackEl.firstChild);
-    requestAnimationFrame(() => requestAnimationFrame(() => el.classList.add('visible')));
-    setTimeout(() => {
-      el.classList.remove('visible'); el.classList.add('fading');
-      el.addEventListener('transitionend', () => el.remove(), { once: true });
-    }, HOLD_MS);
-  }
-
-  function esc(s) {
-    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-  }
 </script>
 </body>
 </html>
