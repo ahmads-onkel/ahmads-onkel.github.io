@@ -927,7 +927,7 @@ body.party-mode #taco-badge{display:block}
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getDatabase, ref, push, set, remove, get, onValue, onChildAdded, onDisconnect }
   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
-import { getAuth, signInAnonymously }
+import { getAuth, signInAnonymously, signOut }
   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
 const FB = {
@@ -1105,23 +1105,19 @@ function watchForKick(){
   });
 }
 
-signInAnonymously(getAuth(app)).then(({user})=>{
-  myUserId  = user.uid;
-  myPresRef = ref(db,`presence/${user.uid}`);
-  onDisconnect(myPresRef).remove().catch(()=>{});
-  pushPresence();
-  if(playerName) initBalance();
-  // Start kick watcher once we have a uid (if already named)
-  if(playerName && !isAdmin) watchForKick();
-  if((myPurchases.ownedIds||[]).length > 0){
-    set(ref(db,`purchases/${myUserId}`),{
-      name: playerName||adminName||'viewer',
-      ownedIds:      myPurchases.ownedIds      || [],
-      equippedBadge: myPurchases.equippedBadge || null,
-      equippedColor: myPurchases.equippedColor || null,
-    });
-  }
-}).catch(console.error);
+// Sign out any cached session first — forces a brand new anonymous UID on every
+// page load/refresh, so no device can carry over admin status or identity.
+const _auth = getAuth(app);
+signOut(_auth).catch(()=>{}).finally(()=>{
+  signInAnonymously(_auth).then(({user})=>{
+    myUserId  = user.uid;
+    myPresRef = ref(db,`presence/${user.uid}`);
+    onDisconnect(myPresRef).remove().catch(()=>{});
+    pushPresence();
+    if(playerName) initBalance();
+    if(playerName && !isAdmin) watchForKick();
+  }).catch(console.error);
+});
 
 /* ── PRESENCE / PLAYER LIST ── */
 // Track uid→name+isAdmin for kick tab
