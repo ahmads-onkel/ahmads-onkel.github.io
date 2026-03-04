@@ -46,7 +46,6 @@
     }
     body.party-mode #main { animation: partyBg 1.2s linear infinite; }
 
-    /* falling tacos */
     #taco-container {
       position: fixed; inset: 0; z-index: 1500;
       pointer-events: none; overflow: hidden;
@@ -67,87 +66,79 @@
       100% { transform: translateY(110vh) rotate(720deg); opacity: 0; }
     }
 
-    /* ── TIME FREEZE ── */
-    #timefreeze-overlay {
+    /* ── SPOTLIGHT ── */
+    #spotlight-overlay {
       display: none;
-      position: fixed; inset: 0; z-index: 3000;
+      position: fixed; inset: 0; z-index: 900;
+      pointer-events: none;
+      background: rgba(0,0,0,0.82);
+      /* radial hole updated via JS */
+      -webkit-mask-image: radial-gradient(circle 160px at 50% 50%, transparent 100%, black 100%);
+      mask-image: radial-gradient(circle 160px at 50% 50%, transparent 100%, black 100%);
+    }
+    #spotlight-overlay.show { display: block; }
+
+    /* ── GLITCH ── */
+    @keyframes glitch1 {
+      0%,100% { clip-path: inset(0 0 95% 0); transform: translate(-4px, 0); }
+      20%      { clip-path: inset(30% 0 50% 0); transform: translate(4px, 0); }
+      40%      { clip-path: inset(60% 0 20% 0); transform: translate(-2px, 0); }
+      60%      { clip-path: inset(80% 0 5% 0);  transform: translate(2px, 0); }
+      80%      { clip-path: inset(10% 0 70% 0); transform: translate(-4px, 0); }
+    }
+    @keyframes glitch2 {
+      0%,100% { clip-path: inset(5% 0 80% 0);  transform: translate(4px, 0) skewX(2deg); }
+      25%      { clip-path: inset(50% 0 30% 0); transform: translate(-4px, 0) skewX(-2deg); }
+      50%      { clip-path: inset(20% 0 60% 0); transform: translate(3px, 0) skewX(1deg); }
+      75%      { clip-path: inset(70% 0 10% 0); transform: translate(-3px, 0) skewX(-1deg); }
+    }
+    #glitch-overlay {
+      display: none;
+      position: fixed; inset: 0; z-index: 2500;
       pointer-events: none;
     }
-    #timefreeze-overlay.show { display: block; }
-
-    /* Blue-white flash */
-    #timefreeze-flash {
+    #glitch-overlay.show { display: block; }
+    #glitch-overlay .gl1,
+    #glitch-overlay .gl2 {
       position: absolute; inset: 0;
-      background: #c8e8ff;
-      opacity: 0;
-      transition: opacity 0.05s;
+      background: inherit;
     }
-    #timefreeze-overlay.show #timefreeze-flash { animation: tfFlash .5s ease-out forwards; }
-    @keyframes tfFlash {
-      0%   { opacity: 1; }
-      100% { opacity: 0; }
+    body.glitching #main {
+      animation: glitch1 0.12s steps(1) infinite;
     }
-
-    /* Freeze crack lines */
-    #timefreeze-cracks {
-      position: absolute; inset: 0;
-      opacity: 0;
-      transition: opacity .3s;
+    body.glitching #main::before {
+      content: '';
+      position: absolute; inset: 0; z-index: 9999;
+      background: rgba(255,0,60,0.18);
+      pointer-events: none;
+      animation: glitch2 0.1s steps(1) infinite;
     }
-    #timefreeze-overlay.show #timefreeze-cracks {
-      animation: tfCracks .4s .1s ease-out forwards;
-    }
-    @keyframes tfCracks {
-      0%   { opacity: 0; transform: scale(.8); }
-      60%  { opacity: 1; transform: scale(1.03); }
-      100% { opacity: .7; transform: scale(1); }
+    body.glitching #main::after {
+      content: '';
+      position: absolute; inset: 0; z-index: 9998;
+      background: rgba(0,200,255,0.15);
+      pointer-events: none;
+      animation: glitch1 0.13s steps(1) 0.04s infinite;
     }
 
-    /* Frozen vignette */
-    #timefreeze-vignette {
-      position: absolute; inset: 0;
-      background: radial-gradient(ellipse at center, transparent 40%, rgba(100,180,255,.45) 100%);
-      opacity: 0;
+    /* ── RAIN ── */
+    #rain-container {
+      position: fixed; inset: 0; z-index: 800;
+      pointer-events: none; overflow: hidden;
+      display: none;
     }
-    #timefreeze-overlay.show #timefreeze-vignette {
-      animation: tfVig .5s .2s ease-out forwards;
-    }
-    @keyframes tfVig {
-      0%   { opacity: 0; }
-      100% { opacity: 1; }
-    }
-
-    /* "Time has stopped" text */
-    #timefreeze-text {
+    #rain-container.show { display: block; }
+    .raindrop {
       position: absolute;
-      top: 50%; left: 50%;
-      transform: translate(-50%, -50%) scale(0);
-      font-family: 'Patrick Hand', cursive;
-      font-size: clamp(28px, 6vw, 64px);
-      color: #fff;
-      text-shadow: 0 0 30px #4cc9f0, 0 0 60px #4cc9f0, 2px 2px 0 #000;
-      white-space: nowrap;
-      letter-spacing: 3px;
-      text-transform: uppercase;
-      opacity: 0;
+      top: -20px;
+      width: 2px;
+      background: linear-gradient(to bottom, transparent, rgba(120,180,255,0.7));
+      animation: rainFall linear infinite;
+      border-radius: 0 0 2px 2px;
     }
-    #timefreeze-overlay.show #timefreeze-text {
-      animation: tfText .6s .3s cubic-bezier(.22,.68,0,1.3) forwards;
-    }
-    @keyframes tfText {
-      0%   { opacity: 0; transform: translate(-50%,-50%) scale(0.3); }
-      70%  { opacity: 1; transform: translate(-50%,-50%) scale(1.08); }
-      100% { opacity: 1; transform: translate(-50%,-50%) scale(1); }
-    }
-
-    /* frozen body effect */
-    body.frozen #main {
-      filter: saturate(0) brightness(0.85) sepia(.3) hue-rotate(180deg);
-      transition: filter .4s ease;
-    }
-    body.frozen .banner,
-    body.frozen #poll-widget {
-      filter: saturate(0);
+    @keyframes rainFall {
+      0%   { transform: translateY(0); opacity: 0.7; }
+      100% { transform: translateY(110vh); opacity: 0.2; }
     }
 
     /* ── MAIN ── */
@@ -216,6 +207,34 @@
       100% { outline: 8px solid red; }
     }
 
+    /* ── BIG TEXT OVERLAY ── */
+    #bigtext-overlay {
+      display: none;
+      position: fixed; inset: 0; z-index: 1800;
+      pointer-events: none;
+      align-items: center; justify-content: center;
+    }
+    #bigtext-overlay.show { display: flex; }
+    #bigtext-content {
+      font-family: 'Patrick Hand', cursive;
+      font-size: clamp(48px, 12vw, 140px);
+      font-weight: bold;
+      text-align: center;
+      padding: 0 20px;
+      line-height: 1.1;
+      opacity: 0;
+      transform: scale(0.3);
+      text-shadow: 4px 4px 0 rgba(0,0,0,0.15);
+    }
+    #bigtext-overlay.show #bigtext-content {
+      animation: bigTextPop 0.5s cubic-bezier(.22,.68,0,1.3) forwards;
+    }
+    @keyframes bigTextPop {
+      0%   { opacity: 0; transform: scale(0.3) rotate(-5deg); }
+      70%  { opacity: 1; transform: scale(1.06) rotate(1deg); }
+      100% { opacity: 1; transform: scale(1) rotate(0deg); }
+    }
+
     /* ── POLL ── */
     #poll-widget {
       position: absolute; top: 50%; left: 50%;
@@ -229,9 +248,10 @@
     #poll-widget.show { opacity: 1; pointer-events: all; transform: translate(-50%, -50%) scale(1); }
     #poll-question { font-size: 17px; margin-bottom: 14px; color: #111; line-height: 1.4; }
     .poll-option   { margin-bottom: 8px; cursor: pointer; }
+    .poll-option.poll-voted { cursor: default; }
     .poll-bar-wrap { background: #f3f3f3; height: 36px; position: relative; overflow: hidden; border: 1px solid #e0e0e0; }
     .poll-bar-fill { background: #111; height: 100%; width: 0%; transition: width .5s ease; }
-    .poll-bar-label { position: absolute; inset: 0; display: flex; align-items: center; justify-content: space-between; padding: 0 11px; font-size: 14px; color: #fff; mix-blend-mode: difference; pointer-events: none; }
+    .poll-bar-label { position: absolute; inset: 0; display: flex; align-items: center; justify-content: space-between; padding: 0 11px; font-size: 14px; color: #111; pointer-events: none; }
     #poll-close { margin-top: 12px; font-family: 'Patrick Hand', cursive; font-size: 13px; background: none; border: 1px solid #ccc; padding: 6px 14px; cursor: pointer; color: #888; width: 100%; transition: border-color .2s, color .2s; }
     #poll-close:hover { border-color: #111; color: #111; }
 
@@ -243,6 +263,20 @@
       z-index: 50; pointer-events: none;
     }
     #viewer-pill b { color: #111; }
+
+    /* ── CURSOR TRAIL ── */
+    .cursor-spark {
+      position: fixed;
+      pointer-events: none;
+      z-index: 9000;
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+      animation: sparkFade 0.6s ease-out forwards;
+    }
+    @keyframes sparkFade {
+      0%   { opacity: 1; transform: translate(-50%,-50%) scale(1); }
+      100% { opacity: 0; transform: translate(-50%,-50%) scale(0.1); }
+    }
 
     /* ── MOBILE CODE BOX ── */
     #mobile-code-box {
@@ -395,6 +429,10 @@
     .admin-btn.blue:hover { background: #38b0d8; opacity: 1; }
     .admin-btn.purple { background: #7b2d8b; }
     .admin-btn.purple:hover { background: #5a1f68; opacity: 1; }
+    .admin-btn.green  { background: #06d6a0; color: #000; }
+    .admin-btn.green:hover { background: #05b88a; opacity: 1; }
+    .admin-btn.orange { background: #ff9e00; color: #000; }
+    .admin-btn.orange:hover { background: #e08c00; opacity: 1; }
 
     .divider { height: 1px; background: #eee; margin: 11px 0; }
 
@@ -484,6 +522,15 @@
     .js-preset:hover    { border-color: #111; transform: scale(1.05); }
     .js-preset.selected { border-color: #e63946; }
 
+    /* Big text tab */
+    .bigtext-color-row { display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 8px; }
+    .bt-color {
+      width: 22px; height: 22px; border-radius: 50%; cursor: pointer;
+      border: 2px solid transparent; transition: transform .15s;
+    }
+    .bt-color:hover    { transform: scale(1.15); }
+    .bt-color.selected { border-color: #111; }
+
     /* ── NAME OVERLAY ── */
     #name-overlay {
       display: none; position: fixed; inset: 0;
@@ -505,38 +552,40 @@
       border: none; padding: 10px 36px; cursor: pointer;
     }
     #name-confirm:hover { opacity: .85; }
+
+    /* ── TOAST ── */
+    #toast {
+      position: fixed; bottom: 20px; left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: #111; color: #fff;
+      font-family: 'Patrick Hand', cursive; font-size: 13px;
+      padding: 7px 16px;
+      opacity: 0; pointer-events: none;
+      transition: opacity .25s, transform .25s;
+      z-index: 9999;
+    }
+    #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
   </style>
 </head>
 <body>
 
-<!-- TACO RAIN -->
+<!-- EFFECTS LAYERS -->
 <div id="taco-container"></div>
+<div id="rain-container"></div>
+<div id="spotlight-overlay"></div>
 
 <!-- JUMPSCARE -->
 <div id="jumpscare-overlay">
   <img id="jumpscare-img" src="" alt=""/>
 </div>
 
-<!-- TIME FREEZE -->
-<div id="timefreeze-overlay">
-  <div id="timefreeze-flash"></div>
-  <svg id="timefreeze-cracks" viewBox="0 0 100 100" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
-    <line x1="50" y1="50" x2="10" y2="5"   stroke="#a8d8ff" stroke-width=".4" opacity=".9"/>
-    <line x1="50" y1="50" x2="85" y2="8"   stroke="#c8eaff" stroke-width=".3" opacity=".8"/>
-    <line x1="50" y1="50" x2="95" y2="40"  stroke="#a8d8ff" stroke-width=".5" opacity=".9"/>
-    <line x1="50" y1="50" x2="90" y2="75"  stroke="#c8eaff" stroke-width=".3" opacity=".7"/>
-    <line x1="50" y1="50" x2="60" y2="100" stroke="#a8d8ff" stroke-width=".4" opacity=".9"/>
-    <line x1="50" y1="50" x2="20" y2="95"  stroke="#c8eaff" stroke-width=".3" opacity=".8"/>
-    <line x1="50" y1="50" x2="5"  y2="70"  stroke="#a8d8ff" stroke-width=".5" opacity=".9"/>
-    <line x1="50" y1="50" x2="8"  y2="35"  stroke="#c8eaff" stroke-width=".3" opacity=".7"/>
-    <line x1="20" y1="20" x2="35" y2="35"  stroke="#a8d8ff" stroke-width=".2" opacity=".6"/>
-    <line x1="75" y1="15" x2="65" y2="30"  stroke="#c8eaff" stroke-width=".2" opacity=".6"/>
-    <line x1="80" y1="60" x2="68" y2="52"  stroke="#a8d8ff" stroke-width=".2" opacity=".6"/>
-    <line x1="30" y1="80" x2="42" y2="65"  stroke="#c8eaff" stroke-width=".2" opacity=".6"/>
-  </svg>
-  <div id="timefreeze-vignette"></div>
-  <div id="timefreeze-text">⏸ time has stopped ⏸</div>
+<!-- BIG TEXT -->
+<div id="bigtext-overlay">
+  <div id="bigtext-content"></div>
 </div>
+
+<!-- TOAST -->
+<div id="toast"></div>
 
 <div id="app">
   <!-- MAIN -->
@@ -562,7 +611,7 @@
         <button class="admin-tab active" data-tab="msg">💬</button>
         <button class="admin-tab" data-tab="abuse">💥</button>
         <button class="admin-tab" data-tab="party">🎉</button>
-        <button class="admin-tab" data-tab="freeze">⏸</button>
+        <button class="admin-tab" data-tab="fx">✨</button>
         <button class="admin-tab" data-tab="draw">🖌</button>
         <button class="admin-tab" data-tab="poll">📊</button>
         <button class="admin-tab" data-tab="bg">🎨</button>
@@ -574,6 +623,13 @@
           <div class="panel-label">message everyone</div>
           <textarea class="admin-input" id="msg-input" rows="3" maxlength="200" placeholder="say something…"></textarea>
           <button class="admin-btn" id="send-msg-btn">send to all</button>
+          <div class="divider"></div>
+          <div class="panel-label">sound alert with message</div>
+          <div style="display:flex;gap:5px;margin-bottom:8px;flex-wrap:wrap">
+            <button class="tool-btn" data-sound="ding">🔔 ding</button>
+            <button class="tool-btn" data-sound="horn">📯 horn</button>
+            <button class="tool-btn" data-sound="none" style="background:#111;color:#fff;border-color:#111">🔇 none</button>
+          </div>
         </div>
 
         <!-- ABUSE -->
@@ -595,6 +651,14 @@
             <button class="tool-btn" data-dur="3500">long</button>
           </div>
           <button class="admin-btn red" id="fire-jumpscare-btn">🔴 fire jumpscare</button>
+          <div class="divider"></div>
+          <div class="panel-label">glitch attack</div>
+          <div style="display:flex;gap:5px;margin-bottom:8px">
+            <button class="tool-btn active" data-gdur="1500">1.5s</button>
+            <button class="tool-btn" data-gdur="3000">3s</button>
+            <button class="tool-btn" data-gdur="6000">6s</button>
+          </div>
+          <button class="admin-btn red" id="fire-glitch-btn">⚡ glitch everyone</button>
         </div>
 
         <!-- PARTY -->
@@ -605,16 +669,42 @@
           </p>
           <button class="admin-btn purple" id="party-start-btn">🎉 start party</button>
           <button class="admin-btn ghost" id="party-stop-btn" style="margin-top:6px">⏹ stop party</button>
+          <div class="divider"></div>
+          <div class="panel-label">rain effect</div>
+          <p style="font-size:12px;color:#aaa;margin-bottom:8px;line-height:1.5">Moody rain falls over the screen 🌧</p>
+          <button class="admin-btn blue" id="rain-start-btn">🌧 start rain</button>
+          <button class="admin-btn ghost" id="rain-stop-btn" style="margin-top:6px">☀️ stop rain</button>
         </div>
 
-        <!-- TIME FREEZE -->
-        <div class="tab-panel" id="tab-freeze">
-          <div class="panel-label">time freeze</div>
-          <p style="font-size:12px;color:#aaa;margin-bottom:10px;line-height:1.5">
-            Gojo's time stop — screen freezes blue with crack effect + Za Warudo sound 🥶
-          </p>
-          <button class="admin-btn blue" id="freeze-btn">⏸ time stop</button>
-          <button class="admin-btn ghost" id="unfreeze-btn" style="margin-top:6px">▶ resume time</button>
+        <!-- FX -->
+        <div class="tab-panel" id="tab-fx">
+          <div class="panel-label">big text flash</div>
+          <input class="admin-input" id="bigtext-input" type="text" maxlength="30" placeholder="e.g. YOOOO 👀"/>
+          <div class="panel-label">color</div>
+          <div class="bigtext-color-row">
+            <div class="bt-color selected" style="background:#ffffff;outline:1px solid #ccc" data-btcolor="#ffffff"></div>
+            <div class="bt-color" style="background:#ffe135" data-btcolor="#ffe135"></div>
+            <div class="bt-color" style="background:#ff4d6d" data-btcolor="#ff4d6d"></div>
+            <div class="bt-color" style="background:#4cc9f0" data-btcolor="#4cc9f0"></div>
+            <div class="bt-color" style="background:#06d6a0" data-btcolor="#06d6a0"></div>
+            <div class="bt-color" style="background:#f72585" data-btcolor="#f72585"></div>
+            <div class="bt-color" style="background:#111111;outline:1px solid #ccc" data-btcolor="#111111"></div>
+          </div>
+          <div class="panel-label">duration</div>
+          <div style="display:flex;gap:5px;margin-bottom:8px">
+            <button class="tool-btn active" data-btdur="1200">fast</button>
+            <button class="tool-btn" data-btdur="2500">mid</button>
+            <button class="tool-btn" data-btdur="4000">slow</button>
+          </div>
+          <button class="admin-btn orange" id="send-bigtext-btn">💥 flash text</button>
+          <div class="divider"></div>
+          <div class="panel-label">spotlight mode</div>
+          <p style="font-size:12px;color:#aaa;margin-bottom:8px;line-height:1.5">Follows your mouse — dims everything except a glowing circle 🔦</p>
+          <button class="admin-btn" id="spotlight-toggle-btn">🔦 start spotlight</button>
+          <div class="divider"></div>
+          <div class="panel-label">cursor trail</div>
+          <p style="font-size:12px;color:#aaa;margin-bottom:8px;line-height:1.5">Leaves a sparkly trail on your cursor ✨</p>
+          <button class="admin-btn ghost" id="trail-toggle-btn">✨ enable trail</button>
         </div>
 
         <!-- DRAW -->
@@ -717,8 +807,7 @@
 <script type="module">
   import { initializeApp }
     from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-  import { getDatabase, ref, push, set, remove, onValue,
-           orderByChild, onChildAdded }
+  import { getDatabase, ref, push, set, remove, onValue, onChildAdded }
     from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
   import { getAuth, signInAnonymously }
     from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
@@ -749,9 +838,44 @@
   let lastPt     = null;
   let jsSelectedUrl = '';
   let jsDuration    = 800;
+  let glitchDuration = 1500;
   let partyInterval = null;
   let partyAudio    = null;
-  let isFrozen      = false;
+  let rainInterval  = null;
+  let spotlightActive = false;
+  let trailActive     = false;
+  let btColor  = '#ffffff';
+  let btDur    = 1200;
+  let msgSound = 'none';
+
+  // ── Toast ─────────────────────────────────────────
+  function showToast(msg, duration = 1800) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), duration);
+  }
+
+  // ── Beep / sound helpers ──────────────────────────
+  function playBeep(type) {
+    try {
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain); gain.connect(ctx.destination);
+      if (type === 'ding') {
+        osc.type = 'sine'; osc.frequency.setValueAtTime(880, ctx.currentTime);
+        gain.gain.setValueAtTime(0.4, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.6);
+        osc.start(); osc.stop(ctx.currentTime + 0.6);
+      } else if (type === 'horn') {
+        osc.type = 'sawtooth'; osc.frequency.setValueAtTime(220, ctx.currentTime);
+        gain.gain.setValueAtTime(0.3, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.4);
+        osc.start(); osc.stop(ctx.currentTime + 0.4);
+      }
+    } catch(e) {}
+  }
 
   // ── Jumpscare presets ─────────────────────────────
   const JS_PRESETS = [
@@ -786,6 +910,35 @@
       jsDuration = parseInt(btn.dataset.dur);
     });
   });
+  document.querySelectorAll('[data-gdur]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('[data-gdur]').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      glitchDuration = parseInt(btn.dataset.gdur);
+    });
+  });
+  document.querySelectorAll('[data-btdur]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('[data-btdur]').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      btDur = parseInt(btn.dataset.btdur);
+    });
+  });
+  document.querySelectorAll('[data-sound]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('[data-sound]').forEach(b => { b.classList.remove('active'); b.style.background=''; b.style.color=''; b.style.borderColor=''; });
+      btn.classList.add('active');
+      btn.style.background = '#111'; btn.style.color = '#fff'; btn.style.borderColor = '#111';
+      msgSound = btn.dataset.sound;
+    });
+  });
+  document.querySelectorAll('.bt-color').forEach(sw => {
+    sw.addEventListener('click', () => {
+      document.querySelectorAll('.bt-color').forEach(s => s.classList.remove('selected'));
+      sw.classList.add('selected');
+      btColor = sw.dataset.btcolor;
+    });
+  });
 
   // ── Firebase ──────────────────────────────────────
   const app        = initializeApp(firebaseConfig);
@@ -798,12 +951,15 @@
   const shakeRef   = ref(db, 'shake');
   const jumpRef    = ref(db, 'jumpscare');
   const partyRef   = ref(db, 'party');
-  const freezeRef  = ref(db, 'freeze');
+  const glitchRef  = ref(db, 'glitch');
+  const bigtextRef = ref(db, 'bigtext');
+  const rainRef    = ref(db, 'rain');
 
   // Clear everything on load
   Promise.all([
     remove(msgsRef), remove(pollRef), remove(strokesRef),
-    remove(shakeRef), remove(jumpRef), remove(partyRef), remove(freezeRef),
+    remove(shakeRef), remove(jumpRef), remove(partyRef),
+    remove(glitchRef), remove(bigtextRef), remove(rainRef),
     set(bgRef, '#ffffff'),
   ]).catch(console.error);
 
@@ -820,10 +976,7 @@
   });
 
   // ── Listeners ─────────────────────────────────────
-  onValue(shakeRef, snap => {
-    if (!snap.exists()) return;
-    triggerShake();
-  });
+  onValue(shakeRef, snap => { if (snap.exists()) triggerShake(); });
 
   onValue(jumpRef, snap => {
     if (!snap.exists()) return;
@@ -832,30 +985,32 @@
   });
 
   onValue(partyRef, snap => {
-    if (!snap.exists() || !snap.val()) {
-      stopParty();
-    } else {
-      startParty();
-    }
+    if (!snap.exists() || !snap.val()) stopParty(); else startParty();
   });
 
-  onValue(freezeRef, snap => {
-    if (!snap.exists() || !snap.val()) {
-      resumeTime();
-    } else {
-      freezeTime();
-    }
+  onValue(glitchRef, snap => {
+    if (!snap.exists()) return;
+    const d = snap.val();
+    if (d?.dur) triggerGlitch(d.dur);
+  });
+
+  onValue(bigtextRef, snap => {
+    if (!snap.exists()) return;
+    const d = snap.val();
+    if (d?.text) showBigText(d.text, d.color || '#fff', d.dur || 1200);
+  });
+
+  onValue(rainRef, snap => {
+    if (!snap.exists() || !snap.val()) stopRain(); else startRain();
   });
 
   // ── Shake ─────────────────────────────────────────
   function triggerShake() {
-    document.body.style.animationDuration = '600ms';
     document.body.classList.remove('shaking');
     void document.body.offsetWidth;
     document.body.classList.add('shaking');
-    setTimeout(() => { document.body.classList.remove('shaking'); }, 660);
+    setTimeout(() => document.body.classList.remove('shaking'), 660);
   }
-
   document.getElementById('shake-sm-btn').addEventListener('click', () => {
     set(shakeRef, { ts: Date.now() });
     triggerShake();
@@ -870,12 +1025,41 @@
     triggerShake();
     setTimeout(() => { overlay.classList.remove('show'); img.src = ''; }, duration);
   }
-
   document.getElementById('fire-jumpscare-btn').addEventListener('click', () => {
     const url = document.getElementById('js-custom-url').value.trim() || jsSelectedUrl;
-    if (!url) { alert('Pick an image or paste a URL!'); return; }
+    if (!url) { showToast('Pick an image or paste a URL!'); return; }
     set(jumpRef, { url, duration: jsDuration, ts: Date.now() });
     fireJumpscare(url, jsDuration);
+  });
+
+  // ── Glitch ────────────────────────────────────────
+  function triggerGlitch(dur) {
+    document.body.classList.add('glitching');
+    setTimeout(() => document.body.classList.remove('glitching'), dur);
+  }
+  document.getElementById('fire-glitch-btn').addEventListener('click', () => {
+    set(glitchRef, { dur: glitchDuration, ts: Date.now() });
+    triggerGlitch(glitchDuration);
+    showToast('⚡ glitching everyone');
+  });
+
+  // ── Big text ──────────────────────────────────────
+  function showBigText(text, color, dur) {
+    const overlay = document.getElementById('bigtext-overlay');
+    const content = document.getElementById('bigtext-content');
+    content.textContent = text;
+    content.style.color = color;
+    overlay.classList.remove('show');
+    void overlay.offsetWidth;
+    overlay.classList.add('show');
+    setTimeout(() => overlay.classList.remove('show'), dur);
+  }
+  document.getElementById('send-bigtext-btn').addEventListener('click', () => {
+    const text = document.getElementById('bigtext-input').value.trim();
+    if (!text) { showToast('Type something first!'); return; }
+    set(bigtextRef, { text, color: btColor, dur: btDur, ts: Date.now() });
+    showBigText(text, btColor, btDur);
+    showToast('💥 text sent');
   });
 
   // ── Party mode ────────────────────────────────────
@@ -883,24 +1067,19 @@
     if (document.body.classList.contains('party-mode')) return;
     document.body.classList.add('party-mode');
     spawnTacos();
-    // Play It's Raining Tacos via YouTube iframe audio trick
     if (!partyAudio) {
-      partyAudio = new Audio('https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3');
-      // ↑ placeholder — swap URL below with a direct mp3 link to the actual song
-      // e.g. a CDN or your own hosted file
+      partyAudio = new Audio('https://ahmads-onkel.github.io/ahmads-onkel.github.io/Its%20Raining%20Tacos!.mp3');
     }
     partyAudio.loop = true;
     partyAudio.volume = 0.6;
     partyAudio.play().catch(() => {});
   }
-
   function stopParty() {
     document.body.classList.remove('party-mode');
     if (partyAudio) { partyAudio.pause(); partyAudio.currentTime = 0; }
     if (partyInterval) { clearInterval(partyInterval); partyInterval = null; }
     document.getElementById('taco-container').innerHTML = '';
   }
-
   function spawnTacos() {
     if (partyInterval) clearInterval(partyInterval);
     partyInterval = setInterval(() => {
@@ -916,48 +1095,98 @@
       setTimeout(() => taco.remove(), dur * 1000 + 200);
     }, 120);
   }
+  document.getElementById('party-start-btn').addEventListener('click', () => { set(partyRef, true); startParty(); });
+  document.getElementById('party-stop-btn').addEventListener('click', () => { remove(partyRef); stopParty(); });
 
-  document.getElementById('party-start-btn').addEventListener('click', () => {
-    set(partyRef, true);
-    startParty();
-  });
-  document.getElementById('party-stop-btn').addEventListener('click', () => {
-    remove(partyRef);
-    stopParty();
-  });
+  // ── Rain ──────────────────────────────────────────
+  function startRain() {
+    const container = document.getElementById('rain-container');
+    if (container.classList.contains('show')) return;
+    container.classList.add('show');
+    container.innerHTML = '';
+    rainInterval = setInterval(() => {
+      if (!container.classList.contains('show')) return;
+      const drop = document.createElement('div');
+      drop.className = 'raindrop';
+      drop.style.left = Math.random() * 100 + 'vw';
+      const h = 40 + Math.random() * 60;
+      drop.style.height = h + 'px';
+      const dur = 0.6 + Math.random() * 0.8;
+      drop.style.animationDuration = dur + 's';
+      drop.style.animationDelay = (Math.random() * 0.5) + 's';
+      drop.style.opacity = 0.4 + Math.random() * 0.4;
+      container.appendChild(drop);
+      setTimeout(() => drop.remove(), (dur + 0.5) * 1000);
+    }, 30);
+  }
+  function stopRain() {
+    const container = document.getElementById('rain-container');
+    container.classList.remove('show');
+    if (rainInterval) { clearInterval(rainInterval); rainInterval = null; }
+    container.innerHTML = '';
+  }
+  document.getElementById('rain-start-btn').addEventListener('click', () => { set(rainRef, true); startRain(); });
+  document.getElementById('rain-stop-btn').addEventListener('click', () => { remove(rainRef); stopRain(); });
 
-  // ── Time Freeze ───────────────────────────────────
-  function freezeTime() {
-    if (isFrozen) return;
-    isFrozen = true;
-    document.body.classList.add('frozen');
+  // ── Spotlight ─────────────────────────────────────
+  const spotlightEl = document.getElementById('spotlight-overlay');
+  const spotlightBtn = document.getElementById('spotlight-toggle-btn');
 
-    // Play Za Warudo / time stop sound
-    const snd = new Audio('https://www.myinstants.com/media/sounds/za-warudo.mp3');
-    snd.volume = 0.8;
-    snd.play().catch(() => {});
-
-    // Show overlay (re-trigger animation by removing/re-adding)
-    const ov = document.getElementById('timefreeze-overlay');
-    ov.classList.remove('show');
-    void ov.offsetWidth;
-    ov.classList.add('show');
+  function updateSpotlight(e) {
+    const x = e.clientX, y = e.clientY;
+    const r = 160;
+    spotlightEl.style.webkitMaskImage =
+      `radial-gradient(circle ${r}px at ${x}px ${y}px, transparent 100%, black 100%)`;
+    spotlightEl.style.maskImage =
+      `radial-gradient(circle ${r}px at ${x}px ${y}px, transparent 100%, black 100%)`;
   }
 
-  function resumeTime() {
-    if (!isFrozen) return;
-    isFrozen = false;
-    document.body.classList.remove('frozen');
-    document.getElementById('timefreeze-overlay').classList.remove('show');
+  spotlightBtn.addEventListener('click', () => {
+    spotlightActive = !spotlightActive;
+    if (spotlightActive) {
+      spotlightEl.classList.add('show');
+      document.addEventListener('mousemove', updateSpotlight);
+      spotlightBtn.textContent = '🔦 stop spotlight';
+      spotlightBtn.style.background = '#111'; spotlightBtn.style.color = '#fff';
+    } else {
+      spotlightEl.classList.remove('show');
+      document.removeEventListener('mousemove', updateSpotlight);
+      spotlightBtn.textContent = '🔦 start spotlight';
+      spotlightBtn.style.background = ''; spotlightBtn.style.color = '';
+    }
+  });
+
+  // ── Cursor trail ──────────────────────────────────
+  const trailBtn = document.getElementById('trail-toggle-btn');
+  const trailColors = ['#ff4d6d','#ffe135','#4cc9f0','#0bce83','#f72585','#ff9e00','#b44fff'];
+  let trailHandler = null;
+
+  function spawnSpark(x, y) {
+    const spark = document.createElement('div');
+    spark.className = 'cursor-spark';
+    const size = 6 + Math.random() * 8;
+    spark.style.width = size + 'px';
+    spark.style.height = size + 'px';
+    spark.style.left = x + 'px';
+    spark.style.top  = y + 'px';
+    spark.style.background = trailColors[Math.floor(Math.random() * trailColors.length)];
+    document.body.appendChild(spark);
+    setTimeout(() => spark.remove(), 600);
   }
 
-  document.getElementById('freeze-btn').addEventListener('click', () => {
-    set(freezeRef, true);
-    freezeTime();
-  });
-  document.getElementById('unfreeze-btn').addEventListener('click', () => {
-    remove(freezeRef);
-    resumeTime();
+  trailBtn.addEventListener('click', () => {
+    trailActive = !trailActive;
+    if (trailActive) {
+      trailHandler = e => spawnSpark(e.clientX, e.clientY);
+      document.addEventListener('mousemove', trailHandler);
+      trailBtn.textContent = '✨ disable trail';
+      trailBtn.style.background = '#111'; trailBtn.style.color = '#fff'; trailBtn.style.borderColor = '#111';
+    } else {
+      document.removeEventListener('mousemove', trailHandler);
+      trailHandler = null;
+      trailBtn.textContent = '✨ enable trail';
+      trailBtn.style.background = ''; trailBtn.style.color = ''; trailBtn.style.borderColor = '';
+    }
   });
 
   // ── Canvas ────────────────────────────────────────
@@ -967,6 +1196,7 @@
 
   function resizeCanvas() {
     const main = document.getElementById('main');
+    const iw = canvas.width, ih = canvas.height;
     canvas.width  = main.clientWidth;
     canvas.height = main.clientHeight;
     replayFromCache();
@@ -1015,7 +1245,10 @@
   onChildAdded(msgsRef, snap => {
     if (!msgInitDone) return;
     const d = snap.val();
-    if (d?.name && d?.text) showBanner(d.name, d.text);
+    if (d?.name && d?.text) {
+      showBanner(d.name, d.text);
+      if (d.sound && d.sound !== 'none') playBeep(d.sound);
+    }
   });
   setTimeout(() => { msgInitDone = true; }, 1000);
 
@@ -1122,8 +1355,9 @@
   function sendMsg() {
     const text = document.getElementById('msg-input').value.trim();
     if (!text || !adminName) return;
-    push(msgsRef, { name: adminName, text, ts: Date.now() });
+    push(msgsRef, { name: adminName, text, sound: msgSound, ts: Date.now() });
     document.getElementById('msg-input').value = '';
+    showToast('💬 sent!');
   }
 
   // ── Poll ──────────────────────────────────────────
@@ -1132,12 +1366,13 @@
     if (!q) return;
     const inputs = document.querySelectorAll('#poll-options-builder input');
     const opts = Array.from(inputs).map(i => i.value.trim()).filter(Boolean);
-    if (opts.length < 2) { alert('Add at least 2 options!'); return; }
+    if (opts.length < 2) { showToast('Add at least 2 options!'); return; }
     const optObj = {};
     opts.forEach((o, i) => { optObj[i] = { label: o, votes: 0 }; });
     set(pollRef, { question: q, options: optObj, ts: Date.now() });
+    showToast('📊 poll launched');
   });
-  document.getElementById('close-poll-btn').addEventListener('click', () => remove(pollRef));
+  document.getElementById('close-poll-btn').addEventListener('click', () => { remove(pollRef); showToast('Poll closed'); });
   document.getElementById('poll-options-builder').addEventListener('click', e => {
     if (e.target.classList.contains('remove-option')) {
       const all = document.querySelectorAll('#poll-options-builder .poll-option-input-wrap');
@@ -1166,7 +1401,7 @@
     selBg = e.target.value;
     document.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('selected'));
   });
-  document.getElementById('send-bg-btn').addEventListener('click', () => set(bgRef, selBg));
+  document.getElementById('send-bg-btn').addEventListener('click', () => { set(bgRef, selBg); showToast('🎨 background updated'); });
 
   // ── Draw ──────────────────────────────────────────
   document.querySelectorAll('.tool-btn[data-tool]').forEach(btn => {
@@ -1196,7 +1431,8 @@
       drawToggleBtn.textContent = '⏹ stop drawing';
       drawToggleBtn.classList.add('drawing');
     } else {
-      canvas.classList.remove('active'); canvas.classList.add('view-only');
+      canvas.classList.remove('active');
+      if (strokeCache) canvas.classList.add('view-only');
       drawToggleBtn.textContent = '✏️ start drawing';
       drawToggleBtn.classList.remove('drawing');
       strokeId = null; lastPt = null; isPointing = false;
@@ -1209,6 +1445,7 @@
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     canvas.classList.remove('view-only');
     strokeCache = null;
+    showToast('🗑 canvas cleared');
   });
 
   function getPos(e) {
@@ -1260,6 +1497,7 @@
           </div>
         </div>`;
       if (!voted) {
+        div.style.cursor = 'pointer';
         div.addEventListener('click', () => {
           myVotes[pollKey] = k;
           set(ref(db, `poll/options/${k}/votes`), (opt.votes || 0) + 1);
